@@ -1,0 +1,104 @@
+.search-autocomplete .autocomplete-suggestions {
+    border: 1px solid #999;
+    background: #fff;
+    cursor: default;
+    overflow: auto;
+    -webkit-box-shadow: 1px 4px 3px rgba(50, 50, 50, 0.64);
+    -moz-box-shadow: 1px 4px 3px rgba(50, 50, 50, 0.64);
+    box-shadow: 1px 4px 3px rgba(50, 50, 50, 0.64);
+}
+
+.search-autocomplete .autocomplete-suggestion {
+    padding: 0px 5px;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.search-autocomplete .autocomplete-selected {
+    background: #f0f0f0;
+}
+
+.search-autocomplete .autocomplete-suggestions strong {
+    font-weight: normal;
+    color: #39f;
+}
+
+.search-autocomplete .product-autocomplete span {
+    display: block;
+    padding-left: 10px;
+}
+
+.search-autocomplete .product-autocomplete.hide {
+    display: none;
+}
+
+.search-autocomplete ul {
+    position: relative !important;
+    background: #fff;
+}
+.search-autocomplete ul li {
+    text-align: left;
+}
+.search-autocomplete ul li.selected {
+    background: #bbb;
+}
+.search-autocomplete .amount {
+    float: right;
+    display: block;
+    padding: 0 10px;
+}
+.search-autocomplete ul:first-child {
+    border-bottom: none !important;
+    -webkit-border-bottom-right-radius: 0px !important;
+    -webkit-border-bottom-left-radius: 0px !important;
+    -moz-border-radius-bottomright: 0px !important;
+    -moz-border-radius-bottomleft: 0px !important;
+    border-bottom-right-radius: 0px !important;
+    border-bottom-left-radius: 0px !important;
+}
+.search-autocomplete ul:last-child {
+    top: -1px !important;
+    border-top: none !important;
+    -webkit-border-top-left-radius: 0px !important;
+    -webkit-border-top-right-radius: 0px !important;
+    -moz-border-radius-topleft: 0px !important;
+    -moz-border-radius-topright: 0px !important;
+    border-top-left-radius: 0px !important;
+    border-top-right-radius: 0px !important;
+}
+
+.queries .facet {
+    color: rgb(138, 148, 175) !important;
+}
+
+.queries .facet span {
+    padding-left: 10px;
+}
+
+.search-autocomplete ul li.facet:hover {
+    background-color: #39f;
+    color: #fff;
+}
+
+.queries a.selected li {
+    background-color: #39f !important;
+    color: #fff !important;
+}
+
+.search-autocomplete li.facet:hover span {
+    color: #fff !important;
+}
+.suggest {
+    display: block;
+    height: 100px;
+}
+
+.suggest li {
+    float: left;
+    font-family: Verdana, Tahoma, Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    height: 18px;
+    line-height: 18px;
+    text-align: left;
+    width: 31%;
+}

@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<config>
+    <modules>
+        <Boxalino_Intelligence>
+            <active>true</active>
+            <codePool>community</codePool>
+        </Boxalino_Intelligence>
+    </modules>
+</config>
