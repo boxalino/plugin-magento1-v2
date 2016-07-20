@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<config>
+    <acl>
+        <resources>
+            <admin>
+                <children>
+                    <system>
+                        <children>
+                            <config>
+                                <children>
+                                    <bxGeneral>
+                                        <title>Boxalino General</title>
+                                    </bxGeneral>
+                                    <bxExporter>
+                                        <title>Boxalino Exporter</title>
+                                    </bxExporter>
+                                    <bxSearch>
+                                        <title>Boxalino Search</title>
+                                    </bxSearch>
+                                    <bxRecommendations>
+                                        <title>Boxalino Recommendation</title>
+                                    </bxRecommendations>
+                                </children>
+                            </config>
+                        </children>
+                    </system>
+                </children>
+            </admin>
+        </resources>
+    </acl>
+</config>
