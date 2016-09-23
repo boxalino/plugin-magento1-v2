@@ -41,6 +41,11 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
     protected $_lastIndex = 0;
 
     /**
+     * @var array
+     */
+    protected $deltaIds = array();
+
+    /**
      *
      */
     const BOXALINO_LOG_FILE = 'boxalino_exporter.log';
@@ -240,13 +245,14 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                     array('p_t' => $db->getTableName($this->_prefix . 'catalog_product_super_link')),
                     'e.entity_id = p_t.product_id', array('group_id' => 'parent_id')
                 );
-            $this->indexType == 'delta' ? $select->where('created_at >= ? OR updated_at >= ?', $this->_getLastIndex()) : '';
+            if($this->indexType == 'delta')$select->where('created_at >= ? OR updated_at >= ?', $this->_getLastIndex());
 
 
             $data = array();
             $result = $db->query($select);
             if($result->rowCount()){
                 while($row = $result->fetch()){
+                    if($this->indexType == 'delta') $this->deltaIds[] = $row['entity_id'];
                     if($row['group_id'] == null) $row['group_id'] = $row['entity_id'];
                     $data[$row['entity_id']] = $row;
                     $totalCount++;
@@ -320,6 +326,9 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
      * @param $files
      */
     protected function exportProductAttributes($attrs = array(), $languages, $account, $files, $mainSourceKey){
+        $tablePriceLabel = array();
+        $tableSpecialPriceLabel = array();
+
         $db = $this->_getReadAdapter();
         $columns = array(
             'entity_id',
@@ -336,7 +345,10 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                 array('t_d' => $db->getTableName($this->_prefix . 'catalog_product_entity_' . $attributeType)),
                 $columns
             );
+            if($this->indexType == 'delta')$select->where('t_d.entity_id IN(?)', $this->deltaIds);
             foreach ($types as $attributeID => $attribute) {
+                Mage::log('bxLog: Products - exporting attribute: ' . $attribute['attribute_code']  . ' for ' . $account, Zend_Log::INFO, self::BOXALINO_LOG_FILE);
+
                 $optionSelect = in_array($attribute['frontend_input'], array('multiselect','select'));
                 $data = array();
                 $additionalData = array();
@@ -347,9 +359,6 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                 $optionValues = array();
 
                 foreach ($languages as $langIndex => $lang) {
-
-
-                    if($this->indexType == 'delta')$select->where('created_at >= ? OR updated_at >= ?', $this->_getLastIndex());
 
                     $labelColumns[$lang] = 'value_' . $lang;
                     $storeObject = $this->config->getStore($account, $lang);
@@ -380,7 +389,7 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                                     'store_id'
                                 )
                             );
-                        if($this->indexType == 'delta') $select->where('c_p_e.created_at >= ? OR c_p_e.updated_at >= ?', $this->_getLastIndex());
+                        if($this->indexType == 'delta')$select->where('c_p_e.entity_id IN(?)', $this->deltaIds);
                     }
                     if ($attribute['attribute_code'] == 'price' || $attribute['attribute_code'] == 'special_price') {
                         if($langIndex == 0) {
@@ -408,12 +417,13 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                                 $priceData = array(array('parent_id', 'value'));
                             }
                             $files->savePartToCsv($attribute['attribute_code'] . '.csv', $priceData);
+                            $priceData = null;
                         }
                     }
                     if ($attribute['attribute_code'] == 'url_key') {
                         if (Mage::getEdition() == Mage::EDITION_ENTERPRISE) {
-                            $select1 = $db->select()
-                                ->from(
+                            $select = $db->select()
+                                ->joinLeft(
                                     array('t_g' => $db->getTableName($this->_prefix . 'catalog_product_entity_url_key')),
                                     array('entity_id', 'attribute_id')
                                 )
@@ -422,17 +432,44 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                                     't_s.attribute_id = t_g.attribute_id AND t_s.entity_id = t_g.entity_id',
                                     array('value' => 'IF(t_s.store_id IS NULL, t_g.value, t_s.value)')
                                 )
-                                ->where('t_g.attribute_id = ?', $attributeID)->where('t_g.store_id = 0 OR t_g.store_id = ?', $storeId);
-                            $this->indexType == 'delta' ? $select->where('created_at >= ? OR updated_at >= ?', $this->_getLastIndex()) : '';
-                            $result = $db->query($select1);
-                            if($result->rowCount()){
-                                while($row = $result->fetch()){
-                                    $data[] = $row;
-                                }
-                            }
-                            continue;
+                                ->where('t_g.attribute_id = ?', $attributeID)
+                                ->where('t_g.store_id = 0 OR t_g.store_id = ?', $storeId);
                         }
                     }
+                    if($optionSelect){
+                        $optionValueSelect = $db->select()
+                            ->from(
+                                array('a_o' => $db->getTableName('eav_attribute_option')),
+                                array(
+                                    'option_id',
+                                    new \Zend_Db_Expr("CASE WHEN c_o.value IS NULL THEN b_o.value ELSE c_o.value END as value")
+                                )
+                            )->joinLeft(array('b_o' => $db->getTableName('eav_attribute_option_value')),
+                                'b_o.option_id = a_o.option_id AND b_o.store_id = 0',
+                                array()
+                            )->joinLeft(array('c_o' => $db->getTableName('eav_attribute_option_value')),
+                                'c_o.option_id = a_o.option_id AND c_o.store_id = ' . $storeId,
+                                array()
+                            )->where('a_o.attribute_id = ?', $attributeID);
+
+                        $fetchedOptionValues = $db->fetchAll($optionValueSelect);
+
+                        if($fetchedOptionValues){
+                            foreach($fetchedOptionValues as $v){
+                                if(isset($optionValues[$v['option_id']])){
+                                    $optionValues[$v['option_id']]['value_' . $lang] = $v['value'];
+                                }else{
+                                    $optionValues[$v['option_id']] = array($attribute['attribute_code'] . '_id' => $v['option_id'],
+                                        'value_' . $lang => $v['value']);
+                                }
+                            }
+                        }else{
+                            $exportAttribute = true;
+                            $optionSelect = false;
+                        }
+                        $fetchedOptionValues = null;
+                    }
+
                     $attributeSelect = clone $select;
                     $attributeSelect
                         ->where('t_d.attribute_id = ?', $attributeID)
@@ -441,43 +478,9 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                     $result = $db->query($attributeSelect);
 
                     if ($result->rowCount()) {
-                        if($optionSelect){
-
-                            $optionValueSelect = $db->select()
-                                ->from(
-                                    array('a_o' => $db->getTableName($this->_prefix . 'eav_attribute_option')),
-                                    array(
-                                        'option_id',
-                                        new \Zend_Db_Expr(
-                                            "CASE WHEN c_o.value IS NULL THEN b_o.value ELSE c_o.value END as value")
-                                    )
-                                )->joinLeft(
-                                    array('b_o' => $db->getTableName($this->_prefix . 'eav_attribute_option_value')),
-                                    'b_o.option_id = a_o.option_id AND b_o.store_id = 0',
-                                    array()
-                                )->joinLeft(
-                                    array('c_o' => $db->getTableName($this->_prefix . 'eav_attribute_option_value')),
-                                    'c_o.option_id = a_o.option_id AND c_o.store_id = ' . $storeId,
-                                    array()
-                                )->where('a_o.attribute_id = ?', $attributeID);
-
-                            $optionResult = $db->query($optionValueSelect);
-                            if($optionResult->rowCount()){
-                                while($row = $optionResult->fetch()){
-                                    if(isset($optionValues[$row['option_id']])){
-                                        $optionValues[$row['option_id']]['value_' . $lang] = $row['value'];
-                                    }else{
-                                        $optionValues[$row['option_id']] = array(
-                                            $attribute['attribute_code'] . '_id' => $row['option_id'],
-                                            'value_' . $lang => $row['value']);
-                                    }
-                                }
-                            }else{
-                                $optionSelect = false;
-                            }
-                        }
 
                         while ($row = $result->fetch()) {
+
                             if (isset($data[$row['entity_id']]) && !$optionSelect) {
                                 if($row['store_id'] > $data[$row['entity_id']]['store_id']) {
                                     $data[$row['entity_id']]['value_' . $lang] = $row['value'];
@@ -543,29 +546,48 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                                                 $attribute['attribute_code'] . '_id' => $v);
                                         }
                                     }else{
+                                        $valueLabel = $attribute['attribute_code'] == 'visibility' ||
+                                        $attribute['attribute_code'] == 'status' ||
+                                        $attribute['attribute_code'] == 'special_from_date' ||
+                                        $attribute['attribute_code'] == 'special_to_date' ? 'value_' . $lang : 'value';
                                         $data[$row['entity_id']] = array('entity_id' => $row['entity_id'],
                                             'store_id' => $row['store_id'],
-                                            'value' => $row['value']);
+                                            $valueLabel => $row['value']);
                                     }
                                 }
                             }
                         }
                         if($attribute['is_global'] == 1){
                             $global = true;
-                            break;
+                            if($attribute['attribute_code'] != 'visibility' &&
+                                $attribute['attribute_code'] != 'status' &&
+                                $attribute['attribute_code'] != 'special_from_date' &&
+                                $attribute['attribute_code'] != 'special_to_date'
+                            )
+                            {
+                                break;
+                            }
                         }
                     }
                 }
-
-                if (sizeof($data)) {
-                    if($optionSelect){
-                        $optionHeader = array_merge(array($attribute['attribute_code'] . '_id'),$labelColumns);
-                        $a = array_merge(array($optionHeader), $optionValues);
-                        $files->savepartToCsv( $attribute['attribute_code'].'.csv', $a);
-                        $optionValues = null;
-                        $a = null;
+                if($optionSelect || $exportAttribute){
+                    $optionHeader = array_merge(array($attribute['attribute_code'] . '_id'),$labelColumns);
+                    $a = array_merge(array($optionHeader), $optionValues);
+                    $files->savepartToCsv($attribute['attribute_code'].'.csv', $a);
+                    $optionValues = null;
+                    $a = null;
+                    $optionSourceKey = $this->bxData->addResourceFile(
+                        $files->getPath($attribute['attribute_code'] . '.csv'), $attribute['attribute_code'] . '_id',
+                        $labelColumns);
+                    if(sizeof($data) == 0){
+                        $d = array(array('entity_id',$attribute['attribute_code'] . '_id'));
+                        $files->savepartToCsv('product_' . $attribute['attribute_code'] . '.csv',$d);
+                        $attributeSourceKey = $this->bxData->addCSVItemFile($files->getPath('product_' . $attribute['attribute_code'] . '.csv'), 'entity_id');
+                        $this->bxData->addSourceLocalizedTextField($attributeSourceKey,$attribute['attribute_code'],
+                            $attribute['attribute_code'] . '_id', $optionSourceKey);
                     }
-
+                }
+                if (sizeof($data)) {
                     if(!$global){
                         if(!$optionSelect){
                             $headerLangRow = array_merge(array('entity_id','store_id'), $labelColumns);
@@ -597,9 +619,6 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
 
                     switch($attribute['attribute_code']){
                         case $optionSelect == true:
-                            $optionSourceKey = $this->bxData->addResourceFile(
-                                $files->getPath($attribute['attribute_code'] . '.csv'), $attribute['attribute_code'] . '_id',
-                                $labelColumns);
                             $this->bxData->addSourceLocalizedTextField($attributeSourceKey,$attribute['attribute_code'],
                                 $attribute['attribute_code'] . '_id', $optionSourceKey);
                             break;
@@ -609,6 +628,16 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                         case 'description':
                             $this->bxData->addSourceDescriptionField($attributeSourceKey, $labelColumns);
                             break;
+                        case 'visibility':
+                        case 'status':
+                        case 'special_from_date':
+                        case 'special_to_date':
+                            $lc = array();
+                            foreach ($languages as $lcl) {
+                                $lc[$lcl] = 'value_' . $lcl;
+                            }
+                            $this->bxData->addSourceLocalizedTextField($attributeSourceKey, $fieldId, $lc);
+                            break;
                         case 'price':
                             if(!$global){
                                 $col = null;
@@ -616,9 +645,9 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                                     $col = $v;
                                     break;
                                 }
-                                $this->bxData->addSourceListPriceField($attributeSourceKey, $col);
+                                $this->bxData->addSourceListPriceField($mainSourceKey, 'entity_id');
                             }else {
-                                $this->bxData->addSourceListPriceField($attributeSourceKey, 'value');
+                                $this->bxData->addSourceListPriceField($mainSourceKey, 'entity_id');
                             }
 
                             if(!$global){
@@ -626,6 +655,12 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                             } else {
                                 $this->bxData->addSourceStringField($attributeSourceKey, "price_localized", 'value');
                             }
+                            $priceLabel = $global ? 'value' : reset($labelColumns);
+                            $tablePriceLabel = $priceLabel;
+                            $this->bxData->addFieldParameter($mainSourceKey,'bx_listprice', 'pc_fields', 'CASE WHEN (price.'.$priceLabel.' IS NULL OR price.'.$priceLabel.' <= 0) AND ref.value IS NOT NULL then ref.value ELSE price.'.$priceLabel.' END as price_value');
+                            $this->bxData->addFieldParameter($mainSourceKey,'bx_listprice', 'pc_tables', 'LEFT JOIN `%%EXTRACT_PROCESS_TABLE_BASE%%_products_product_price` as price ON t.entity_id = price.entity_id, LEFT JOIN `%%EXTRACT_PROCESS_TABLE_BASE%%_products_resource_price` as ref ON t.entity_id = ref.parent_id');
+
+                            $this->bxData->addResourceFile($files->getPath($attribute['attribute_code'] . '.csv'), 'parent_id','value');
                             break;
                         case 'special_price':
                             if(!$global){
@@ -634,25 +669,24 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                                     $col = $v;
                                     break;
                                 }
-                                $this->bxData->addSourceDiscountedPriceField($attributeSourceKey, $col);
+                                $this->bxData->addSourceDiscountedPriceField($mainSourceKey, 'entity_id');
                             }else {
-                                $this->bxData->addSourceDiscountedPriceField($attributeSourceKey, 'value');
+                                $this->bxData->addSourceDiscountedPriceField($mainSourceKey, 'entity_id');
                             }
                             if(!$global){
                                 $this->bxData->addSourceLocalizedTextField($attributeSourceKey, "special_price_localized", $labelColumns);
                             } else {
                                 $this->bxData->addSourceStringField($attributeSourceKey, "special_price_localized", 'value');
                             }
+                            $priceLabel = $global ? 'value' : reset($labelColumns);
+                            $tableSpecialPriceLabel = $priceLabel;
+                            $this->bxData->addFieldParameter($mainSourceKey,'bx_discountedprice', 'pc_fields', 'CASE WHEN (price.'.$priceLabel.' IS NULL OR price.'.$priceLabel.' <= 0) AND ref.value IS NOT NULL then ref.value ELSE price.'.$priceLabel.' END as price_value');
+                            $this->bxData->addFieldParameter($mainSourceKey,'bx_discountedprice', 'pc_tables', 'LEFT JOIN `%%EXTRACT_PROCESS_TABLE_BASE%%_products_product_special_price` as price ON t.entity_id = price.entity_id, LEFT JOIN `%%EXTRACT_PROCESS_TABLE_BASE%%_products_resource_special_price` as ref ON t.entity_id = ref.parent_id');
+
+                            $this->bxData->addResourceFile($files->getPath($attribute['attribute_code'] . '.csv'), 'parent_id','value');
                             break;
                         case ($attributeType == ('int' || 'decimal')) && $attribute['is_global'] == 1:
                             $this->bxData->addSourceNumberField($attributeSourceKey, $fieldId, 'value');
-                            break;
-                        case $attributeType == 'datetime':
-                            if(!$global){
-                                $this->bxData->addSourceLocalizedTextField($attributeSourceKey, $fieldId, $labelColumns);
-                            }else{
-                                $this->bxData->addSourceStringField($attributeSourceKey, $fieldId, 'value');
-                            }
                             break;
                         default:
                             if(!$global){
@@ -669,6 +703,10 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                 $labelColumns = null;
             }
         }
+        $this->bxData->addSourceNumberField($mainSourceKey, 'bx_grouped_price', 'entity_id');
+        $this->bxData->addFieldParameter($mainSourceKey,'bx_grouped_price', 'pc_fields', 'CASE WHEN sref.value IS NOT NULL AND sref.value > 0 THEN sref.value WHEN sprice.'.$priceLabel.' IS NOT NULL AND sprice.'.$tableSpecialPriceLabel.' > 0 THEN sprice.'.$tableSpecialPriceLabel.' WHEN ref.value IS NOT NULL then ref.value ELSE price.'.$tablePriceLabel.' END as price_value');
+        $this->bxData->addFieldParameter($mainSourceKey,'bx_grouped_price', 'pc_tables', 'LEFT JOIN `%%EXTRACT_PROCESS_TABLE_BASE%%_products_product_price` as price ON t.entity_id = price.entity_id, LEFT JOIN `%%EXTRACT_PROCESS_TABLE_BASE%%_products_resource_price` as ref ON t.entity_id = ref.parent_id, LEFT JOIN `%%EXTRACT_PROCESS_TABLE_BASE%%_products_product_special_price` as sprice ON t.entity_id = sprice.entity_id, LEFT JOIN `%%EXTRACT_PROCESS_TABLE_BASE%%_products_resource_special_price` as sref ON t.entity_id = sref.parent_id');
+        $this->bxData->addFieldParameter($mainSourceKey,'bx_grouped_price', 'multiValued', 'false');
     }
 
     /**
@@ -689,7 +727,7 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                 )
             )
             ->where('stock_id = ?', 1);
-        $this->indexType == 'delta' ? $select->where('created_at >= ? OR updated_at >= ?', $this->_getLastIndex()) : '';
+        if($this->indexType == 'delta')$select->where('entity_id IN(?)', $this->deltaIds);
 
         $result = $db->query($select);
 
@@ -706,35 +744,6 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
             $this->bxData->addSourceNumberField($attributeSourceKey, 'qty', 'qty');
         }
 
-        //product website
-//        $select = $db->select()
-//            ->from(
-//                array('c_p_w' => $db->getTableName($this->_prefix . 'catalog_product_website')),
-//                array(
-//                    'entity_id' => 'product_id',
-//                    'website_id',
-//                )
-//            )->joinLeft(array('s_w' => $db->getTableName($this->_prefix . 'store_website')),
-//                's_w.website_id = c_p_w.website_id',
-//                array('s_w.name')
-//            );
-//        $this->indexType == 'delta' ? $select->where('created_at >= ? OR updated_at >= ?', $this->_getLastIndex()) : '';
-//
-//        $result = $db->query($select);
-//
-//        if($result->rowCount()){
-//            while($row = $result->fetch()){
-//                $data[] = $row;
-//            }
-//            $d = array_merge(array(array_keys(end($data))), $data);
-//            $files->savePartToCsv('product_website.csv', $d);
-//            $data = null;
-//            $d = null;
-//            $attributeSourceKey = $this->bxData->addCSVItemFile($files->getPath('product_website.csv'), 'entity_id');
-//            $this->bxData->addSourceStringField($attributeSourceKey, 'website_name', 'name');
-//            $this->bxData->addSourceStringField($attributeSourceKey, 'website_id', 'website_id');
-//        }
-
         //product categories
         $select = $db->select()
             ->from(
@@ -745,7 +754,7 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                     'position'
                 )
             );
-        $this->indexType == 'delta' ? $select->where('created_at >= ? OR updated_at >= ?', $this->_getLastIndex()) : '';
+        if($this->indexType == 'delta')$select->where('entity_id IN(?)', $this->deltaIds);
 
         $result = $db->query($select);
 
@@ -769,7 +778,7 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                     'link_id'
                 )
             );
-        $this->indexType == 'delta' ? $select->where('created_at >= ? OR updated_at >= ?', $this->_getLastIndex()) : '';
+        if($this->indexType == 'delta')$select->where('entity_id IN(?)', $this->deltaIds);
 
 
         $result = $db->query($select);
@@ -803,7 +812,7 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                 'pl.link_type_id = lt.link_type_id', array()
             )
             ->where('lt.link_type_id = pl.link_type_id');
-        $this->indexType == 'delta' ? $select->where('created_at >= ? OR updated_at >= ?', $this->_getLastIndex()) : '';
+        if($this->indexType == 'delta')$select->where('pl.entity_id IN(?)', $this->deltaIds);
 
 
         $result = $db->query($select);
