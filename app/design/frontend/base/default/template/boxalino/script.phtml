@@ -6,17 +6,17 @@
 /** @var $this Boxalino_CemSearch_Block_Script */
 
 /** @var $_helper Boxalino_CemSearch_Helper_Data */
-$_helper = Mage::helper('Boxalino_CemSearch');
+$_helper = Mage::helper('intelligence');
 
 // get account
-$account = Mage::getStoreConfig('Boxalino_General/general/di_account');
+$account = Mage::getStoreConfig('bxGeneral/general/account_name');
 ?>
 <script>
     var _bxq = _bxq || []
     _bxq.push(['setAccount', <?php echo json_encode($account); ?>]);
     <?php echo $this->getScripts(); ?>
 
-    <?php if ($_helper->isAnalyticsEnabled()): ?>
+    <?php if ($_helper->isTrackerEnabled()): ?>
     _bxq.push(['trackPageView']);
     <?php endif; ?>
 

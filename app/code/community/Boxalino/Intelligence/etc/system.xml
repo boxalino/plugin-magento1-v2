@@ -168,6 +168,15 @@
                             <comment><![CDATA[ Optional: Write here comma-separated names of fields in Boxalino response Colon separate option:
                             <br>-global (without language version)<br>-local (with language version)]]></comment>
                         </additional_fields>
+                        <thrift_timeout>
+                            <label>Timeout limit to our server</label>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>8</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <comment>Optional: default value is 2 seconds and should normally not be changed.</comment>
+                        </thrift_timeout>
                     </fields>
                 </advanced>
             </groups>
@@ -396,7 +405,7 @@
         </bxExporter>
 
         <bxSearch translate="label" module="intelligence">
-            <label>Search</label>
+            <label>Search - Navigation</label>
             <tab>boxalino</tab>
             <frontend_type>text</frontend_type>
             <sort_order>3000</sort_order>
@@ -405,7 +414,7 @@
             <show_in_store>1</show_in_store>
             <groups>
                 <search>
-                    <label>General</label>
+                    <label>Search</label>
                     <frontend_type>text</frontend_type>
                     <sort_order>10</sort_order>
                     <show_in_default>1</show_in_default>
@@ -422,6 +431,16 @@
                             <show_in_store>1</show_in_store>
                             <comment>Is Boxalino search active?</comment>
                         </enabled>
+                        <filter tranlate="label">
+                            <label>Enable boxalino filter layout</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_enabledisable</source_model>
+                            <sort_order>2</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <comment>Is Boxalino filter layout active?</comment>
+                        </filter>
                     </fields>
                 </search>
                 <navigation>
@@ -442,32 +461,22 @@
                             <show_in_store>1</show_in_store>
                             <comment>Is Boxalino navigation active?</comment>
                         </enabled>
-                    </fields>
-                </navigation>
-                <filter>
-                    <label>Filter</label>
-                    <frontend_type>text</frontend_type>
-                    <sort_order>30</sort_order>
-                    <show_in_default>1</show_in_default>
-                    <show_in_website>1</show_in_website>
-                    <show_in_store>1</show_in_store>
-                    <fields>
-                        <enabled tranlate="label">
+                        <filter tranlate="label">
                             <label>Enable boxalino filter layout</label>
                             <frontend_type>select</frontend_type>
                             <source_model>adminhtml/system_config_source_enabledisable</source_model>
-                            <sort_order>1</sort_order>
+                            <sort_order>2</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
                             <comment>Is Boxalino filter layout active?</comment>
-                        </enabled>
+                        </filter>
                     </fields>
-                </filter>
+                </navigation>
                 <left_facets>
                     <label>Left facets</label>
                     <frontend_type>text</frontend_type>
-                    <sort_order>40</sort_order>
+                    <sort_order>30</sort_order>
                     <show_in_default>1</show_in_default>
                     <show_in_website>1</show_in_website>
                     <show_in_store>1</show_in_store>
@@ -538,12 +547,25 @@
                                  "order by Magento categorization" (only for category)]]>
                             </comment>
                         </orders>
+                        <position tranlate="label">
+                            <label>Position of facet values</label>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>6</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <comment>
+                                <![CDATA[The position of the facet appearing in the filter. Ordered list matching
+                                the values of Field names (values separated by ',').<br />If the position overlaps with
+                                other attributes defined in magento, the position is determined alphabetical.]]>
+                            </comment>
+                        </position>
                     </fields>
                 </left_facets>
                 <top_facet>
                     <label>Top facet</label>
                     <frontend_type>text</frontend_type>
-                    <sort_order>50</sort_order>
+                    <sort_order>40</sort_order>
                     <show_in_default>1</show_in_default>
                     <show_in_website>1</show_in_website>
                     <show_in_store>1</show_in_store>
@@ -589,7 +611,7 @@
                 <autocomplete>
                     <label>Autocomplete</label>
                     <frontend_type>text</frontend_type>
-                    <sort_order>60</sort_order>
+                    <sort_order>50</sort_order>
                     <show_in_default>1</show_in_default>
                     <show_in_website>1</show_in_website>
                     <show_in_store>1</show_in_store>
@@ -633,7 +655,7 @@
                 <advanced>
                     <label>Advanced</label>
                     <frontend_type>text</frontend_type>
-                    <sort_order>70</sort_order>
+                    <sort_order>60</sort_order>
                     <show_in_default>1</show_in_default>
                     <show_in_website>1</show_in_website>
                     <show_in_store>1</show_in_store>
@@ -669,6 +691,17 @@
                                 Optional: default value is "navigation" and should normally not be changed
                             </comment>
                         </navigation_choice_id>
+                        <search_sub_phrases_limit tranlate="label">
+                            <label>Search limit for sub-phrases</label>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>4</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <comment>
+                                Optional: default value is 3 and should normally not be changed.
+                            </comment>
+                        </search_sub_phrases_limit>
                     </fields>
                 </advanced>
             </groups>

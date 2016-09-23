@@ -1,12 +1,8 @@
-<?php $filters = $this->getTopFilters(); ?>
-<?php if (!empty($filters)): ?>
-    <div class="top_filters" style="width:100%; margin-left:5px;">
-        <?php foreach ($filters as $key => $filter): ?>
-            <div class="value" style="width:33%; float:left;">
-                <?php if ($filter['selected']) echo '<strong>' ?>
-                <a href="<?php echo $filter['url'] ?>"><?php echo $filter['title'] . ' (' . $filter['hitCount'] . ')' ?></a>
-                <?php if ($filter['selected']) echo '</strong>' ?>
-            </div>
-        <?php endforeach; ?>
-    </div>
+<?php if($this->isTopFilterEnabled()): ?>
+    <?php $_filter = $this->getTopFilter(); ?>
+    <?php if(!empty($_filter)): ?>
+        <div class="top_filters">
+            <?php echo $_filter->getHtml(); ?>
+        </div>
+    <?php endif; ?>
 <?php endif; ?>

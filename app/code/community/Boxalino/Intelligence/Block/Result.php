@@ -2,19 +2,6 @@
 
 class Boxalino_Intelligence_Block_Result extends Mage_CatalogSearch_Block_Result{
 
-    protected function _getProductCollection()
-    {
-        if (is_null($this->_productCollection)) {
-            $this->_productCollection = $this->getListBlock()->getLoadedProductCollection();
-        }
-//        // reset limits set by the toolbar
-        $this->_productCollection->clear();
-        $this->_productCollection->getSelect()->limit();
-
-        return $this->_productCollection;
-    }
-
-    
     public function getResultCount()
     {
         if (!$this->getData('result_count')) {
@@ -22,6 +9,6 @@ class Boxalino_Intelligence_Block_Result extends Mage_CatalogSearch_Block_Result
             $this->_getQuery()->setNumResults($size);
             $this->setResultCount($size);
         }
-        return 123;
+        return $this->getData('result_count');
     }
 }

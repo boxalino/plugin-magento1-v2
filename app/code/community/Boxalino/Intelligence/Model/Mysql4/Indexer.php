@@ -1,23 +1,53 @@
 <?php
 
+/**
+ * Class Boxalino_Intelligence_Model_Mysql4_Indexer
+ */
 abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Model_Mysql4_Abstract{
 
+    /**
+     * @var
+     */
     protected $_prefix;
 
+    /**
+     * @var
+     */
     protected $config;
 
+    /**
+     * @var
+     */
     protected $bxData;
 
+    /**
+     * @var
+     */
     protected $indexType;
 
+    /**
+     * @var
+     */
     protected $_helperExporter;
 
+    /**
+     * @var null
+     */
     protected $_entityTypeIds = null;
 
+    /**
+     * @var int
+     */
     protected $_lastIndex = 0;
 
+    /**
+     *
+     */
     const BOXALINO_LOG_FILE = 'boxalino_exporter.log';
 
+    /**
+     * @return $this
+     */
     public function reindexAll()
     {
         $this->loadBxLibrary();
@@ -26,81 +56,93 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
         $this->exportStores();
         return $this;
     }
-    
+
+    /**
+     *
+     */
     protected function exportStores(){
+
         $this->_helperExporter = Mage::helper('intelligence');
-
         Mage::log("bxLog: starting exportStores", Zend_Log::INFO, self::BOXALINO_LOG_FILE);
-        $this->config = new Boxalino_Intelligence_Helper_BxIndexConfig();
+        $this->config = Mage::helper('intelligence/bxindexconfig');
         Mage::log("bxLog: retrieved index config: " . $this->config->toString(), Zend_Log::INFO, self::BOXALINO_LOG_FILE);
+        try {
+            foreach ($this->config->getAccounts() as $account) {
 
-        foreach ($this->config->getAccounts() as $account) {
+                Mage::log("bxLog: initialize files on account: " . $account, Zend_Log::INFO, self::BOXALINO_LOG_FILE);
+                $files = Mage::helper('intelligence/bxfiles');
 
-            Mage::log("bxLog: initialize files on account: " . $account, Zend_Log::INFO, self::BOXALINO_LOG_FILE);
-            $files = new Boxalino_Intelligence_Helper_BxFiles( $account, $this->config);
+                $bxClient = new \com\boxalino\bxclient\v1\BxClient($account, $this->config->getAccountPassword($account), "");
+                $this->bxData = new \com\boxalino\bxclient\v1\BxData($bxClient, $this->config->getAccountLanguages($account), $this->config->isAccountDev($account), false);
+                Mage::log("bxLog: verify credentials for account: " . $account, Zend_Log::INFO, self::BOXALINO_LOG_FILE);
+                $this->bxData->verifyCredentials();
 
-            $bxClient = new \com\boxalino\bxclient\v1\BxClient($account, $this->config->getAccountPassword($account), "");
-            $this->bxData = new \com\boxalino\bxclient\v1\BxData($bxClient, $this->config->getAccountLanguages($account), $this->config->isAccountDev($account), false);
-            Mage::log("bxLog: verify credentials for account: " . $account, Zend_Log::INFO, self::BOXALINO_LOG_FILE);
-            $this->bxData->verifyCredentials();
-
-            Mage::log("bxLog: verify credentials for account: " . $account, Zend_Log::INFO, self::BOXALINO_LOG_FILE);
-            $categories = array();
-            foreach ($this->config->getAccountLanguages($account) as $language) {
-                $store = $this->config->getStore($account, $language);
-                Mage::log('bxLog: Start getStoreProductAttributes for language: ' . $language . ' on store: ' . $store->getId(), Zend_Log::INFO, self::BOXALINO_LOG_FILE);
-                if($this->indexType == 'full'){
+                Mage::log("bxLog: verify credentials for account: " . $account, Zend_Log::INFO, self::BOXALINO_LOG_FILE);
+                $categories = array();
+                foreach ($this->config->getAccountLanguages($account) as $language) {
+                    $store = $this->config->getStore($account, $language);
+                    Mage::log('bxLog: Start getStoreProductAttributes for language: ' . $language . ' on store: ' . $store->getId(), Zend_Log::INFO, self::BOXALINO_LOG_FILE);
                     Mage::log('bxLog: Start exportCategories for language: ' . $language . ' on store:' . $store->getId(), Zend_Log::INFO, self::BOXALINO_LOG_FILE);
                     $categories = $this->exportCategories($store, $language, $categories);
                 }
-            }
-            Mage::log('bxLog: Export the customers, transactions and product files for account: ' . $account, Zend_Log::INFO, self::BOXALINO_LOG_FILE);
+                Mage::log('bxLog: Export the customers, transactions and product files for account: ' . $account, Zend_Log::INFO, self::BOXALINO_LOG_FILE);
 
-            $exportProducts = $this->exportProducts($account, $files);
-            if($this->indexType == 'full'){
-                $this->exportCustomers($account, $files);
-                $this->exportTransactions($account, $files);
-                $this->prepareData($account, $files, $categories);
-            }
 
-            if(!$exportProducts){
-                Mage::log('bxLog: No Products found for account: ' . $account, Zend_Log::INFO, self::BOXALINO_LOG_FILE);
-                Mage::log('bxLog: Finished account: ' . $account, Zend_Log::INFO, self::BOXALINO_LOG_FILE);
-            }else{
+                $exportProducts = $this->exportProducts($account, $files);
                 if($this->indexType == 'full'){
-                    Mage::log('bxLog: Prepare the final files: ' . $account, Zend_Log::INFO, self::BOXALINO_LOG_FILE);
-                    Mage::log('bxLog: Prepare XML configuration file: ' . $account, Zend_Log::INFO, self::BOXALINO_LOG_FILE);
-                    try {
-                        Mage::log('bxLog: Push the XML configuration file to the Data Indexing server for account: ' . $account, Zend_Log::INFO, self::BOXALINO_LOG_FILE);
-                        $this->bxData->pushDataSpecifications();
-                    } catch(\Exception $e) {
-                        $value = @json_decode($e->getMessage(), true);
-                        if(isset($value['error_type_number']) && $value['error_type_number'] == 3) {
-                            Mage::log('bxLog: Try to push the XML file a second time, error 3 happens always at the very first time but not after: ' . $account, Zend_Log::INFO, self::BOXALINO_LOG_FILE);
+                    $this->exportCustomers($account, $files);
+                    $this->exportTransactions($account, $files);
+                    $this->prepareData($account, $files, $categories);
+                }
+
+                if(!$exportProducts){
+                    Mage::log('bxLog: No Products found for account: ' . $account, Zend_Log::INFO, self::BOXALINO_LOG_FILE);
+                    Mage::log('bxLog: Finished account: ' . $account, Zend_Log::INFO, self::BOXALINO_LOG_FILE);
+                }else{
+                    if($this->indexType == 'full'){
+                        Mage::log('bxLog: Prepare the final files: ' . $account, Zend_Log::INFO, self::BOXALINO_LOG_FILE);
+                        Mage::log('bxLog: Prepare XML configuration file: ' . $account, Zend_Log::INFO, self::BOXALINO_LOG_FILE);
+                        try {
+                            Mage::log('bxLog: Push the XML configuration file to the Data Indexing server for account: ' . $account, Zend_Log::INFO, self::BOXALINO_LOG_FILE);
                             $this->bxData->pushDataSpecifications();
-                        } else {
-                            throw $e;
+                        } catch(\Exception $e) {
+                            $value = @json_decode($e->getMessage(), true);
+                            if(isset($value['error_type_number']) && $value['error_type_number'] == 3) {
+                                Mage::log('bxLog: Try to push the XML file a second time, error 3 happens always at the very first time but not after: ' . $account, Zend_Log::INFO, self::BOXALINO_LOG_FILE);
+                                $this->bxData->pushDataSpecifications();
+                            } else {
+                                throw $e;
+                            }
                         }
+                        Mage::log('bxLog: Publish the configuration changes from the magento2 owner for account: ' . $account, Zend_Log::INFO, self::BOXALINO_LOG_FILE);
+                        $publish = $this->config->publishConfigurationChanges($account);
+                        $changes = $this->bxData->publishChanges($publish);
+                        if(sizeof($changes['changes']) > 0 && !$publish) {
+                            Mage::log("changes in configuration detected but not published as publish configuration automatically option has not been activated for account: " . $account, Zend_Log::WARN, self::BOXALINO_LOG_FILE);
+                        }
+                        Mage::log('bxLog: Push the Zip data file to the Data Indexing server for account: ' . $account, Zend_Log::INFO, self::BOXALINO_LOG_FILE);
                     }
-                    Mage::log('bxLog: Publish the configuration changes from the magento2 owner for account: ' . $account, Zend_Log::INFO, self::BOXALINO_LOG_FILE);
-                    $publish = $this->config->publishConfigurationChanges($account);
-                    $changes = $this->bxData->publishChanges($publish);
-                    if(sizeof($changes['changes']) > 0 && !$publish) {
-                        Mage::log("changes in configuration detected but not published as publish configuration automatically option has not been activated for account: " . $account, Zend_Log::WARN, self::BOXALINO_LOG_FILE);
+                    try{
+                        $this->bxData->pushData();
+                    }catch(\Exception $e){
+                        throw $e;
                     }
-                    Mage::log('bxLog: Push the Zip data file to the Data Indexing server for account: ' . $account, Zend_Log::INFO, self::BOXALINO_LOG_FILE);
+                    Mage::log('bxLog: Finished account: ' . $account, Zend_Log::INFO, self::BOXALINO_LOG_FILE);
                 }
-                try{
-                    $this->bxData->pushData();
-                }catch(\Exception $e){
-                    throw $e;
-                }
-                Mage::log('bxLog: Finished account: ' . $account, Zend_Log::INFO, self::BOXALINO_LOG_FILE);
             }
+        }catch(\Exception $e){
+            Mage::log("bxLog: failed with exception: " . $e->getMessage(), Zend_Log::INFO, self::BOXALINO_LOG_FILE);
         }
         Mage::log("bxLog: finished exportStores", Zend_Log::INFO, self::BOXALINO_LOG_FILE);
     }
 
+    /**
+     * @param $account
+     * @param $files
+     * @param $categories
+     * @param null $tags
+     * @param null $productTags
+     */
     protected function prepareData($account, $files, $categories, $tags = null, $productTags = null){
         $withTag = ($tags != null && $productTags != null) ? true : false;
         $languages = $this->config->getAccountLanguages($account);
@@ -115,6 +157,10 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
         $this->bxData->setCategoryField($productToCategoriesSourceKey, 'category_id');
     }
 
+    /**
+     * @param $account
+     * @return array
+     */
     protected function getStoreProductAttributes($account)
     {
         $db = $this->_getReadAdapter();
@@ -159,13 +205,17 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
         return $attributes;
     }
 
+    /**
+     * @param $account
+     * @param $files
+     * @return bool
+     */
     protected function exportProducts($account, $files){
         $languages = $this->config->getAccountLanguages($account);
 
         Mage::log('bxLog: Products - start of export for account ' . $account, Zend_Log::INFO, self::BOXALINO_LOG_FILE);
         $attrs = $this->getStoreProductAttributes($account);
         Mage::log('bxLog: Products - get info about attributes - before for account ' . $account, Zend_Log::INFO, self::BOXALINO_LOG_FILE);
-
 
         $db = $this->_getReadAdapter();
 
@@ -258,12 +308,18 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
             }
         }
 
-        $this->exportProductAttributes($attrsFromDb, $languages, $account, $files);
+        $this->exportProductAttributes($attrsFromDb, $languages, $account, $files, $attributeSourceKey);
         $this->exportProductInformation($files);
         return true;
     }
-    
-    protected function exportProductAttributes($attrs = array(), $languages, $account, $files){
+
+    /**
+     * @param array $attrs
+     * @param $languages
+     * @param $account
+     * @param $files
+     */
+    protected function exportProductAttributes($attrs = array(), $languages, $account, $files, $mainSourceKey){
         $db = $this->_getReadAdapter();
         $columns = array(
             'entity_id',
@@ -280,25 +336,79 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                 array('t_d' => $db->getTableName($this->_prefix . 'catalog_product_entity_' . $attributeType)),
                 $columns
             );
-            $this->indexType == 'delta' ? $select->where('created_at >= ? OR updated_at >= ?', $this->_getLastIndex()) : '';
-
             foreach ($types as $attributeID => $attribute) {
                 $optionSelect = in_array($attribute['frontend_input'], array('multiselect','select'));
                 $data = array();
                 $additionalData = array();
+                $exportAttribute = false;
                 $global = false;
                 $d = array();
                 $headerLangRow = array();
                 $optionValues = array();
 
-                foreach ($languages as $lang) {
+                foreach ($languages as $langIndex => $lang) {
+
+
+                    if($this->indexType == 'delta')$select->where('created_at >= ? OR updated_at >= ?', $this->_getLastIndex());
 
                     $labelColumns[$lang] = 'value_' . $lang;
                     $storeObject = $this->config->getStore($account, $lang);
                     $storeId = $storeObject->getId();
+
                     if($attribute['attribute_code'] == 'url_key' || $attribute['attribute_code'] == 'image'){
                         $storeBaseUrl = $storeObject->getBaseUrl();
                         $imageBaseUrl = $storeObject->getBaseUrl(Mage_Core_Model_Store::URL_TYPE_MEDIA) . "catalog/product";
+                    }
+
+                    if ($attribute['attribute_code'] == 'visibility') {
+
+                        $select = $db->select()
+                            ->from(
+                                array('c_p_e' => $db->getTableName('catalog_product_entity')),
+                                array('entity_id')
+                            )
+                            ->joinLeft(
+                                array('c_p_r' => $db->getTableName('catalog_product_relation')),
+                                'c_p_e.entity_id = c_p_r.child_id',
+                                array('parent_id'))
+                            ->join(
+                                array('t_d' => $db->getTableName('catalog_product_entity_' . $attributeType)),
+                                '(t_d.entity_id = c_p_r.parent_id) OR (t_d.entity_id = c_p_e.entity_id AND c_p_r.parent_id IS NULL)',
+                                array(
+                                    'attribute_id',
+                                    'value',
+                                    'store_id'
+                                )
+                            );
+                        if($this->indexType == 'delta') $select->where('c_p_e.created_at >= ? OR c_p_e.updated_at >= ?', $this->_getLastIndex());
+                    }
+                    if ($attribute['attribute_code'] == 'price' || $attribute['attribute_code'] == 'special_price') {
+                        if($langIndex == 0) {
+                            $priceSelect = $db->select()
+                                ->from(
+                                    array('c_p_r' => $db->getTableName('catalog_product_relation')),
+                                    array('parent_id')
+                                )
+                                ->join(
+                                    array('t_d' => $db->getTableName('catalog_product_entity_' . $attributeType)),
+                                    't_d.entity_id = c_p_r.child_id',
+                                    array(
+                                        'value' => 'MIN(value)'
+                                    )
+                                )->group(array('parent_id'))->where('t_d.attribute_id = ?', $attributeID);
+                            $priceData = array();
+
+                            foreach ($db->fetchAll($priceSelect) as $row) {
+                                $priceData[] = $row;
+                            }
+
+                            if (sizeof($priceData)) {
+                                $priceData = array_merge(array(array_keys(end($priceData))), $priceData);
+                            } else {
+                                $priceData = array(array('parent_id', 'value'));
+                            }
+                            $files->savePartToCsv($attribute['attribute_code'] . '.csv', $priceData);
+                        }
                     }
                     if ($attribute['attribute_code'] == 'url_key') {
                         if (Mage::getEdition() == Mage::EDITION_ENTERPRISE) {
@@ -460,11 +570,6 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                         if(!$optionSelect){
                             $headerLangRow = array_merge(array('entity_id','store_id'), $labelColumns);
                             if(sizeof($additionalData)){
-//                                if($attribute['attribute_code'] == 'url_key'){
-//
-//                                    print_r($attributeID);print_r($attribute);
-//                                    print_r($additionalData);exit;
-//                                }
                                 $additionalHeader = array_merge(array('entity_id','store_id'), $labelColumns);
                                 $d = array_merge(array($additionalHeader), $additionalData);
                                 if ($attribute['attribute_code'] == 'url_key') {
@@ -566,6 +671,9 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
         }
     }
 
+    /**
+     * @param $files
+     */
     protected function exportProductInformation($files){
 
         $fetchedResult = array();
@@ -714,6 +822,11 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
         }
     }
 
+    /**
+     * @param $account
+     * @param $files
+     * @throws Zend_Db_Select_Exception
+     */
     protected function exportCustomers($account, $files){
         if(!$this->config->isCustomersExportEnabled($account)) {
             return;
@@ -959,8 +1072,10 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
         }
     }
 
-
-
+    /**
+     * @param $account
+     * @return array
+     */
     protected function getCustomerAttributes($account)
     {
         $attributes = array();
@@ -996,6 +1111,10 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
         return $attributes;
     }
 
+    /**
+     * @param $account
+     * @param $files
+     */
     protected function exportTransactions($account, $files){
         if(!$this->config->isTransactionsExportEnabled($account)){
             return;
@@ -1176,7 +1295,10 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
         Mage::log('bxLog: Transactions - end of export for account ' . $account, Zend_Log::INFO, self::BOXALINO_LOG_FILE);
     }
 
-
+    /**
+     * @param $account
+     * @return array
+     */
     protected function getTransactionAttributes($account){
 
         $setupConfig = Mage::getConfig()->getResourceConnectionConfig("default_setup");
@@ -1214,6 +1336,12 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
         return $attributes;
     }
 
+    /**
+     * @param $store
+     * @param $language
+     * @param $transformedCategories
+     * @return mixed
+     */
     protected function exportCategories($store, $language, $transformedCategories)
     {
         $categoryTypeId = $this->getEntityTypeId('catalog_category');
@@ -1252,7 +1380,10 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
         return $transformedCategories;
     }
 
-
+    /**
+     * @param $entityType
+     * @return null
+     */
     protected function getEntityTypeId($entityType)
     {
         if ($this->_entityTypeIds == null) {
@@ -1273,7 +1404,10 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
         return array_key_exists($entityType, $this->_entityTypeIds) ? $this->_entityTypeIds[$entityType] : null;
     }
 
-
+    /**
+     * @param $attr_code
+     * @return null
+     */
     protected function getAttributeId($attr_code){
         $db = $this->_getReadAdapter();
         $select = $db->select()
@@ -1292,6 +1426,9 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
         return null;
     }
 
+    /**
+     * @return int
+     */
     protected function _getLastIndex()
     {
         if ($this->_lastIndex == 0) {
@@ -1300,6 +1437,9 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
         return $this->_lastIndex;
     }
 
+    /**
+     *
+     */
     protected function _setLastIndex()
     {
         $dates = array();
@@ -1323,8 +1463,7 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
 
         $this->_lastIndex = $date;
     }
-
-
+    
     protected function loadBxLibrary(){
         $libPath = __DIR__ . '/../../Lib';
         require_once($libPath . '/BxClient.php');

@@ -6,6 +6,7 @@
             <version>0.0.1</version>
         </Boxalino_Intelligence>
     </modules>
+
     <frontend>
         <routers>
             <catalogsearch>
@@ -23,6 +24,63 @@
                 </args>
             </intelligence>
         </routers>
+        <layout>
+            <updates>
+                <intelligence>
+                    <file>boxalino.xml</file>
+                </intelligence>
+            </updates>
+        </layout>
+        <events>
+            <checkout_cart_product_add_after>
+                <observers>
+                    <intelligence_cart_add>
+                        <class>Boxalino_Intelligence_Model_Observer</class>
+                        <method>onProductAddedToCart</method>
+                    </intelligence_cart_add>
+                </observers>
+            </checkout_cart_product_add_after>
+            <checkout_onepage_controller_success_action>
+                <observers>
+                    <intelligence_order_success>
+                        <class>Boxalino_Intelligence_Model_Observer</class>
+                        <method>onOrderSuccessPageView</method>
+                    </intelligence_order_success>
+                </observers>
+            </checkout_onepage_controller_success_action>
+            <checkout_multishipping_controller_success_action>
+                <observers>
+                    <intelligence_order_success>
+                        <class>Boxalino_Intelligence_Model_Observer</class>
+                        <method>onOrderSuccessPageView</method>
+                    </intelligence_order_success>
+                </observers>
+            </checkout_multishipping_controller_success_action>
+            <catalog_controller_product_view>
+                <observers>
+                    <intelligence_product_view>
+                        <class>Boxalino_Intelligence_Model_Observer</class>
+                        <method>onProductPageView</method>
+                    </intelligence_product_view>
+                </observers>
+            </catalog_controller_product_view>
+            <catalog_controller_category_init_after>
+                <observers>
+                    <intelligence_category_view>
+                        <class>Boxalino_Intelligence_Model_Observer</class>
+                        <method>onCategoryPageView</method>
+                    </intelligence_category_view>
+                </observers>
+            </catalog_controller_category_init_after>
+            <customer_login>
+                <observers>
+                    <intelligence_login>
+                        <class>Boxalino_Intelligence_Model_Observer</class>
+                        <method>onLogin</method>
+                    </intelligence_login>
+                </observers>
+            </customer_login>
+        </events>
     </frontend>
     <global>
         <index>
@@ -39,11 +97,24 @@
         <models>
             <intelligence>
                 <class>Boxalino_Intelligence_Model</class>
+            </intelligence>
+            <catalog_resource>
+                <rewrite>
+                    <product_collection>Boxalino_Intelligence_Model_Resource_Product_Collection</product_collection>
+                </rewrite>
+            </catalog_resource>
+            <intelligence>
+                <class>Boxalino_Intelligence_Model</class>
                 <resourceModel>boxalinoexporter_mysql4</resourceModel>
             </intelligence>
             <boxalinoexporter_mysql4>
                 <class>Boxalino_Intelligence_Model_Mysql4</class>
             </boxalinoexporter_mysql4>
+            <widget>
+                <rewrite>
+                    <template_filter>Boxalino_Intelligence_Model_Template_Filter</template_filter>
+                </rewrite>
+            </widget>
         </models>
 
         <helpers>
@@ -51,17 +122,26 @@
                 <class>Boxalino_Intelligence_Helper</class>
             </intelligence>
         </helpers>
+
         <blocks>
+            <boxalino>
+                <class>Boxalino_Intelligence_Block</class>
+            </boxalino>
             <catalogsearch>
                 <rewrite>
-                    <!--<autocomplete>Boxalino_CemSearch_Block_Autocomplete</autocomplete>-->
+                    <autocomplete>Boxalino_Intelligence_Block_Autocomplete</autocomplete>
                     <result>Boxalino_Intelligence_Block_Result</result>
+                    <layer>Boxalino_Intelligence_Block_Layer</layer>
                 </rewrite>
             </catalogsearch>
             <catalog>
                 <rewrite>
                     <product_list>Boxalino_Intelligence_Block_Product_List</product_list>
+                    <product_list_toolbar>Boxalino_Intelligence_Block_Product_List_Toolbar</product_list_toolbar>
+                    <layer_view>Boxalino_Intelligence_Block_Layer_View</layer_view>
+                    <layer_state>Boxalino_Intelligence_Block_Layer_State</layer_state>
                 </rewrite>
+
             </catalog>
         </blocks>
     </global>
@@ -72,6 +152,9 @@
                 <enabled>1</enabled>
                 <dev>0</dev>
             </general>
+            <advanced>
+                <thrift_timeout>2</thrift_timeout>
+            </advanced>
         </bxGeneral>
         <bxExporter>
             <exporter>
@@ -96,6 +179,9 @@
                 <limit>7</limit>
                 <products_limit>1</products_limit>
             </autocomplete>
+            <advanced>
+                <search_sub_phrases_limit>3</search_sub_phrases_limit>
+            </advanced>
         </bxSearch>
         <bxRecommendations>
             <cart>
