@@ -35,26 +35,36 @@
 
     </default>
     <catalogsearch_result_index>
-        <!--<reference name="left">-->
-            <!--<block type="boxalino/facets" name="left_filters" as="left_filters" template="boxalino/left_filters.phtml"/>-->
-        <!--</reference>-->
-        <reference name="content">
-            <block type="boxalino/facets" name="top_filters" as="search_top_filters" before="-" template="boxalino/top_filters.phtml"/>
-            <!--<block type="core/template" name="relaxation_suggestion" as="relaxation_suggestion" after="top_filters" template="boxalino/relaxation_suggestion.phtml"/>-->
-            <!--<block type="catalog/product_list" name="relaxation_products" as="relaxation_products" before="search.result" template="boxalino/catalogsearch/relaxation_products.phtml">-->
-                <!--<block type="core/text_list" name="product_list.name.after" as="name.after"/>-->
-                <!--<block type="core/text_list" name="product_list.after" as="after"/>-->
-            <!--</block>-->
+        <reference name="head">
+            <action method="addItem" ifconfig="bxSearch/search/filter">
+                <type>skin_css</type>
+                <name>css/nouislider.css</name>
+            </action>
+            <action method="addItem" ifconfig="bxSearch/search/filter">
+                <type>skin_js</type>
+                <name>js/nouislider.js</name>
+            </action>
         </reference>
-        <!--<reference name="search.result">-->
-            <!--<action method="setTemplate">-->
-                <!--<template>boxalino/catalogsearch/result.phtml</template>-->
-            <!--</action>-->
-        <!--</reference>-->
+        <reference name="content">
+            <block type="boxalino/facets" name="top_filters" as="search_top_filters" before="-"
+                   template="boxalino/top_filters.phtml" ifconfig="bxSearch/top_facet/enabled"/>
+
+        </reference>
     </catalogsearch_result_index>
     <catalog_category_layered>
+        <reference name="head">
+            <action method="addItem" ifconfig="bxSearch/navigation/filter">
+                <type>skin_css</type>
+                <name>css/nouislider.css</name>
+            </action>
+            <action method="addItem" ifconfig="bxSearch/navigation/filter">
+                <type>skin_js</type>
+                <name>js/nouislider.js</name>
+            </action>
+        </reference>
         <reference name="content">
-            <block type="boxalino/facets" name="top_filters" as="category_top_filters" before="-" template="boxalino/top_filters.phtml"/>
+            <block type="boxalino/facets" name="top_filters" as="category_top_filters" before="-"
+                   template="boxalino/top_filters.phtml" ifconfig="bxSearch/top_facet/enabled"/>
         </reference>
     </catalog_category_layered>
 </layout>

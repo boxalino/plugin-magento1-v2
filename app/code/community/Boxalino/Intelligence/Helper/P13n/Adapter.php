@@ -105,7 +105,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
             $searchRequest = $bxRequest->getBxSearchRequest();
 
             $searchRequest->setReturnFields(array('products_group_id'));
-            $searchRequest->setGroupBy('products_group_id');
+            $searchRequest->setGroupBy($this->getEntityIdFieldName());
             $searchRequest->setFilters($this->getSystemFilters($queryText));
             self::$bxClient->setAutocompleteRequest($bxRequest)->autocomplete();
             $bxAutocompleteResponse = self::$bxClient->getAutocompleteResponse();
@@ -150,7 +150,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
 
     public function search($queryText, $pageOffset = 0, $overwriteHitcount = null, \com\boxalino\bxclient\v1\BxSortFields $bxSortFields=null, $categoryId=null)
     {
-        $returnFields = array($this->getEntityIdFieldName(), 'categories', 'discountedPrice', 'title', 'score');
+        $returnFields = array($this->getEntityIdFieldName(), 'categories', 'discountedPrice', 'products_bx_grouped_price', 'title', 'score');
         $additionalFields = explode(',', Mage::getStoreConfig('bxGeneral/advanced/additional_fields'));
         $returnFields = array_merge($returnFields, $additionalFields);
 
@@ -158,6 +158,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
 
         //create search request
         $bxRequest = new \com\boxalino\bxclient\v1\BxSearchRequest($this->bxHelperData->getLanguage(), $queryText, $hitCount, $this->getSearchChoice($queryText));
+        $bxRequest->setGroupBy($this->getEntityIdFieldName());
         $bxRequest->setReturnFields($returnFields);
         $bxRequest->setOffset($pageOffset);
         $bxRequest->setSortFields($bxSortFields);
@@ -224,7 +225,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
             if($order == 'name'){
                 $field = 'title';
             } elseif($order == 'price'){
-                $field = 'discountedPrice';
+                $field = 'products_bx_grouped_price';
             }
         }
         $dirOrder = $request->getParam('dir');
@@ -274,7 +275,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
         $catId = isset($selectedValues['category_id']) && sizeof($selectedValues['category_id']) > 0 ? $selectedValues['category_id'][0] : null;
 
         $bxFacets->addCategoryFacet($catId);
-        $attributeCollection = $bxHelperData->getLeftFacetConfig();
+        $attributeCollection = $bxHelperData->getLeftFacets();
         
         foreach($attributeCollection as $code => $attribute){
             $bound = $code == 'discountedPrice' ? true : false;
@@ -356,7 +357,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
             self::$choiceContexts[$widgetName][] = json_encode($context);
             if ($widgetType == '') {
                 $bxRequest = new \com\boxalino\bxclient\v1\BxRecommendationRequest($this->bxHelperData->getLanguage(), $widgetName, $amount);
-                $bxRequest->setGroupBy('products_group_id');
+                $bxRequest->setGroupBy($this->getEntityIdFieldName());
                 $bxRequest->setMin($minAmount);
                 $bxRequest->setFilters($this->getSystemFilters());
                 if (isset($context[0])) {
@@ -367,7 +368,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
             } else {
                 if (($minAmount >= 0) && ($amount >= 0) && ($minAmount <= $amount)) {
                     $bxRequest = new \com\boxalino\bxclient\v1\BxRecommendationRequest($this->bxHelperData->getLanguage(), $widgetName, $amount, $minAmount);
-                    $bxRequest->setGroupBy('products_group_id');
+                    $bxRequest->setGroupBy($this->getEntityIdFieldName());
                     $bxRequest->setFilters($this->getSystemFilters());
                     $bxRequest->setReturnFields(array($this->getEntityIdFieldName()));
                     if ($widgetType === 'basket' && is_array($context)) {

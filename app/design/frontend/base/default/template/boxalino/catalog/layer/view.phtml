@@ -15,14 +15,7 @@
                     <?php foreach ($_filters as $_filter): ?>
                         <?php if($_filter->getItemsCount()): ?>
                             <dt><?php echo $this->__($_filter->getName()) ?></dt>
-                            <?php if($_filter->getFieldName() == 'discountedPrice'): ?>
-                                <div id="bxslider"></div>
-                                <span id="slider-snap-value-lower"></span>
-                                <span id="slider-snap-value-upper"></span>
-                                <?php echo $this->getLayout()->createBlock("boxalino/slider")->setTemplate("boxalino/slider.phtml")->toHtml();?>
-                            <?php else: ?>
-                                <dd><?php echo $_filter->getHtml() ?></dd>
-                            <?php endif; ?>
+                            <dd><?php echo $_filter->getHtml() ?></dd>
                         <?php endif; ?>
                     <?php endforeach; ?>
                 </dl>

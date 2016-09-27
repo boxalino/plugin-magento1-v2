@@ -1,22 +1,29 @@
-<ol>
-    <?php foreach ($this->getItems() as $_item): ?>
-        <?php $selected = $_item->getSelected(); ?>
-        <li class="item <?php echo $_item->getType(); echo $selected == true ?  ' selected' : ''; ?>">
-            <?php if ($_item->getCount() > 0): ?>
-                <a href="<?php echo $this->escapeHtml($selected == true ? $_item->getRemoveUrl() : $_item->getUrl()) ?>">
-                    <?php echo $_item->getLabel() ?>
-                    <?php if ($this->shouldDisplayProductCount()): ?>
-                        <span class="count">(<?php echo $_item->getCount() ?>)</span>
-                    <?php endif; ?>
-                </a>
-            <?php else: ?>
-                <span>
-                <?php echo $_item->getLabel(); ?>
-                    <?php if ($this->shouldDisplayProductCount()): ?>
-                        <span class="count">(<?php echo $_item->getCount() ?>)</span>
-                    <?php endif; ?>
-            </span>
-            <?php endif; ?>
-        </li>
-    <?php endforeach ?>
-</ol>
+<?php if ($this->getFieldName() == 'discountedPrice') : ?>
+    <div id="bxslider"></div>
+    <span id="slider-snap-value-lower"></span>
+    <span id="slider-snap-value-upper"></span>
+    <?php echo $this->getLayout()->createBlock("boxalino/slider")->setTemplate("boxalino/slider.phtml")->toHtml();?>
+<?php else: ?>
+    <ol>
+        <?php foreach ($this->getItems() as $_item): ?>
+            <?php $selected = $_item->getSelected(); ?>
+            <li class="item <?php echo $_item->getType(); echo $selected == true ?  ' selected' : ''; ?>">
+                <?php if ($_item->getCount() > 0): ?>
+                    <a href="<?php echo $this->escapeHtml($selected == true ? $_item->getRemoveUrl() : $_item->getUrl()) ?>">
+                        <?php echo $_item->getLabel() ?>
+                        <?php if ($this->shouldDisplayProductCount()): ?>
+                            <span class="count">(<?php echo $_item->getCount() ?>)</span>
+                        <?php endif; ?>
+                    </a>
+                <?php else: ?>
+                    <span>
+                    <?php echo $_item->getLabel(); ?>
+                        <?php if ($this->shouldDisplayProductCount()): ?>
+                            <span class="count">(<?php echo $_item->getCount() ?>)</span>
+                        <?php endif; ?>
+                </span>
+                <?php endif; ?>
+            </li>
+        <?php endforeach ?>
+    </ol>
+<?php endif; ?>

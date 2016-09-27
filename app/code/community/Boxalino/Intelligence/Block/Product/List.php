@@ -1,7 +1,8 @@
 <?php
-
 class Boxalino_Intelligence_Block_Product_List extends Mage_Catalog_Block_Product_List{
-
+    
+    public static $number = 0;
+    
     protected $bxHelperData;
 
     public function __construct(array $args)
@@ -30,6 +31,7 @@ class Boxalino_Intelligence_Block_Product_List extends Mage_Catalog_Block_Produc
                 if (count($entity_ids) == 0) {
                     $entity_ids = array(0);
                 }
+
                 $this->_productCollection->addFieldToFilter('entity_id', $entity_ids)
                     ->addAttributeToSelect('*');
 

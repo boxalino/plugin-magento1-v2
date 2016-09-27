@@ -27,9 +27,7 @@ class Boxalino_Intelligence_Block_Layer_Filter_Attribute extends Mage_Catalog_Bl
         $this->_filter = Mage::getModel($this->_filterModelName)
             ->setLayer($this->getLayer())
             ->setFacets($this->getFacets())
-            ->setFieldName($this->getFieldName())
-            ->setRequestVar($this->getFieldName());
-
+            ->setFieldName($this->getFieldName());
         return $this;
     }
 

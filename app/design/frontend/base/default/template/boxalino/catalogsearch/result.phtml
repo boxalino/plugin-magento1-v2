@@ -1,36 +1,26 @@
-<?php
-$session = Mage::getSingleton("core/session");
-$_productCollections = $session->getData("relax_products_extra");
-if (count($_productCollections) > 0) {
-    return;
-}
-?>
-<?php if ($this->getResultCount()): ?>
-    <?php echo $this->getMessagesBlock()->getGroupedHtml() ?>
-    <div class="page-title">
-        <?php if ($this->helper('rss/catalog')->getTagFeedUrl()): ?>
-            <a href="<?php echo $this->helper('rss/catalog')->getTagFeedUrl() ?>" class="nobr link-rss"><?php echo $this->__('Subscribe to Feed') ?></a>
-        <?php endif; ?>
-        <h1><?php echo ($this->getHeaderText() || $this->getHeaderText() === false) ? $this->getHeaderText() : $this->__("Search results for '%s'", $this->helper('catalogsearch')->getEscapedQueryText()) ?></h1>
-    </div>
-    <?php if ($messages = $this->getNoteMessages()): ?>
-        <p class="note-msg">
-            <?php foreach ($messages as $message): ?>
-                <?php echo $message ?><br/>
-            <?php endforeach; ?>
-        </p>
+<?php if($this->getResultCount()): ?>
+    <?php if($this->hasSubPhrases()): ?>
+        <?php for($i=0; $i<$this->getSubPhrasesResultCount(); $i++) { ?>
+            <h1><?php echo $i; ?></h1>
+            <h1>
+                <a href="<?php echo $this->getSearchQueryLink($i); ?>"><?php echo $this->getSubPhrasesResultText($i); ?></a>
+            </h1>
+            <?php
+            echo $this->getProductListHtml();
+            Boxalino_Intelligence_Block_Product_List::$number++;
+        }
+        ?>
+    <?php else: ?>
+        <?php echo $this->getProductListHtml(); ?>
     <?php endif; ?>
-    <?php echo $this->getProductListHtml() ?>
 <?php else: ?>
-    <div class="page-title">
-        <h1><?php echo ($this->getHeaderText() || $this->getHeaderText() === false) ? $this->getHeaderText() : $this->__("Search results for '%s'", $this->helper('catalogsearch')->getEscapedQueryText()) ?></h1>
-    </div>
     <p class="note-msg">
         <?php echo ($this->getNoResultText()) ? $this->getNoResultText() : $this->__('Your search returns no results.') ?>
-        <?php if ($messages = $this->getNoteMessages()): ?>
-            <?php foreach ($messages as $message): ?>
-                <br/><?php echo $message ?>
-            <?php endforeach; ?>
+        <?php echo $this->getAdditionalHtml() ?>
+        <?php if ($messages = $this->getNoteMessages()):?>
+            <?php foreach ($messages as $message):?>
+                <br /><?php echo $message?>
+            <?php endforeach;?>
         <?php endif; ?>
     </p>
 <?php endif; ?>
