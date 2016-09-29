@@ -1,59 +1,91 @@
 <?php
+
+/**
+ * Class Boxalino_Intelligence_Block_Product_List
+ */
 class Boxalino_Intelligence_Block_Product_List extends Mage_Catalog_Block_Product_List{
-    
+
+    /**
+     * @var int
+     */
     public static $number = 0;
-    
-    protected $bxHelperData;
 
-    public function __construct(array $args)
-    {
-        $this->bxHelperData = Mage::helper('intelligence');
-        parent::__construct($args);
-    }
-
+    /**
+     * @return Mage_Eav_Model_Entity_Collection_Abstract
+     */
     protected function _getProductCollection(){
 
-        if(!$this->bxHelperData->isSearchEnabled()){
-            return parent::_getProductCollection();
-        }
-
+        $bxHelperData = Mage::helper('intelligence');
+        $p13nHelper = $bxHelperData->getAdapter();
         $layer = $this->getLayer();
-        if($layer instanceof Mage_CatalogSearch_Model_Layer || $layer instanceof Mage_Catalog_Model_Layer){
 
-            if(!$this->bxHelperData->isNavigationEnabled() && $layer instanceof Mage_Catalog_Model_Layer){
-                return parent::_getProductCollection();
-            }
+        try{
+            if($bxHelperData->isEnabledOnLayer($layer)){
+                if(count($this->_productCollection) && !$p13nHelper->areThereSubPhrases()){
+                    return $this->_productCollection;
+                }
+    
+                if(get_class($layer) == 'Mage_Catalog_Model_Layer'){
+                    if(Mage::getBlockSingleton('catalog/category_view')->isContentMode()){
+                        return parent::_getProductCollection();
+                    }
+                }
+                
+                if($p13nHelper->areThereSubPhrases()){
+                    $queries = $p13nHelper->getSubPhrasesQueries();
+                    $entity_ids = $p13nHelper->getSubPhraseEntitiesIds($queries[self::$number]);
+                    $entity_ids = array_slice($entity_ids, 0, $bxHelperData->getSubPhrasesLimit());
+                }else{
+                    $entity_ids = $p13nHelper->getEntitiesIds();
+                }
 
-            if(is_null($this->_productCollection)){
-                $entity_ids = $this->bxHelperData->getAdapter()->getEntitiesIds();
-                $this->_productCollection = Mage::getResourceModel('catalog/product_collection');
-
-                if (count($entity_ids) == 0) {
+                if(count($entity_ids) == 0){
                     $entity_ids = array(0);
                 }
 
-                $this->_productCollection->addFieldToFilter('entity_id', $entity_ids)
-                    ->addAttributeToSelect('*');
-
-                $this->_productCollection->getSelect()->order(new Zend_Db_Expr('FIELD(e.entity_id,' . implode(',', $entity_ids).')'));
-                Mage::getSingleton('catalog/product_visibility')->addVisibleInCatalogFilterToCollection($this->_productCollection);
-                $this->_productCollection->load();
-                $this->_productCollection->setCurBxPage($this->getToolbarBlock()->getCurrentPage());
-                $limit = $this->getRequest()->getParam('limit') ? $this->getRequest()->getParam('limit') : $this->getToolbarBlock()->getDefaultPerPageValue();
-                $totalHitCount = $this->bxHelperData->getAdapter()->getTotalHitCount();
-
-                if((ceil($totalHitCount / $limit) <  $this->_productCollection->getCurPage()) && $this->getRequest()->getParam('p')){
-                    $currentUrl = Mage::helper('core/url')->getCurrentUrl();
-                    $url = preg_replace('/(\&|\?)p=+(\d+|\z)/','$1p=1',$currentUrl);
-                    Mage::app()->getFrontController()->getResponse()->setRedirect($url);
-                }
-
-                $lastPage = ceil($totalHitCount /$limit);
-                $this->_productCollection->setLastBxPage($lastPage);
-                $this->_productCollection->setBxTotal($totalHitCount);
-                $this->_productCollection->setBxCount(count($entity_ids));
+                $this->_setupCollection($entity_ids);
+                return $this->_productCollection;
+                
+            }else{
+                return parent::_getProductCollection();
             }
+        }catch(\Exception $e){
+            Mage::logException($e);
         }
-        return $this->_productCollection;
+        return parent::_getProductCollection();
+    }
+
+    /**
+     * @param $entity_ids
+     * @throws Exception
+     */
+    private function _setupCollection($entity_ids){
+
+        $this->_productCollection = Mage::getResourceModel('catalog/product_collection');
+
+        $this->_productCollection
+            ->setStore($this->getLayer()->getCurrentStore())
+            ->addFieldToFilter('entity_id', $entity_ids)
+            ->addAttributeToSelect('*');
+
+        $this->_productCollection
+            ->getSelect()
+            ->order(new Zend_Db_Expr('FIELD(e.entity_id,' . implode(',', $entity_ids).')'));
+
+        $this->_productCollection->load();
+        $this->_productCollection->setCurBxPage($this->getToolbarBlock()->getCurrentPage());
+        $limit = $this->getRequest()->getParam('limit') ? $this->getRequest()->getParam('limit') : $this->getToolbarBlock()->getLimit();
+   
+        try{
+            $totalHitCount = Mage::helper('intelligence')->getAdapter()->getTotalHitCount();
+        }catch(\Exception $e){
+            throw $e;
+        }
+
+        $lastPage = ceil($totalHitCount /$limit);
+        $this->_productCollection
+            ->setLastBxPage($lastPage)
+            ->setBxTotal($totalHitCount)
+            ->setBxCount(count($entity_ids));
     }
 }

@@ -24,9 +24,13 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
         return $this;
     }
 
+    /**
+     * @return null
+     */
     public function getFacets(){
         return $this->bxFacets;
     }
+    
     /**
      * @param $fieldName
      */
@@ -56,21 +60,16 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
      *
      */
     public function _initItems(){
-
-        $bxDataHelper = Mage::helper('intelligence');
-        if($bxDataHelper->isFilterLayoutEnabled($this->getLayer() instanceof Mage_Catalog_Model_Layer)){
-   
-            $data = $this->_getItemsData();
-            $items = [];
-            foreach ($data as $itemData) {
-                $selected = isset($itemData['selected']) ? $itemData['selected'] : null;
-                $type = isset($itemData['type']) ? $itemData['type'] : null;
-                $items[] = $this->_createItem($itemData['label'], $itemData['value'], $itemData['count'], $selected, $type);
-            }
-            $this->_items = $items;
-            return $this;
+        
+        $data = $this->_getItemsData();
+        $items = [];
+        foreach ($data as $itemData) {
+            $selected = isset($itemData['selected']) ? $itemData['selected'] : null;
+            $type = isset($itemData['type']) ? $itemData['type'] : null;
+            $items[] = $this->_createItem($itemData['label'], $itemData['value'], $itemData['count'], $selected, $type);
         }
-        return parent::_initItems();
+        $this->_items = $items;
+        return $this;
     }
 
     /**
@@ -82,6 +81,7 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
      * @return mixed
      */
     public function _createItem($label, $value, $count = 0, $selected = null, $type = null){
+        
         return Mage::getModel('catalog/layer_filter_item')
             ->setFilter($this)
             ->setLabel($label)

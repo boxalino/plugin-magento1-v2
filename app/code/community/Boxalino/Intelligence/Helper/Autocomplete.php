@@ -1,7 +1,14 @@
 <?php
 
+/**
+ * Class Boxalino_Intelligence_Helper_Autocomplete
+ */
 class Boxalino_Intelligence_Helper_Autocomplete{
-    
+
+    /**
+     * @param $products
+     * @return array
+     */
     public function getListValues($products){
         $values = array();
         foreach($products as $product){

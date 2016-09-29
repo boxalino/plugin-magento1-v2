@@ -1,17 +1,35 @@
 <?php
 
+/**
+ * Class Boxalino_Intelligence_Helper_P13n_Adapter
+ */
 class Boxalino_Intelligence_Helper_P13n_Adapter{
 
+    /**
+     * @var \com\boxalino\bxclient\v1\BxClient
+     */
     private static $bxClient = null;
+    
     /**
      * @var array
      */
     private static $choiceContexts = array();
+
+    /**
+     * @var Mage_Core_Helper_Abstract
+     */
     protected $bxHelperData;
+
+    /**
+     * @var
+     */
     protected $currentSearchChoice;
-    public function __construct()
-    {
-        Mage::setIsDeveloperMode(true);
+
+    /**
+     * Boxalino_Intelligence_Helper_P13n_Adapter constructor.
+     */
+    public function __construct(){
+        
         $this->bxHelperData = Mage::helper('intelligence');
         $libPath = Mage::getModuleDir('','Boxalino_Intelligence') . DIRECTORY_SEPARATOR . 'lib';
         require_once($libPath . DIRECTORY_SEPARATOR . 'BxClient.php');
@@ -21,8 +39,12 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
             $this->initializeBXClient();
         }
     }
-    
+
+    /**
+     * Initialize BxClient 
+     */
     protected function initializeBXClient() {
+        
         if(self::$bxClient == null) {
             $generalConfig = Mage::getStoreConfig('bxGeneral');
             $account = $generalConfig['general']['account_name'];
@@ -38,6 +60,10 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
         }
     }
 
+    /**
+     * @param string $queryText
+     * @return array
+     */
     public function getSystemFilters($queryText="") {
 
         $filters = array();
@@ -51,6 +77,9 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
         return $filters;
     }
 
+    /**
+     * @return mixed|string
+     */
     public function getAutocompleteChoice() {
 
         $choice = Mage::getStoreConfig('bxSearch/advanced/autocomplete_choice_id');
@@ -61,6 +90,10 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
         return $choice;
     }
 
+    /**
+     * @param $queryText
+     * @return mixed|string
+     */
     public function getSearchChoice($queryText) {
 
         if($queryText == null) {
@@ -80,7 +113,11 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
         return $choice;
     }
 
+    /**
+     * @return mixed|string
+     */
     public function getEntityIdFieldName() {
+        
         $entityIdFieldName = Mage::getStoreConfig('bxGeneral/advanced/entity_id');
         if (!isset($entityIdFieldName) || $entityIdFieldName === '') {
             $entityIdFieldName = 'products_group_id';
@@ -88,9 +125,12 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
         return $entityIdFieldName;
     }
 
-
-
-    public function autocomplete($queryText, $autocomplete) {
+    /**
+     * @param $queryText
+     * @param $autocomplete
+     * @return array
+     */
+    public function autocomplete($queryText, $autocomplete){
 
         $order = array();
         $data = array();
@@ -107,7 +147,8 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
             $searchRequest->setReturnFields(array('products_group_id'));
             $searchRequest->setGroupBy($this->getEntityIdFieldName());
             $searchRequest->setFilters($this->getSystemFilters($queryText));
-            self::$bxClient->setAutocompleteRequest($bxRequest)->autocomplete();
+            self::$bxClient->setAutocompleteRequest($bxRequest);
+            self::$bxClient->autocomplete();
             $bxAutocompleteResponse = self::$bxClient->getAutocompleteResponse();
 
             foreach ($bxAutocompleteResponse->getTextualSuggestions() as $i => $suggestion) {
@@ -125,7 +166,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
                     'products' => array()
                 );
 
-                foreach ($bxAutocompleteResponse->getBxSearchResponse($suggestion)->getHitIds() as $id) {
+                foreach ($bxAutocompleteResponse->getBxSearchResponse($suggestion)->getHitIds($this->currentSearchChoice) as $id) {
                     $entity_ids[$id] = $id;
                 }
 
@@ -148,13 +189,19 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
         return $data;
     }
 
-    public function search($queryText, $pageOffset = 0, $overwriteHitcount = null, \com\boxalino\bxclient\v1\BxSortFields $bxSortFields=null, $categoryId=null)
-    {
+    /**
+     * @param $queryText
+     * @param int $pageOffset
+     * @param null $overwriteHitCount
+     * @param \com\boxalino\bxclient\v1\BxSortFields|null $bxSortFields
+     * @param null $categoryId
+     */
+    public function search($queryText, $pageOffset = 0, $overwriteHitCount = null, \com\boxalino\bxclient\v1\BxSortFields $bxSortFields=null, $categoryId=null){
+        
         $returnFields = array($this->getEntityIdFieldName(), 'categories', 'discountedPrice', 'products_bx_grouped_price', 'title', 'score');
         $additionalFields = explode(',', Mage::getStoreConfig('bxGeneral/advanced/additional_fields'));
         $returnFields = array_merge($returnFields, $additionalFields);
-
-        $hitCount = $overwriteHitcount;
+        $hitCount = $overwriteHitCount;
 
         //create search request
         $bxRequest = new \com\boxalino\bxclient\v1\BxSearchRequest($this->bxHelperData->getLanguage(), $queryText, $hitCount, $this->getSearchChoice($queryText));
@@ -164,7 +211,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
         $bxRequest->setSortFields($bxSortFields);
         $bxRequest->setFacets($this->prepareFacets());
         $bxRequest->setFilters($this->getSystemFilters($queryText));
-        $bxRequest->setMax($overwriteHitcount);
+        $bxRequest->setMax($hitCount);
 
         if($categoryId != null) {
             $filterField = "category_id";
@@ -172,94 +219,70 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
             $filterNegative = false;
             $bxRequest->addFilter(new com\boxalino\bxclient\v1\BxFilter($filterField, $filterValues, $filterNegative));
         }
-
         self::$bxClient->addRequest($bxRequest);
     }
 
-    public function getMagentoStoreConfigPageSize() {
+    /**
+     * 
+     */
+    public function simpleSearch(){
+
         $request = Mage::app()->getRequest();
-        $storeConfig = Mage::getStoreConfig('catalog/frontend');
-        $storeDisplayMode = $storeConfig['list_mode'];
-
-        //we may get grid-list, list-grid, grid or list
-        $storeMainMode = explode('-', $storeDisplayMode);
-        if($request->getParam('mode') == 'list'){
-            $storeMainMode = $storeMainMode[1];
-        }else{
-            $storeMainMode = $storeMainMode[0];
-        }
-
-        $hitCount = $storeConfig[$storeMainMode . '_per_page'];
-
-        return $hitCount;
-    }
-
-    public function didViewModeChange(){
-        $request = Mage::app()->getRequest();
-        $storeConfig = Mage::getStoreConfig('catalog/frontend');
-        $storeDisplayMode = $storeConfig['list_mode'];
-        $storeMainMode = explode('-', $storeDisplayMode);
-        if($request->getParam('mode') == 'list'){
-            $storeMainMode = $storeMainMode[1];
-        }else{
-            $storeMainMode = $storeMainMode[0];
-        }
-
-        $limit = $request->getParam('limit');
-        return $limit != null && strpos($storeConfig[$storeMainMode . '_per_page_values'], $limit) === false;
-    }
-
-    public function simpleSearch() {
-        $request = Mage::app()->getRequest();
-        $queryText =Mage::helper('catalogsearch')->getEscapedQueryText();
-        if(self::$bxClient->getChoiceIdRecommendationRequest($this->getSearchChoice($queryText))!=null) {
+        $queryText = Mage::helper('catalogsearch')->getEscapedQueryText();
+        if (self::$bxClient->getChoiceIdRecommendationRequest($this->getSearchChoice($queryText)) != null) {
             return;
         }
 
         $field = '';
         $dir = '';
-
         $order = $request->getParam('order');
-
-        if(isset($order)){
-            if($order == 'name'){
+        if (isset($order)) {
+            if ($order == 'name') {
                 $field = 'title';
-            } elseif($order == 'price'){
+            } elseif ($order == 'price') {
                 $field = 'products_bx_grouped_price';
             }
         }
+
         $dirOrder = $request->getParam('dir');
-        if($dirOrder){
+        if ($dirOrder) {
             $dir = $dirOrder == 'asc' ? false : true;
-        } else{
+        } else {
             $dir = true;
         }
 
         $categoryId = $request->getParam($this->getUrlParameterPrefix() . 'category_id');
         if (empty($categoryId)) {
-            /* @var $category Mage_Catalog_Model_Category */
+
             $category = Mage::registry('current_category');
             if (!empty($category)) {
                 $_REQUEST[$this->getUrlParameterPrefix() . 'category_id'][0] = $category->getId();
             }
             // GET param 'cat' may override the current_category,
             // i.e. when clicking on subcategories in a category page
-            $cat = $request->getParam('cat');
+            $cat = $request->getParam('id');
             if (!empty($cat)) {
                 $_REQUEST[$this->getUrlParameterPrefix() . 'category_id'][0] = $cat;
             }
         }
 
-        $overWriteLimit = isset($_REQUEST['limit'])? $_REQUEST['limit'] : $this->getMagentoStoreConfigPageSize();
-
+        $toolbar = Mage::getBlockSingleton('catalog/product_list_toolbar');
+        $overWriteLimit = $toolbar->getLimit();
         $pageOffset = isset($_REQUEST['p'])? ($_REQUEST['p']-1)*($overWriteLimit) : 0;
         $this->search($queryText, $pageOffset, $overWriteLimit, new \com\boxalino\bxclient\v1\BxSortFields($field, $dir), $categoryId);
     }
-    
+
+    /**
+     * @return string
+     */
     private function getUrlParameterPrefix() {
+        
         return 'bx_';
     }
-    
+
+    /**
+     * @return \com\boxalino\bxclient\v1\BxFacets
+     */
     private function prepareFacets(){
 
         $bxFacets = new \com\boxalino\bxclient\v1\BxFacets();
@@ -292,20 +315,30 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
         }
         return $bxFacets;
     }
-    
-    public function getTotalHitCount()
-    {
+
+    /**
+     * @return int
+     */
+    public function getTotalHitCount(){
+        
         $this->simpleSearch();
         return self::$bxClient->getResponse()->getTotalHitCount($this->currentSearchChoice);
     }
-    
+
+    /**
+     * @return array
+     */
     public function getEntitiesIds()
     {
         $this->simpleSearch();
         return self::$bxClient->getResponse()->getHitIds($this->currentSearchChoice);
     }
 
+    /**
+     * @return null
+     */
     public function getFacets() {
+        
         $this->simpleSearch();
         $facets = self::$bxClient->getResponse()->getFacets($this->currentSearchChoice);
         if(empty($facets)){
@@ -315,36 +348,70 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
         return $facets;
     }
 
+    /**
+     * @return null
+     */
     public function getCorrectedQuery() {
+        
         $this->simpleSearch();
         return self::$bxClient->getResponse()->getCorrectedQuery($this->currentSearchChoice);
     }
- 
+
+    /**
+     * @return bool
+     */
     public function areResultsCorrected() {
+        
         $this->simpleSearch();
         return self::$bxClient->getResponse()->areResultsCorrected($this->currentSearchChoice);
     }
 
+    /**
+     * @return bool
+     */
     public function areThereSubPhrases() {
+        
         $this->simpleSearch();
         return self::$bxClient->getResponse()->areThereSubPhrases($this->currentSearchChoice);
     }
 
+    /**
+     * @return array
+     */
     public function getSubPhrasesQueries() {
+        
         $this->simpleSearch();
         return self::$bxClient->getResponse()->getSubPhrasesQueries($this->currentSearchChoice);
     }
 
+    /**
+     * @param $queryText
+     * @return int|mixed
+     */
     public function getSubPhraseTotalHitCount($queryText) {
+        
         $this->simpleSearch();
         return self::$bxClient->getResponse()->getSubPhraseTotalHitCount($queryText,$this->currentSearchChoice);
     }
 
+    /**
+     * @param $queryText
+     * @return array
+     */
     public function getSubPhraseEntitiesIds($queryText) {
         $this->simpleSearch();
         return self::$bxClient->getResponse()->getSubPhraseHitIds($queryText, $this->currentSearchChoice);
     }
 
+    /**
+     * @param $widgetName
+     * @param array $context
+     * @param string $widgetType
+     * @param int $minAmount
+     * @param int $amount
+     * @param bool $execute
+     * @return array|void
+     */
     public function getRecommendation($widgetName, $context = array(), $widgetType = '', $minAmount = 3, $amount = 3, $execute=true){
 
         if(!$execute) {

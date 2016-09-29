@@ -15,7 +15,10 @@ class Boxalino_Intelligence_Block_Layer extends Mage_CatalogSearch_Block_Layer{
      * @return $this
      */
     public function setTemplate($template){
-        
+
+        if(!Mage::helper('intelligence')->isPluginEnabled()){
+            return parent::setTemplate($template);
+        }
         $this->_template = 'boxalino/catalog/layer/view.phtml';
         return $this;
     }
@@ -49,7 +52,7 @@ class Boxalino_Intelligence_Block_Layer extends Mage_CatalogSearch_Block_Layer{
     public function getFilters(){
         
         $bxHelperData = Mage::helper('intelligence');
-        if($bxHelperData->isFilterLayoutEnabled($this->getLayer() instanceof Mage_Catalog_Model_Layer) && $bxHelperData->isLeftFilterEnabled()){
+        if($bxHelperData->isFilterLayoutEnabled($this->getLayer()) && $bxHelperData->isLeftFilterEnabled()){
             if(empty($this->bxFilters)){
                 $this->_prepareFilters();
             }

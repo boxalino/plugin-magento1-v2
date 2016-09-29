@@ -11,6 +11,9 @@ class Boxalino_Intelligence_Block_Layer_State extends Mage_Catalog_Block_Layer_S
      */
     public function setTemplate($template)
     {
+        if(!Mage::helper('intelligence')->isPluginEnabled()){
+            return parent::setTemplate($template);
+        }
         $this->_template = 'boxalino/catalog/layer/state.phtml';
         return $this;
     }
@@ -21,27 +24,32 @@ class Boxalino_Intelligence_Block_Layer_State extends Mage_Catalog_Block_Layer_S
     public function getActiveFilters(){
         
         $bxHelperData = Mage::helper('intelligence');
-        if ($bxHelperData->isFilterLayoutEnabled($this->getLayer() instanceof Mage_Catalog_Model_Layer)) {
+        if ($bxHelperData->isFilterLayoutEnabled($this->getLayer())) {
+            
             $filters = array();
-            $facets = $bxHelperData->getAdapter()->getFacets();
-            foreach ($bxHelperData->getAllFacetFieldNames() as $fieldName){
+            try{
+                $facets = $bxHelperData->getAdapter()->getFacets();
+                foreach ($bxHelperData->getAllFacetFieldNames() as $fieldName){
 
-                if($facets->isSelected($fieldName)){
-                    $value = $facets->getSelectedValueLabel($fieldName);
-                    if($fieldName == 'discountedPrice'){
-                        $value = substr_replace($value, '0', strlen($value)-1);
+                    if($facets->isSelected($fieldName)){
+                        $value = $facets->getSelectedValueLabel($fieldName);
+                        if($fieldName == 'discountedPrice'){
+                            $value = substr_replace($value, '0', strlen($value)-1);
+                        }
+                        $filter = Mage::getModel('intelligence/layer_filter_attribute')
+                            ->setFacets($facets)
+                            ->setFieldName($fieldName)
+                            ->setRequestVar($facets->getFacetParameterName($fieldName));
+                        $filters[] = Mage::getModel('catalog/layer_filter_item')
+                            ->setFilter($filter)
+                            ->setValue($value)
+                            ->setFieldName($fieldName);
                     }
-                    $filter = Mage::getModel('intelligence/layer_filter_attribute')
-                        ->setFacets($facets)
-                        ->setFieldName($fieldName)
-                        ->setRequestVar($facets->getFacetParameterName($fieldName));
-                    $filters[] = Mage::getModel('catalog/layer_filter_item')
-                        ->setFilter($filter)
-                        ->setValue($value)
-                        ->setFieldName($fieldName);
                 }
+                return $filters;
+            }catch(\Exception $e){
+                Mage::logException($e);
             }
-            return $filters;
         }
         return parent::getActiveFilters();
     }

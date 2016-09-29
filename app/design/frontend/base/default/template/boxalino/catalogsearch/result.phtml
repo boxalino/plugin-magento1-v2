@@ -1,26 +1,10 @@
-<?php if($this->getResultCount()): ?>
-    <?php if($this->hasSubPhrases()): ?>
-        <?php for($i=0; $i<$this->getSubPhrasesResultCount(); $i++) { ?>
-            <h1><?php echo $i; ?></h1>
-            <h1>
-                <a href="<?php echo $this->getSearchQueryLink($i); ?>"><?php echo $this->getSubPhrasesResultText($i); ?></a>
-            </h1>
-            <?php
-            echo $this->getProductListHtml();
-            Boxalino_Intelligence_Block_Product_List::$number++;
-        }
-        ?>
-    <?php else: ?>
-        <?php echo $this->getProductListHtml(); ?>
-    <?php endif; ?>
-<?php else: ?>
-    <p class="note-msg">
-        <?php echo ($this->getNoResultText()) ? $this->getNoResultText() : $this->__('Your search returns no results.') ?>
-        <?php echo $this->getAdditionalHtml() ?>
-        <?php if ($messages = $this->getNoteMessages()):?>
-            <?php foreach ($messages as $message):?>
-                <br /><?php echo $message?>
-            <?php endforeach;?>
-        <?php endif; ?>
-    </p>
-<?php endif; ?>
+<?php for($i=0; $i<$this->getSubPhrasesResultCount(); $i++) : ?>
+    <h1>
+        <a href="<?php echo $this->getSearchQueryLink($i); ?>"><?php echo $this->getSubPhrasesResultText($i); ?></a>
+    </h1>
+    <?php
+    Boxalino_Intelligence_Block_Product_List::$number = $i;
+    echo $this->getProductListHtml();
+    echo "<br />";
+    ?>
+<?php endfor; ?>

@@ -31,6 +31,11 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data{
     protected $setup = true;
 
     /**
+     * @var bool
+     */
+    protected $fallback = false;
+
+    /**
      * @param $countryCode
      * @return mixed
      */
@@ -168,7 +173,7 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data{
      */
     public function getWidgetConfig($widgetName){
 
-        if(!isset($this->bxConfig['bxRecommendations'])){
+        if(!$this->bxConfig == null || !isset($this->bxConfig['bxRecommendations'])){
             $this->bxConfig['bxRecommendations'] =  Mage::getStoreConfig('bxRecommendations');
         }
 
@@ -212,16 +217,12 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data{
      */
     public function getTopFacetConfig() {
 
-        if($this->isTopFilterEnabled()){
-
-            if(!isset($this->bxConfig['bxSearch'])){
-                $this->bxConfig['bxSearch'] = Mage::getStoreConfig('bxSearch');
-            }
-            $field = $this->bxConfig['bxSearch']['top_facet']['field'];
-            $order = $this->bxConfig['bxSearch']['top_facet']['order'];
-            return array($field, $order);
+        if(!$this->bxConfig == null || !isset($this->bxConfig['bxSearch'])){
+            $this->bxConfig['bxSearch'] = Mage::getStoreConfig('bxSearch');
         }
-        return null;
+        $field = $this->bxConfig['bxSearch']['top_facet']['field'];
+        $order = $this->bxConfig['bxSearch']['top_facet']['order'];
+        return array($field, $order);
     }
     
     /**
@@ -343,7 +344,7 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data{
      */
     public function isHierarchical($fieldName){
 
-        if(!isset($this->bxConfig['bxSearch'])){
+        if(!$this->bxConfig == null || !isset($this->bxConfig['bxSearch'])){
             $this->bxConfig['bxSearch'] = Mage::getStoreConfig('bxSearch');
         }
         $facetConfig =   $this->bxConfig['bxSearch']['left_facets'];
@@ -363,7 +364,7 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data{
      */
     public function getCategoriesSortOrder(){
 
-        if(!isset($this->bxConfig['bxSearch'])){
+        if(!$this->bxConfig == null || !isset($this->bxConfig['bxSearch'])){
             $this->bxConfig['bxSearch'] = Mage::getStoreConfig('bxSearch');
         }
 
@@ -416,7 +417,17 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data{
 
         $this->setup = $setup;
     }
-
+    
+    /**
+     * @return mixed
+     */
+    public function getSubPhrasesLimit(){
+        if(!$this->bxConfig == null || !isset($this->bxConfig['bxSearch'])){
+            $this->bxConfig['bxSearch'] = Mage::getStoreConfig('bxSearch');
+        }
+        return $this->bxConfig['bxSearch']['advanced']['search_sub_phrases_limit'];
+    }
+    
     /**
      * @return string
      */
@@ -425,13 +436,28 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data{
     }
 
     /**
+     * @param $layer
+     * @return bool
+     */
+    public function isEnabledOnLayer($layer){
+        switch(get_class($layer)){
+            case 'Mage_CatalogSearch_Model_Layer':
+                return $this->isSearchEnabled();
+            case 'Mage_Catalog_Model_Layer':
+                return $this->isNavigationEnabled();
+            default:
+                return false;
+        }
+    }
+    
+    /**
      * @return bool
      */
     public function isPluginEnabled(){
         if(!$this->bxConfig == null || !isset($this->bxConfig['bxGeneral'])){
             $this->bxConfig['bxGeneral'] = Mage::getStoreConfig('bxGeneral');
         }
-        return (bool)$this->bxConfig['bxGeneral']['general']['enabled'];
+        return (bool)($this->bxConfig['bxGeneral']['general']['enabled'] && !$this->fallback);
     }
 
     /**
@@ -506,7 +532,7 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data{
         if(!$this->bxConfig == null || !isset($this->bxConfig['bxSearch'])) {
             $this->bxConfig['bxSearch'] = Mage::getStoreConfig('bxSearch');
         }
-        return (bool)$this->isSearchEnabled() && $this->bxConfig['bxSearch']['navigation']['enabled'];
+        return (bool)($this->isPluginEnabled() && $this->bxConfig['bxSearch']['navigation']['enabled']);
     }
 
     /**
@@ -517,7 +543,7 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data{
         if(!$this->bxConfig == null || !isset($this->bxConfig['bxSearch'])) {
             $this->bxConfig['bxSearch'] = Mage::getStoreConfig('bxSearch');
         }
-        return (bool)$this->isSearchEnabled() && $this->bxConfig['bxSearch']['left_facets']['enabled'];
+        return $this->bxConfig['bxSearch']['left_facets']['enabled'];
     }
 
     /**
@@ -528,22 +554,43 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data{
         if(!$this->bxConfig == null || !isset($this->bxConfig['bxSearch'])) {
             $this->bxConfig['bxSearch'] = Mage::getStoreConfig('bxSearch');
         }
-        return (bool)$this->isSearchEnabled() && $this->bxConfig['bxSearch']['top_facet']['enabled'];
+        return (bool)$this->bxConfig['bxSearch']['top_facet']['enabled'];
     }
 
     /**
      * @return bool
      */
-    public function isFilterLayoutEnabled($category=true){
-
-        if($category){
-            $type = 'navigation';
-        }else{
-            $type = 'search';
+    public function isFilterLayoutEnabled($layer){
+        
+        $type = '';
+        switch(get_class($layer)){
+            case 'Mage_CatalogSearch_Model_Layer':
+                $type = 'search';
+                break;
+            case 'Mage_Catalog_Model_Layer':
+                $type = 'navigation';
+                break;
+            default:
+                return false;
         }
+        
         if(!isset($this->bxConfig['bxSearch'])){
             $this->bxConfig['bxSearch'] = Mage::getStoreConfig('bxSearch');
         }
-        return (bool)($this->isSearchEnabled() && $this->bxConfig['bxSearch'][$type]['filter']);
+        return (bool)($this->isEnabledOnLayer($layer) && $this->bxConfig['bxSearch'][$type]['filter']);
+    }
+
+    /**
+     * @param $fallback
+     */
+    public function setFallback($fallback){
+        $this->fallback = $fallback;
+    }
+
+    /**
+     * @return bool
+     */
+    public function getFallback(){
+        return $this->fallback;
     }
 }

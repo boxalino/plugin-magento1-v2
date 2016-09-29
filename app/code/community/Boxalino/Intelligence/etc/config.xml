@@ -16,13 +16,13 @@
                     </modules>
                 </args>
             </catalogsearch>
-            <intelligence>
-                <use>standard</use>
+            <catalog>
                 <args>
-                    <module>Boxalino_Intelligence</module>
-                    <frontName>test</frontName>
+                    <modules>
+                        <Boxalino_Intelligence before="Mage_Catalog">Boxalino_Intelligence</Boxalino_Intelligence>
+                    </modules>
                 </args>
-            </intelligence>
+            </catalog>
         </routers>
         <layout>
             <updates>
@@ -141,7 +141,6 @@
                     <layer_view>Boxalino_Intelligence_Block_Layer_View</layer_view>
                     <layer_state>Boxalino_Intelligence_Block_Layer_State</layer_state>
                 </rewrite>
-
             </catalog>
         </blocks>
     </global>
