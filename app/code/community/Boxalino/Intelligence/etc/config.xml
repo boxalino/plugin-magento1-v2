@@ -140,8 +140,15 @@
                     <product_list_toolbar>Boxalino_Intelligence_Block_Product_List_Toolbar</product_list_toolbar>
                     <layer_view>Boxalino_Intelligence_Block_Layer_View</layer_view>
                     <layer_state>Boxalino_Intelligence_Block_Layer_State</layer_state>
+                    <product_list_related>Boxalino_Intelligence_Block_Product_List_Related</product_list_related>
+                    <product_list_upsell>Boxalino_Intelligence_Block_Product_List_Upsell</product_list_upsell>
                 </rewrite>
             </catalog>
+            <checkout>
+                <rewrite>
+                    <cart_crosssell>Boxalino_Intelligence_Block_Cart_Crosssell</cart_crosssell>
+                </rewrite>
+            </checkout>
         </blocks>
     </global>
 
