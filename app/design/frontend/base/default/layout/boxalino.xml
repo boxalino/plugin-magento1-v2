@@ -20,20 +20,11 @@
                 <name>js/jquery-noConflict.js</name>
             </action>
         </reference>
-        <!--<reference name="top.search">-->
-            <!--<action method="setTemplate">-->
-                <!--<template>boxalino/catalogsearch/form.mini.phtml</template>-->
-            <!--</action>-->
-        <!--</reference>-->
         <reference name="before_body_end">
             <block type="boxalino/script" name="intelligence_script" template="boxalino/script.phtml"/>
-            <!--<block type="boxalino/recommendation" name="intelligence_recommendation" template="boxalino/recommendation.phtml">-->
-                <!--<action method="setData"><name>widget</name><value>rec_top</value></action>-->
-            <!--</block>-->
         </reference>
-
-
     </default>
+
     <catalogsearch_result_index>
         <reference name="head">
             <action method="addItem" ifconfig="bxSearch/search/filter">
@@ -48,7 +39,6 @@
         <reference name="content">
             <block type="boxalino/facets" name="top_filter" as="search_top_filter" before="-"
                    template="boxalino/top_filter.phtml" ifconfig="bxSearch/top_facet/enabled"/>
-
         </reference>
     </catalogsearch_result_index>
     <catalog_category_layered>

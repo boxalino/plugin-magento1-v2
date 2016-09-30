@@ -23,7 +23,7 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data{
     /**
      * @var array CMS Block
      */
-    protected $cmsBlock;
+    protected $cmsBlock = array();
 
     /**
      * @var bool
@@ -187,6 +187,8 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data{
         if($index !== false){
             $widgetConfig = array('widget' => $widgetNames[$index], 'scenario' => $widgetScenarios[$index],
                 'min' => $widgetMin[$index], 'max' => $widgetMax[$index]);
+        }else{
+            throw new \Exception("There is no configuration for this widget name: " . $widgetName);
         }
         return $widgetConfig;
     }
@@ -383,6 +385,7 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data{
      * @return string
      */
     public function getLanguage() {
+        
         return substr(Mage::getStoreConfig('general/locale/code'), 0, 2);
     }
 
@@ -390,8 +393,9 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data{
      * @param $block
      */
     public function setCmsBlock($block){
-
+        
         $this->cmsBlock = $block;
+        return $this;
     }
 
     /**
