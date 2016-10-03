@@ -66,19 +66,20 @@ class Boxalino_Intelligence_Block_Product_List extends Mage_Catalog_Block_Produc
         $this->_productCollection
             ->setStore($this->getLayer()->getCurrentStore())
             ->addFieldToFilter('entity_id', $entity_ids)
-            ->addAttributeToSelect('*');
+            ->addAttributeToSelect(Mage::getSingleton('catalog/config')->getProductAttributes())
+            ->addUrlRewrite($this->getLayer()->getCurrentCategory()->getId());
 
         $this->_productCollection
             ->getSelect()
             ->order(new Zend_Db_Expr('FIELD(e.entity_id,' . implode(',', $entity_ids).')'));
 
-        $this->_productCollection->load();
         $this->_productCollection->setCurBxPage($this->getToolbarBlock()->getCurrentPage());
         $limit = $this->getRequest()->getParam('limit') ? $this->getRequest()->getParam('limit') : $this->getToolbarBlock()->getLimit();
    
         try{
             $totalHitCount = Mage::helper('intelligence')->getAdapter()->getTotalHitCount();
         }catch(\Exception $e){
+            Mage::logException($e);
             throw $e;
         }
 
@@ -86,6 +87,7 @@ class Boxalino_Intelligence_Block_Product_List extends Mage_Catalog_Block_Produc
         $this->_productCollection
             ->setLastBxPage($lastPage)
             ->setBxTotal($totalHitCount)
-            ->setBxCount(count($entity_ids));
+            ->setBxCount(count($entity_ids))
+            ->load();
     }
 }

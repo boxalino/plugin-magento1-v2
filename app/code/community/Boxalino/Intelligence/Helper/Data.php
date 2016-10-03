@@ -303,13 +303,26 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data{
     }
 
     /**
+     * @return Mage_Catalog_Model_Resource_Product_Attribute_Collection
+     */
+    protected function _getFilterableAttributes(){
+
+        $collection = Mage::getResourceModel('catalog/product_attribute_collection');
+        $collection
+            ->setITemObjectClass('catalog/resource_eav_attribute')
+            ->addStoreLabel(Mage::app()->getStore()->getId())
+            ->setOrder('position', 'ASC')
+            ->addIsFilterableFilter()->load();
+        return $collection;
+    }
+
+    /**
      * @return array
      */
-    public function getFilterProductAttributes()
-    {
-        $layer = Mage::getModel('catalog/layer');
+    public function getFilterProductAttributes(){
+
         $attributes = array();
-        $attributeCollection = $layer->getFilterableAttributes();
+        $attributeCollection = $this->_getFilterableAttributes();
 
         $allowedTypes = array('multiselect', 'price', 'select');
         foreach ($attributeCollection as $attribute) {
