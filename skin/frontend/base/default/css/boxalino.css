@@ -102,3 +102,31 @@
     text-align: left;
     width: 31%;
 }
+div.top_filter > ol > li{
+    float: left;
+    padding-right: 10px;
+}
+ol > li.selected{
+    font-weight: bold;
+}
+div.top_filter {
+    height: 60px;
+}
+div.top_filter>ol.items>li.item>a{
+    color: #0a0a0a;
+}
+div.top_filter>ol.items>li.item>a>span.count>.filter-count-label{
+    display: none;
+}
+li.selected.parent{
+    font-weight: bold;
+}
+li.children{
+    padding-left: 10px;
+}
+li.parent:not(.selected)>a>span.count{
+    display:none;
+}
+#bxslider{
+    margin: 10px 10px 10px 10px !important;
+}
