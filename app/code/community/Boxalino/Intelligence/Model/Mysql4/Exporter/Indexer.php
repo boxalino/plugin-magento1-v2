@@ -10,7 +10,7 @@ class Boxalino_Intelligence_Model_Mysql4_Exporter_Indexer extends Boxalino_Intel
      */
     protected function _construct()
     {
-        $this->_init('intelligence/indexer', '');
+        $this->_init('boxalino_intelligence/indexer', '');
     }
 
 }

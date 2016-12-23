@@ -16,7 +16,7 @@ class Boxalino_Intelligence_Block_Layer_View extends Mage_Catalog_Block_Layer_Vi
      */
     public function setTemplate($template){
         
-        if(!Mage::helper('intelligence')->isPluginEnabled()){
+        if(!Mage::helper('boxalino_intelligence')->isPluginEnabled()){
             return parent::setTemplate($template);
         }
         $this->_template = 'boxalino/catalog/layer/view.phtml';
@@ -28,12 +28,12 @@ class Boxalino_Intelligence_Block_Layer_View extends Mage_Catalog_Block_Layer_Vi
      */
     protected function _prepareFilters(){
 
-        $bxHelperData = Mage::helper('intelligence');
+        $bxHelperData = Mage::helper('boxalino_intelligence');
         $filters = array();
         $facets = $bxHelperData->getAdapter()->getFacets();
         if ($facets) {
             foreach ($bxHelperData->getLeftFacetFieldNames() as $fieldName) {
-                $filter = $this->getLayout()->createBlock('boxalino/layer_filter_attribute')
+                $filter = $this->getLayout()->createBlock('boxalino_intelligence/layer_filter_attribute')
                     ->setLayer($this->getLayer())
                     ->setFacets($facets)
                     ->setFieldName($fieldName)
@@ -51,7 +51,7 @@ class Boxalino_Intelligence_Block_Layer_View extends Mage_Catalog_Block_Layer_Vi
      */
     public function getFilters(){
 
-        $bxHelperData = Mage::helper('intelligence');
+        $bxHelperData = Mage::helper('boxalino_intelligence');
         if($bxHelperData->isFilterLayoutEnabled($this->getLayer()) && $bxHelperData->isLeftFilterEnabled()){
             if(empty($this->bxFilters)){
                 $this->_prepareFilters();

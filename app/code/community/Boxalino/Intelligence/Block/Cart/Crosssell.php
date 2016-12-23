@@ -20,7 +20,7 @@ class Boxalino_Intelligence_Block_Cart_Crosssell extends Mage_Checkout_Block_Car
      */
     public function getItems($execute = true){
 
-        $bxHelperData = Mage::helper('intelligence');
+        $bxHelperData = Mage::helper('boxalino_intelligence');
         if($bxHelperData->isPluginEnabled() && $bxHelperData->isCrosssellEnabled()){
             $config = Mage::getStoreConfig('bxRecommendations/cart');
             $items = array();

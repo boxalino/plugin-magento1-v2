@@ -53,7 +53,7 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data{
      */
     public function getAdapter(){
         if(!$this->adapter){
-            $this->adapter = new Boxalino_Intelligence_Helper_P13n_Adapter();
+            $this->adapter = Mage::helper('boxalino_intelligence/p13n_adapter');
         }
         return $this->adapter;
     }
@@ -309,7 +309,7 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data{
 
         $collection = Mage::getResourceModel('catalog/product_attribute_collection');
         $collection
-            ->setITemObjectClass('catalog/resource_eav_attribute')
+            ->setItemObjectClass('catalog/resource_eav_attribute')
             ->addStoreLabel(Mage::app()->getStore()->getId())
             ->setOrder('position', 'ASC')
             ->addIsFilterableFilter()->load();
@@ -456,15 +456,14 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data{
      * @param $layer
      * @return bool
      */
-    public function isEnabledOnLayer($layer){
-        switch(get_class($layer)){
-            case 'Mage_CatalogSearch_Model_Layer':
-                return $this->isSearchEnabled();
-            case 'Mage_Catalog_Model_Layer':
-                return $this->isNavigationEnabled();
-            default:
-                return false;
+    public function isEnabledOnLayer($layer)
+    {
+        if ($layer instanceof Mage_CatalogSearch_Model_Layer) {
+            return $this->isSearchEnabled();
+        } elseif ($layer instanceof Mage_Catalog_Model_Layer) {
+            return $this->isNavigationEnabled();
         }
+        return false;
     }
     
     /**
@@ -579,18 +578,15 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data{
      */
     public function isFilterLayoutEnabled($layer){
         
-        $type = '';
-        switch(get_class($layer)){
-            case 'Mage_CatalogSearch_Model_Layer':
-                $type = 'search';
-                break;
-            case 'Mage_Catalog_Model_Layer':
-                $type = 'navigation';
-                break;
-            default:
-                return false;
+        $type = null;
+        if ($layer instanceof Mage_CatalogSearch_Model_Layer) {
+            $type = 'search';
+        } elseif ($layer instanceof Mage_Catalog_Model_Layer) {
+            $type = 'navigation';
         }
-        
+        if (null === $type) {
+            return false;
+        }
         if(!isset($this->bxConfig['bxSearch'])){
             $this->bxConfig['bxSearch'] = Mage::getStoreConfig('bxSearch');
         }

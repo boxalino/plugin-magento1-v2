@@ -5,8 +5,8 @@
 
 /** @var $this Boxalino_CemSearch_Block_Script */
 
-/** @var $_helper Boxalino_CemSearch_Helper_Data */
-$_helper = Mage::helper('intelligence');
+/** @var $_helper Boxalino_Intelligence_Helper_Data */
+$_helper = Mage::helper('boxalino_intelligence');
 
 // get account
 $account = Mage::getStoreConfig('bxGeneral/general/account_name');
@@ -20,9 +20,10 @@ $account = Mage::getStoreConfig('bxGeneral/general/account_name');
     _bxq.push(['trackPageView']);
     <?php endif; ?>
 
-    <?php if ($this->isSearch()): ?>
-    <?php echo $_helper->reportSearch($_GET['q'], $_helper->getFiltersValues($_GET)); ?>
-    <?php endif; ?>
+    <?php // FIXME This method does not exist. Direct $_GET access is not forbidden. ?>
+    <?php //if ($this->isSearch()): ?>
+    <?php //echo $_helper->reportSearch($_GET['q'], $_helper->getFiltersValues($_GET)); ?>
+    <?php //endif; ?>
 
     (function () {
         var s = document.createElement('script');

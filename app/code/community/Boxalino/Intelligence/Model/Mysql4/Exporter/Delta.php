@@ -13,7 +13,7 @@ class Boxalino_Intelligence_Model_Mysql4_Exporter_Delta extends Boxalino_Intelli
      */
     protected function _construct()
     {
-        $this->_init('intelligence/delta', '');
+        $this->_init('boxalino_intelligence/delta', '');
     }
 
     /**

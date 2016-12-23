@@ -5,6 +5,12 @@
         <Boxalino_Intelligence>
             <active>true</active>
             <codePool>community</codePool>
+            <depends>
+                <Mage_Catalog/>
+                <Mage_Catalogsearch/>
+                <Mage_Checkout/>
+                <Mage_Widget/>
+            </depends>
         </Boxalino_Intelligence>
     </modules>
 </config>

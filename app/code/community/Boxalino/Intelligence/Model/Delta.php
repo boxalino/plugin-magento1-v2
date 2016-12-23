@@ -26,7 +26,7 @@ class Boxalino_Intelligence_Model_Delta extends Mage_Index_Model_Indexer_Abstrac
      */
     protected function _construct()
     {
-        $this->_init('intelligence/exporter_delta');
+        $this->_init('boxalino_intelligence/exporter_delta');
     }
 
     /**

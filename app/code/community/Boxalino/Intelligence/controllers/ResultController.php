@@ -11,7 +11,7 @@ class Boxalino_Intelligence_ResultController extends Mage_CatalogSearch_ResultCo
      */
     public function indexAction()
     {
-        $bxHelperData = Mage::helper('intelligence');
+        $bxHelperData = Mage::helper('boxalino_intelligence');
         try{
             if($bxHelperData->isSearchEnabled() && $bxHelperData->getAdapter()->areThereSubPhrases()){
                 $queries = $bxHelperData->getAdapter()->getSubPhrasesQueries();

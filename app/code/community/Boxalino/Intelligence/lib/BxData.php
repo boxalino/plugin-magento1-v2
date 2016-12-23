@@ -426,14 +426,14 @@ class BxData
         $s = curl_init();
 		
         curl_setopt($s, CURLOPT_URL, $url);
-        curl_setopt($s, CURLOPT_TIMEOUT, 35000);
+        curl_setopt($s, CURLOPT_TIMEOUT, 600);
         curl_setopt($s, CURLOPT_POST, true);
         curl_setopt($s, CURLOPT_ENCODING, '');
         curl_setopt($s, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($s, CURLOPT_POSTFIELDS, $fields);
 
         $responseBody = curl_exec($s);
-		
+
 		if($responseBody === false)
 		{
 			if(strpos(curl_error($s), "couldn't open file") !== false) {
@@ -602,9 +602,9 @@ class BxData
 		return $zipFilePath;
     }
 	
-	public function pushData($temporaryFilePath=null) {
+	public function pushData($temporaryFilePath = null, $archiveName = 'bxdata.zip') {
 		
-		$zipFile = $this->createZip($temporaryFilePath);
+		$zipFile = $this->createZip($temporaryFilePath, $archiveName);
 		
 		$fields = array(
             'username' => $this->bxClient->getUsername(),

@@ -19,7 +19,7 @@ class Boxalino_Intelligence_Block_Slider extends Mage_Core_Block_Template{
      */
     public function getSliderValues(){
 
-        $bxHelperData = Mage::helper('intelligence');
+        $bxHelperData = Mage::helper('boxalino_intelligence');
         $facets = $bxHelperData->getAdapter()->getFacets();
         if(empty($facets) || empty($facets->getPriceRanges())){
             return null;

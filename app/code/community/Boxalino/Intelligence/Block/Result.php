@@ -25,7 +25,7 @@ class Boxalino_Intelligence_Block_Result extends Mage_CatalogSearch_Block_Result
      */
     public function _construct(){
 
-        $this->bxHelperData = Mage::helper('intelligence');
+        $this->bxHelperData = Mage::helper('boxalino_intelligence');
         try{
             if( $this->bxHelperData->isSearchEnabled()){
                 if($this->hasSubPhrases()){
@@ -55,7 +55,7 @@ class Boxalino_Intelligence_Block_Result extends Mage_CatalogSearch_Block_Result
     public function hasSubPhrases(){
 
         try{
-            return Mage::helper('intelligence')->getAdapter()->areThereSubPhrases();
+            return Mage::helper('boxalino_intelligence')->getAdapter()->areThereSubPhrases();
         }catch(\Exception $e){
             Mage::logException($e);
         }
@@ -85,7 +85,7 @@ class Boxalino_Intelligence_Block_Result extends Mage_CatalogSearch_Block_Result
             return parent::getResultCount();
         }
         if (!$this->getData('result_count')) {
-            $bxHelperData = Mage::helper('intelligence');
+            $bxHelperData = Mage::helper('boxalino_intelligence');
             $query = $this->_getQuery();
             $size = $this->hasSubPhrases() ?
                 $bxHelperData->getAdapter()->getSubPhraseTotalHitCount(
@@ -102,7 +102,7 @@ class Boxalino_Intelligence_Block_Result extends Mage_CatalogSearch_Block_Result
      */
     public function getHeaderText(){
 
-        $bxHelperData = Mage::helper('intelligence');
+        $bxHelperData = Mage::helper('boxalino_intelligence');
         if(!$this->fallback && $bxHelperData->getAdapter()->areResultsCorrected()){
             return $this->__("Corrected search results for '%s'", $bxHelperData->getAdapter()->getCorrectedQuery());
         }

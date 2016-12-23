@@ -11,7 +11,7 @@ class Boxalino_Intelligence_Block_Layer_State extends Mage_Catalog_Block_Layer_S
      */
     public function setTemplate($template)
     {
-        if(!Mage::helper('intelligence')->isPluginEnabled()){
+        if(!Mage::helper('boxalino_intelligence')->isPluginEnabled()){
             return parent::setTemplate($template);
         }
         $this->_template = 'boxalino/catalog/layer/state.phtml';
@@ -23,7 +23,7 @@ class Boxalino_Intelligence_Block_Layer_State extends Mage_Catalog_Block_Layer_S
      */
     public function getActiveFilters(){
         
-        $bxHelperData = Mage::helper('intelligence');
+        $bxHelperData = Mage::helper('boxalino_intelligence');
         if ($bxHelperData->isFilterLayoutEnabled($this->getLayer())) {
             
             $filters = array();
@@ -36,7 +36,7 @@ class Boxalino_Intelligence_Block_Layer_State extends Mage_Catalog_Block_Layer_S
                         if($fieldName == 'discountedPrice'){
                             $value = substr_replace($value, '0', strlen($value)-1);
                         }
-                        $filter = Mage::getModel('intelligence/layer_filter_attribute')
+                        $filter = Mage::getModel('boxalino_intelligence/layer_filter_attribute')
                             ->setFacets($facets)
                             ->setFieldName($fieldName)
                             ->setRequestVar($facets->getFacetParameterName($fieldName));
