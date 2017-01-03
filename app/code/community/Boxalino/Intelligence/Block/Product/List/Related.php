@@ -20,7 +20,7 @@ class Boxalino_Intelligence_Block_Product_List_Related extends Mage_Catalog_Bloc
      */
     protected function _prepareData($execute = true){
         
-        $bxHelperData = Mage::helper('intelligence');
+        $bxHelperData = Mage::helper('boxalino_intelligence');
         if($bxHelperData->isPluginEnabled() && $bxHelperData->isRelatedEnabled()){
             $product = Mage::registry('product');
             $config = Mage::getStoreConfig('bxRecommendations/related');
@@ -53,7 +53,8 @@ class Boxalino_Intelligence_Block_Product_List_Related extends Mage_Catalog_Bloc
                 ->addAttributeToSelect('*');
 
             if (Mage::helper('catalog')->isModuleEnabled('Mage_Checkout')) {
-                Mage::getResourceSingleton('checkout/cart')->addExcludeProductFilter($this->_itemCollection,
+                Mage::getResourceSingleton('checkout/cart')->addExcludeProductFilter(
+                    $this->_itemCollection,
                     Mage::getSingleton('checkout/session')->getQuoteId()
                 );
                 $this->_addProductAttributesAndPrices($this->_itemCollection);

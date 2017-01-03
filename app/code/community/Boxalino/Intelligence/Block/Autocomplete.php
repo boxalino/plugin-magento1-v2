@@ -1,7 +1,4 @@
 <?php
-
-require_once "Mage/CatalogSearch/Block/Autocomplete.php";
-
 /**
  * Class Boxalino_Intelligence_Block_Autocomplete
  */
@@ -19,7 +16,7 @@ class Boxalino_Intelligence_Block_Autocomplete extends Mage_CatalogSearch_Block_
         }
         $autocompleteHelper = new Boxalino_Intelligence_Helper_Autocomplete();
         try{
-            $suggestData = Mage::helper('intelligence')->getAdapter()->autocomplete(
+            $suggestData = Mage::helper('boxalino_intelligence')->getAdapter()->autocomplete(
                 $query = $this->helper('catalogsearch')->getQueryText(),
                 $autocompleteHelper
             );

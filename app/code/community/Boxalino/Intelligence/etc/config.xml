@@ -26,58 +26,58 @@
         </routers>
         <layout>
             <updates>
-                <intelligence>
+                <boxalino_intelligence>
                     <file>boxalino.xml</file>
-                </intelligence>
+                </boxalino_intelligence>
             </updates>
         </layout>
         <events>
             <checkout_cart_product_add_after>
                 <observers>
-                    <intelligence_cart_add>
+                    <boxalino_intelligence_cart_add>
                         <class>Boxalino_Intelligence_Model_Observer</class>
                         <method>onProductAddedToCart</method>
-                    </intelligence_cart_add>
+                    </boxalino_intelligence_cart_add>
                 </observers>
             </checkout_cart_product_add_after>
             <checkout_onepage_controller_success_action>
                 <observers>
-                    <intelligence_order_success>
+                    <boxalino_intelligence_order_success>
                         <class>Boxalino_Intelligence_Model_Observer</class>
                         <method>onOrderSuccessPageView</method>
-                    </intelligence_order_success>
+                    </boxalino_intelligence_order_success>
                 </observers>
             </checkout_onepage_controller_success_action>
             <checkout_multishipping_controller_success_action>
                 <observers>
-                    <intelligence_order_success>
+                    <boxalino_intelligence_order_success>
                         <class>Boxalino_Intelligence_Model_Observer</class>
                         <method>onOrderSuccessPageView</method>
-                    </intelligence_order_success>
+                    </boxalino_intelligence_order_success>
                 </observers>
             </checkout_multishipping_controller_success_action>
             <catalog_controller_product_view>
                 <observers>
-                    <intelligence_product_view>
+                    <boxalino_intelligence_product_view>
                         <class>Boxalino_Intelligence_Model_Observer</class>
                         <method>onProductPageView</method>
-                    </intelligence_product_view>
+                    </boxalino_intelligence_product_view>
                 </observers>
             </catalog_controller_product_view>
             <catalog_controller_category_init_after>
                 <observers>
-                    <intelligence_category_view>
+                    <boxalino_intelligence_category_view>
                         <class>Boxalino_Intelligence_Model_Observer</class>
                         <method>onCategoryPageView</method>
-                    </intelligence_category_view>
+                    </boxalino_intelligence_category_view>
                 </observers>
             </catalog_controller_category_init_after>
             <customer_login>
                 <observers>
-                    <intelligence_login>
+                    <boxalino_intelligence_login>
                         <class>Boxalino_Intelligence_Model_Observer</class>
                         <method>onLogin</method>
-                    </intelligence_login>
+                    </boxalino_intelligence_login>
                 </observers>
             </customer_login>
         </events>
@@ -86,27 +86,27 @@
         <index>
             <indexer>
                 <boxalinoexporter_indexer>
-                    <model>intelligence/indexer</model>
+                    <model>boxalino_intelligence/indexer</model>
                 </boxalinoexporter_indexer>
                 <boxalinoexporter_delta>
-                    <model>intelligence/delta</model>
+                    <model>boxalino_intelligence/delta</model>
                 </boxalinoexporter_delta>
             </indexer>
         </index>
 
         <models>
-            <intelligence>
+            <boxalino_intelligence>
                 <class>Boxalino_Intelligence_Model</class>
-            </intelligence>
+            </boxalino_intelligence>
             <catalog_resource>
                 <rewrite>
                     <product_collection>Boxalino_Intelligence_Model_Resource_Product_Collection</product_collection>
                 </rewrite>
             </catalog_resource>
-            <intelligence>
+            <boxalino_intelligence>
                 <class>Boxalino_Intelligence_Model</class>
                 <resourceModel>boxalinoexporter_mysql4</resourceModel>
-            </intelligence>
+            </boxalino_intelligence>
             <boxalinoexporter_mysql4>
                 <class>Boxalino_Intelligence_Model_Mysql4</class>
             </boxalinoexporter_mysql4>
@@ -118,15 +118,15 @@
         </models>
 
         <helpers>
-            <intelligence>
+            <boxalino_intelligence>
                 <class>Boxalino_Intelligence_Helper</class>
-            </intelligence>
+            </boxalino_intelligence>
         </helpers>
 
         <blocks>
-            <boxalino>
+            <boxalino_intelligence>
                 <class>Boxalino_Intelligence_Block</class>
-            </boxalino>
+            </boxalino_intelligence>
             <catalogsearch>
                 <rewrite>
                     <autocomplete>Boxalino_Intelligence_Block_Autocomplete</autocomplete>

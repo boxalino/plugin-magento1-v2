@@ -20,7 +20,7 @@ class Boxalino_Intelligence_Block_Recommendation extends Mage_Catalog_Block_Prod
      */
     public function _construct(){
 
-        $this->bxHelperData = Mage::helper('intelligence');
+        $this->bxHelperData = Mage::helper('boxalino_intelligence');
         if($this->bxHelperData->isSetup() && $this->bxHelperData->isPluginEnabled()){
             $cmsBlock = $this->bxHelperData->getCmsBlock();
             if($cmsBlock){
@@ -44,7 +44,7 @@ class Boxalino_Intelligence_Block_Recommendation extends Mage_Catalog_Block_Prod
 
         if(isset($results[1])){
             foreach($results[1] as $result){
-                if(strpos($result,'boxalino/recommendation')){
+                if(strpos($result,'boxalino_intelligence/recommendation')){
                     preg_match_all("/[-^\s](.*?)\=\"(.*?)\"/",$result, $sectionResults);
                     $result_holder = array();
                     foreach($sectionResults[1] as $index => $sectionResult){
@@ -61,7 +61,7 @@ class Boxalino_Intelligence_Block_Recommendation extends Mage_Catalog_Block_Prod
 
         $results = array();
         $recommendations = array();
-        preg_match_all("/\<block type=\"boxalino\/recommendation\"(.*?)\<\/block\>/" ,$content,$results);
+        preg_match_all("/\<block type=\"boxalino_intelligence\/recommendation\"(.*?)\<\/block\>/" ,$content,$results);
 
         if(isset($results[0])){
             foreach ($results[0] as $block){

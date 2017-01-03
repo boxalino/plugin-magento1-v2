@@ -11,7 +11,7 @@ class Boxalino_Intelligence_Block_Layer_Filter_Attribute extends Mage_Catalog_Bl
     public function __construct()
     {
         parent::__construct();
-        $this->_filterModelName = 'intelligence/layer_filter_attribute';
+        $this->_filterModelName = 'boxalino_intelligence/layer_filter_attribute';
     }
 
     /**

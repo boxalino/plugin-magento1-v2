@@ -67,15 +67,15 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
      */
     protected function exportStores(){
 
-        $this->_helperExporter = Mage::helper('intelligence');
+        $this->_helperExporter = Mage::helper('boxalino_intelligence');
         Mage::log("bxLog: starting exportStores", Zend_Log::INFO, self::BOXALINO_LOG_FILE);
-        $this->config = Mage::helper('intelligence/bxindexconfig');
+        $this->config = Mage::helper('boxalino_intelligence/bxIndexConfig');
         Mage::log("bxLog: retrieved index config: " . $this->config->toString(), Zend_Log::INFO, self::BOXALINO_LOG_FILE);
         try {
             foreach ($this->config->getAccounts() as $account) {
 
                 Mage::log("bxLog: initialize files on account: " . $account, Zend_Log::INFO, self::BOXALINO_LOG_FILE);
-                $files = Mage::helper('intelligence/bxfiles');
+                $files = Mage::helper('boxalino_intelligence/bxFiles');
 
                 $bxClient = new \com\boxalino\bxclient\v1\BxClient($account, $this->config->getAccountPassword($account), "");
                 $this->bxData = new \com\boxalino\bxclient\v1\BxData($bxClient, $this->config->getAccountLanguages($account), $this->config->isAccountDev($account), false);
@@ -373,15 +373,15 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
 
                         $select = $db->select()
                             ->from(
-                                array('c_p_e' => $db->getTableName('catalog_product_entity')),
+                                array('c_p_e' => $db->getTableName($this->_prefix . 'catalog_product_entity')),
                                 array('entity_id')
                             )
                             ->joinLeft(
-                                array('c_p_r' => $db->getTableName('catalog_product_relation')),
+                                array('c_p_r' => $db->getTableName($this->_prefix . 'catalog_product_relation')),
                                 'c_p_e.entity_id = c_p_r.child_id',
                                 array('parent_id'))
                             ->join(
-                                array('t_d' => $db->getTableName('catalog_product_entity_' . $attributeType)),
+                                array('t_d' => $db->getTableName($this->_prefix . 'catalog_product_entity_' . $attributeType)),
                                 '(t_d.entity_id = c_p_r.parent_id) OR (t_d.entity_id = c_p_e.entity_id AND c_p_r.parent_id IS NULL)',
                                 array(
                                     'attribute_id',
@@ -395,11 +395,11 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                         if($langIndex == 0) {
                             $priceSelect = $db->select()
                                 ->from(
-                                    array('c_p_r' => $db->getTableName('catalog_product_relation')),
+                                    array('c_p_r' => $db->getTableName($this->_prefix . 'catalog_product_relation')),
                                     array('parent_id')
                                 )
                                 ->join(
-                                    array('t_d' => $db->getTableName('catalog_product_entity_' . $attributeType)),
+                                    array('t_d' => $db->getTableName($this->_prefix . 'catalog_product_entity_' . $attributeType)),
                                     't_d.entity_id = c_p_r.child_id',
                                     array(
                                         'value' => 'MIN(value)'
@@ -439,15 +439,15 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                     if($optionSelect){
                         $optionValueSelect = $db->select()
                             ->from(
-                                array('a_o' => $db->getTableName('eav_attribute_option')),
+                                array('a_o' => $db->getTableName($this->_prefix . 'eav_attribute_option')),
                                 array(
                                     'option_id',
                                     new \Zend_Db_Expr("CASE WHEN c_o.value IS NULL THEN b_o.value ELSE c_o.value END as value")
                                 )
-                            )->joinLeft(array('b_o' => $db->getTableName('eav_attribute_option_value')),
+                            )->joinLeft(array('b_o' => $db->getTableName($this->_prefix . 'eav_attribute_option_value')),
                                 'b_o.option_id = a_o.option_id AND b_o.store_id = 0',
                                 array()
-                            )->joinLeft(array('c_o' => $db->getTableName('eav_attribute_option_value')),
+                            )->joinLeft(array('c_o' => $db->getTableName($this->_prefix . 'eav_attribute_option_value')),
                                 'c_o.option_id = a_o.option_id AND c_o.store_id = ' . $storeId,
                                 array()
                             )->where('a_o.attribute_id = ?', $attributeID);
@@ -919,7 +919,7 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
             if (count($attrsFromDb['varchar']) > 0) {
                 $select1 = clone $select;
                 $select1->from(array('ce' => $db->getTableName($this->_prefix . 'customer_entity_varchar')), $columns)
-                    ->joinLeft(array('ea' => $db->getTableName('eav_attribute')), 'ce.attribute_id = ea.attribute_id', 'ea.attribute_code')
+                    ->joinLeft(array('ea' => $db->getTableName($this->_prefix . 'eav_attribute')), 'ce.attribute_id = ea.attribute_id', 'ea.attribute_code')
                     ->where('ce.attribute_id IN(?)', $attrsFromDb['varchar']);
                 $selects[] = $select1;
             }
@@ -1093,7 +1093,7 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
         $db = $this->_getReadAdapter();
         $select = $db->select()
             ->from(
-                array('main_table' => $db->getTableName('eav_attribute')),
+                array('main_table' => $db->getTableName($this->_prefix . 'eav_attribute')),
                 array(
                     'attribute_code',
                 )
@@ -1357,11 +1357,11 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
         $db = $this->_getReadAdapter();
         $select = $db->select()
             ->from(
-                array('c_t' => $db->getTableName('catalog_category_entity')),
+                array('c_t' => $db->getTableName($this->_prefix . 'catalog_category_entity')),
                 array('entity_id', 'parent_id')
             )
             ->joinInner(
-                array('c_v' => $db->getTableName('catalog_category_entity_varchar')),
+                array('c_v' => $db->getTableName($this->_prefix . 'catalog_category_entity_varchar')),
                 'c_v.entity_id = c_t.entity_id',
                 array('c_v.value', 'c_v.store_id')
             )
@@ -1399,7 +1399,7 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
             $db = $this->_getReadAdapter();
             $select = $db->select()
                 ->from(
-                    $db->getTableName('eav_entity_type'),
+                    $db->getTableName($this->_prefix . 'eav_entity_type'),
                     array('entity_type_id', 'entity_type_code')
                 );
 
@@ -1421,7 +1421,7 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
         $db = $this->_getReadAdapter();
         $select = $db->select()
             ->from(
-                array('a_t' => $db->getTableName('eav_attribute')),
+                array('a_t' => $db->getTableName($this->_prefix . 'eav_attribute')),
                 array('attribute_id')
             )->where('a_t.attribute_code = ?', $attr_code);
 
@@ -1474,7 +1474,7 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
     }
     
     protected function loadBxLibrary(){
-        $libPath = __DIR__ . '/../../Lib';
+        $libPath = __DIR__ . '/../../lib';
         require_once($libPath . '/BxClient.php');
         \com\boxalino\bxclient\v1\BxClient::LOAD_CLASSES($libPath);
     }

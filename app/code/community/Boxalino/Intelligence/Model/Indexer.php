@@ -26,7 +26,7 @@ class Boxalino_Intelligence_Model_Indexer extends Mage_Index_Model_Indexer_Abstr
      */
     protected function _construct()
     {
-        $this->_init('intelligence/exporter_indexer');
+        $this->_init('boxalino_intelligence/exporter_indexer');
     }
 
     /**

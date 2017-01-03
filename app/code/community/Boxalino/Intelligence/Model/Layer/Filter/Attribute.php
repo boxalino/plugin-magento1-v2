@@ -97,7 +97,7 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
     protected function _getItemsData(){
 
         $data = [];
-        $bxDataHelper = Mage::helper('intelligence');
+        $bxDataHelper = Mage::helper('boxalino_intelligence');
         $this->_requestVar = $this->bxFacets->getFacetParameterName($this->fieldName);
         if (!$bxDataHelper->isHierarchical($this->fieldName)) {
             foreach ($this->bxFacets->getFacetValues($this->fieldName) as $facetValue) {

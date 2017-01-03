@@ -30,7 +30,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
      */
     public function __construct(){
         
-        $this->bxHelperData = Mage::helper('intelligence');
+        $this->bxHelperData = Mage::helper('boxalino_intelligence');
         $libPath = Mage::getModuleDir('','Boxalino_Intelligence') . DIRECTORY_SEPARATOR . 'lib';
         require_once($libPath . DIRECTORY_SEPARATOR . 'BxClient.php');
         \com\boxalino\bxclient\v1\BxClient::LOAD_CLASSES($libPath);
@@ -286,7 +286,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
     private function prepareFacets(){
 
         $bxFacets = new \com\boxalino\bxclient\v1\BxFacets();
-        $bxHelperData = Mage::helper('intelligence');
+        $bxHelperData = Mage::helper('boxalino_intelligence');
         $selectedValues = array();
         foreach ($_REQUEST as $key => $values) {
             if (strpos($key, $this->getUrlParameterPrefix()) !== false) {
@@ -414,10 +414,8 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
      */
     public function getRecommendation($widgetName, $context = array(), $widgetType = '', $minAmount = 3, $amount = 3, $execute=true){
 
-        if(!$execute) {
-            if(!isset(self::$choiceContexts[$widgetName])) {
-                self::$choiceContexts[$widgetName] = array();
-            }
+        if (!isset(self::$choiceContexts[$widgetName])) {
+            self::$choiceContexts[$widgetName] = [];
             if(in_array(json_encode($context), self::$choiceContexts[$widgetName])) {
                 return;
             }
@@ -457,9 +455,12 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
                     self::$bxClient->addRequest($bxRequest);
                 }
             }
-            return array();
         }
-        $count = array_search(json_encode(array($context)), self::$choiceContexts[$widgetName]);
-        return self::$bxClient->getResponse()->getHitIds($widgetName, true, $count);
+
+        if ($execute) {
+            $count = array_search(json_encode(array($context)), self::$choiceContexts[$widgetName]);
+            return self::$bxClient->getResponse()->getHitIds($widgetName, true, $count);
+        }
+        return [];
     }
 }

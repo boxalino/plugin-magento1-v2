@@ -11,8 +11,8 @@ class Boxalino_Intelligence_Model_Template_Filter extends Mage_Widget_Model_Temp
      */
     public function filter($value){
         
-        if(strpos($value,'boxalino/recommendation')){
-            Mage::helper('intelligence')->setCmsBlock($value);
+        if(strpos($value,'boxalino_intelligence/recommendation')){
+            Mage::helper('boxalino_intelligence')->setCmsBlock($value);
         }
         return parent::filter($value);
     }

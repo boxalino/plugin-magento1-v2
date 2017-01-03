@@ -25,7 +25,7 @@ class Boxalino_Intelligence_CategoryController extends Mage_Catalog_CategoryCont
             }
         }
 
-        $bxHelperData = Mage::helper('intelligence');
+        $bxHelperData = Mage::helper('boxalino_intelligence');
         try{
             if($bxHelperData->isNavigationEnabled()){
                 if(count($bxHelperData->getAdapter()->getEntitiesIds()) == 0){

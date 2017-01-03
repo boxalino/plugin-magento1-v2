@@ -21,7 +21,7 @@
             </action>
         </reference>
         <reference name="before_body_end">
-            <block type="boxalino/script" name="intelligence_script" template="boxalino/script.phtml"/>
+            <block type="boxalino_intelligence/script" name="intelligence_script" template="boxalino/script.phtml"/>
         </reference>
     </default>
 
@@ -37,7 +37,7 @@
             </action>
         </reference>
         <reference name="content">
-            <block type="boxalino/facets" name="top_filter" as="search_top_filter" before="-"
+            <block type="boxalino_intelligence/facets" name="top_filter" as="search_top_filter" before="-"
                    template="boxalino/top_filter.phtml" ifconfig="bxSearch/top_facet/enabled"/>
         </reference>
     </catalogsearch_result_index>
@@ -53,7 +53,7 @@
             </action>
         </reference>
         <reference name="content">
-            <block type="boxalino/facets" name="top_filter" as="category_top_filter" before="-"
+            <block type="boxalino_intelligence/facets" name="top_filter" as="category_top_filter" before="-"
                    template="boxalino/top_filter.phtml" ifconfig="bxSearch/top_facet/enabled"/>
         </reference>
     </catalog_category_layered>

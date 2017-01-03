@@ -31,7 +31,7 @@ class Boxalino_Intelligence_Model_Resource_Product_Collection extends Mage_Catal
      */
     public function _construct(){
 
-        $bxHelperData = Mage::helper('intelligence');
+        $bxHelperData = Mage::helper('boxalino_intelligence');
         $this->fallback = $bxHelperData->getFallback();
         $layer = $this->getLayer();
         if(Mage::app()->getStore()->isAdmin() || !$bxHelperData->isEnabledOnLayer($layer)){

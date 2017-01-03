@@ -6,8 +6,8 @@ class Boxalino_Intelligence_Model_Observer{
     {
 
         try {
-            $session = Mage::getSingleton('Boxalino_Intelligence_Model_Session');
-            $script = Mage::helper('intelligence')->reportAddToBasket(
+            $session = Mage::getSingleton('boxalino_intelligence/session');
+            $script = Mage::helper('boxalino_intelligence')->reportAddToBasket(
                 $event->getProduct()->getId(),
                 $event->getQuoteItem()->getQty(),
                 $event->getProduct()->getSpecialPrice() > 0 ? $event->getProduct()->getSpecialPrice() : $event->getProduct()->getPrice(),
@@ -15,7 +15,7 @@ class Boxalino_Intelligence_Model_Observer{
             );
             $session->addScript($script);
         } catch (Exception $e) {
-            if (Mage::helper('intelligence')->isDebugEnabled()) {
+            if (Mage::helper('boxalino_intelligence')->isDebugEnabled()) {
                 echo($e);
                 exit;
             }
@@ -26,6 +26,7 @@ class Boxalino_Intelligence_Model_Observer{
     public function onOrderSuccessPageView(Varien_Event_Observer $event)
     {
         try {
+            // FIXME This is not the order the customer made.
             $orders = Mage::getModel('sales/order')->getCollection()
                 ->setOrder('entity_id', 'DESC')
                 ->setPageSize(1)
@@ -45,12 +46,12 @@ class Boxalino_Intelligence_Model_Observer{
                     $fullPrice += $item->getPrice() * $item->getData('qty_ordered');
                 }
             }
-            $script = Mage::helper('intelligence')->reportPurchase($products, $transactionId, $fullPrice, Mage::app()->getStore()->getCurrentCurrencyCode());
-
-            $session = Mage::getSingleton('Boxalino_Intelligence_Model_Session');
-            $session->addScript($script);
+            // FIXME This method is not available.
+//            $script = Mage::helper('boxalino_intelligence')->reportPurchase($products, $transactionId, $fullPrice, Mage::app()->getStore()->getCurrentCurrencyCode());
+//            $session = Mage::getSingleton('boxalino_intelligence/session');
+//            $session->addScript($script);
         } catch (Exception $e) {
-            if (Mage::helper('intelligence')->isDebugEnabled()) {
+            if (Mage::helper('boxalino_intelligence')->isDebugEnabled()) {
                 echo($e);
                 exit;
             }
@@ -62,12 +63,12 @@ class Boxalino_Intelligence_Model_Observer{
     {
         try {
             $productId = $event['product']->getId();
-            $script = Mage::helper('intelligence')->reportProductView($productId);
+            $script = Mage::helper('boxalino_intelligence')->reportProductView($productId);
 
-            $session = Mage::getSingleton('Boxalino_Intelligence_Model_Session');
+            $session = Mage::getSingleton('boxalino_intelligence/session');
             $session->addScript($script);
         } catch (Exception $e) {
-            if (Mage::helper('intelligence')->isDebugEnabled()) {
+            if (Mage::helper('boxalino_intelligence')->isDebugEnabled()) {
                 echo($e);
                 exit;
             }
@@ -79,12 +80,12 @@ class Boxalino_Intelligence_Model_Observer{
 
         try {
             $categoryId = $event['category']['entity_id'];
-            $script = Mage::helper('intelligence')->reportCategoryView($categoryId);
+            $script = Mage::helper('boxalino_intelligence')->reportCategoryView($categoryId);
 
-            $session = Mage::getSingleton('Boxalino_Intelligence_Model_Session');
+            $session = Mage::getSingleton('boxalino_intelligence/session');
             $session->addScript($script);
         } catch (Exception $e) {
-            if (Mage::helper('intelligence')->isDebugEnabled()) {
+            if (Mage::helper('boxalino_intelligence')->isDebugEnabled()) {
                 echo($e);
                 exit;
             }
@@ -95,12 +96,12 @@ class Boxalino_Intelligence_Model_Observer{
     {
         try {
             $userId = $event['customer']['entity_id'];
-            $script = Mage::helper('intelligence')->reportLogin($userId);
+            $script = Mage::helper('boxalino_intelligence')->reportLogin($userId);
 
-            $session = Mage::getSingleton('Boxalino_Intelligence_Model_Session');
+            $session = Mage::getSingleton('boxalino_intelligence/session');
             $session->addScript($script);
         } catch (Exception $e) {
-            if (Mage::helper('intelligence')->isDebugEnabled()) {
+            if (Mage::helper('boxalino_intelligence')->isDebugEnabled()) {
                 echo($e);
                 exit;
             }
