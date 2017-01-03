@@ -26,12 +26,13 @@ class Boxalino_Intelligence_Model_Observer{
     public function onOrderSuccessPageView(Varien_Event_Observer $event)
     {
         try {
-            // FIXME This is not the order the customer made.
-            $orders = Mage::getModel('sales/order')->getCollection()
-                ->setOrder('entity_id', 'DESC')
-                ->setPageSize(1)
-                ->setCurPage(1);
-            $order = $orders->getFirstItem();
+            $order = Mage::registry('last_order');
+            if($order == null){
+                $orderId = Mage::getSingleton('checkout/session')->getLastOrderId();
+                $order = Mage::getModel('sales/order')->load($orderId);
+                Mage::register('last_order', $order);
+            }
+
             $orderData = $order->getData();
             $transactionId = $orderData['entity_id'];
             $products = array();
@@ -46,10 +47,10 @@ class Boxalino_Intelligence_Model_Observer{
                     $fullPrice += $item->getPrice() * $item->getData('qty_ordered');
                 }
             }
-            // FIXME This method is not available.
-//            $script = Mage::helper('boxalino_intelligence')->reportPurchase($products, $transactionId, $fullPrice, Mage::app()->getStore()->getCurrentCurrencyCode());
-//            $session = Mage::getSingleton('boxalino_intelligence/session');
-//            $session->addScript($script);
+
+            $script = Mage::helper('boxalino_intelligence')->reportPurchase($products, $transactionId, $fullPrice, Mage::app()->getStore()->getCurrentCurrencyCode());
+            $session = Mage::getSingleton('boxalino_intelligence/session');
+            $session->addScript($script);
         } catch (Exception $e) {
             if (Mage::helper('boxalino_intelligence')->isDebugEnabled()) {
                 echo($e);

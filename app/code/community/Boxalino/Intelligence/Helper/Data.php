@@ -107,9 +107,8 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data{
         if ($this->isTrackerEnabled()) {
             $script = "_bxq.push(['trackAddToBasket', '" . $product . "', " . $count . ", " . $price . ", '" . $currency . "']);" . PHP_EOL;
             return $script;
-        } else {
-            return '';
         }
+        return '';
     }
 
     /**
@@ -121,9 +120,8 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data{
         if ($this->isTrackerEnabled()) {
             $script = "_bxq.push(['trackCategoryView', '" . $categoryID . "'])" . PHP_EOL;
             return $script;
-        } else {
-            return '';
         }
+        return '';
     }
 
     /**
@@ -135,9 +133,8 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data{
         if ($this->isTrackerEnabled()) {
             $script = "_bxq.push(['trackLogin', '" . $customerId . "'])" . PHP_EOL;
             return $script;
-        } else {
-            return '';
         }
+        return '';
     }
 
     /**
@@ -149,9 +146,51 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data{
         if ($this->isTrackerEnabled()) {
             $script = "_bxq.push(['trackProductView', '" . $product . "'])" . PHP_EOL;
             return $script;
-        } else {
-            return '';
         }
+        return '';
+    }
+    
+    /**
+     * @param $term
+     * @param null $filters
+     * @return string
+     */
+    public function reportSearch($term, $filters = null)
+    {
+        if ($this->isTrackerEnabled()) {
+            $logTerm = addslashes($term);
+            $script = "_bxq.push(['trackSearch', '" . $logTerm . "', " . json_encode($filters) . "]);" . PHP_EOL;
+            return $script;
+        }
+        return '';
+    }
+
+    /**
+     * @param $products array example:
+     *      <code>
+     *          array(
+     *              array('product' => 'PRODUCTID1', 'quantity' => 1, 'price' => 59.90),
+     *              array('product' => 'PRODUCTID2', 'quantity' => 2, 'price' => 10.0)
+     *          )
+     *      </code>
+     * @param $orderId string
+     * @param $price number
+     * @param $currency string
+     */
+    public function reportPurchase($products, $orderId, $price, $currency)
+    {
+        if($this->isTrackerEnabled()){
+            $productsJson = json_encode($products);
+            $script = "_bxq.push([" . PHP_EOL;
+            $script .= "'trackPurchase'," . PHP_EOL;
+            $script .= $price . "," . PHP_EOL;
+            $script .= "'" . $currency . "'," . PHP_EOL;
+            $script .= $productsJson . "," . PHP_EOL;
+            $script .= $orderId . "" . PHP_EOL;
+            $script .= "]);" . PHP_EOL;
+            return $script;
+        }
+        return '';
     }
 
     /**

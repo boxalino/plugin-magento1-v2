@@ -20,10 +20,9 @@ $account = Mage::getStoreConfig('bxGeneral/general/account_name');
     _bxq.push(['trackPageView']);
     <?php endif; ?>
 
-    <?php // FIXME This method does not exist. Direct $_GET access is not forbidden. ?>
-    <?php //if ($this->isSearch()): ?>
-    <?php //echo $_helper->reportSearch($_GET['q'], $_helper->getFiltersValues($_GET)); ?>
-    <?php //endif; ?>
+    <?php if ($this->isSearch()): ?>
+    <?php echo $_helper->reportSearch($_GET['q'], $_helper->getFiltersValues($_GET)); ?>
+    <?php endif; ?>
 
     (function () {
         var s = document.createElement('script');
