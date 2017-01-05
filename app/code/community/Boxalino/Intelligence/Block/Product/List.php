@@ -15,39 +15,42 @@ class Boxalino_Intelligence_Block_Product_List extends Mage_Catalog_Block_Produc
      */
     protected function _getProductCollection()
     {
-        if (null === $this->_productCollection) {
-            /** @var Boxalino_Intelligence_Helper_Data $bxHelperData */
-            $bxHelperData = Mage::helper('boxalino_intelligence');
-            $p13nHelper = $bxHelperData->getAdapter();
-            $layer = $this->getLayer();
+        /** @var Boxalino_Intelligence_Helper_Data $bxHelperData */
+        $bxHelperData = Mage::helper('boxalino_intelligence');
+        $p13nHelper = $bxHelperData->getAdapter();
+        $layer = $this->getLayer();
 
-            try {
-                if ($bxHelperData->isEnabledOnLayer($layer) && !$p13nHelper->areThereSubPhrases()) {
-                    if ($layer instanceof Mage_Catalog_Model_Layer) {
-                        // We skip boxalino processing if category is static cms block only.
-                        if (Mage::getBlockSingleton('catalog/category_view')->isContentMode()) {
-                            return parent::_getProductCollection();
-                        }
-                    }
-
-                    if ($p13nHelper->areThereSubPhrases()) {
-                        $queries = $p13nHelper->getSubPhrasesQueries();
-                        $entity_ids = $p13nHelper->getSubPhraseEntitiesIds($queries[self::$number]);
-                        $entity_ids = array_slice($entity_ids, 0, $bxHelperData->getSubPhrasesLimit());
-                    } else {
-                        $entity_ids = $p13nHelper->getEntitiesIds();
-                    }
-
-                    if (count($entity_ids) == 0) {
-                        $entity_ids = array(0);
-                    }
-                    $this->_setupCollection($entity_ids);
-                } else {
-                    $this->_productCollection = parent::_getProductCollection();
+        try {
+            if ($bxHelperData->isEnabledOnLayer($layer)) {
+                if(count($this->_productCollection) && !$p13nHelper->areThereSubPhrases()){
+                    return $this->_productCollection;
                 }
-            } catch (\Exception $e) {
-                Mage::logException($e);
+
+                if(get_class($layer) == 'Mage_Catalog_Model_Layer'){
+                    // We skip boxalino processing if category is static cms block only.
+                    if (Mage::getBlockSingleton('catalog/category_view')->isContentMode()) {
+                        return parent::_getProductCollection();
+                    }
+                }
+
+                if ($p13nHelper->areThereSubPhrases()) {
+                    $queries = $p13nHelper->getSubPhrasesQueries();
+                    $entity_ids = $p13nHelper->getSubPhraseEntitiesIds($queries[self::$number]);
+                    $entity_ids = array_slice($entity_ids, 0, $bxHelperData->getSubPhrasesLimit());
+                } else {
+                    $entity_ids = $p13nHelper->getEntitiesIds();
+                }
+
+                if (count($entity_ids) == 0) {
+                    $entity_ids = array(0);
+                }
+                $this->_setupCollection($entity_ids);
+            } else {
+                parent::_getProductCollection();
             }
+        } catch (\Exception $e) {
+            Mage::logException($e);
+            parent::_getProductCollection();
         }
         return $this->_productCollection;
     }

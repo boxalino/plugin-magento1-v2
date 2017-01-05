@@ -92,8 +92,8 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                 }
                 Mage::log('bxLog: Export the customers, transactions and product files for account: ' . $account, Zend_Log::INFO, self::BOXALINO_LOG_FILE);
 
-
                 $exportProducts = $this->exportProducts($account, $files);
+
                 if($this->indexType == 'full'){
                     $this->exportCustomers($account, $files);
                     $this->exportTransactions($account, $files);
@@ -121,7 +121,7 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                         }
                         Mage::log('bxLog: Publish the configuration changes from the magento2 owner for account: ' . $account, Zend_Log::INFO, self::BOXALINO_LOG_FILE);
                         $publish = $this->config->publishConfigurationChanges($account);
-                        $changes = $this->bxData->publishChanges($publish);
+                        $changes = $this->bxData->publishChanges();
                         if(sizeof($changes['changes']) > 0 && !$publish) {
                             Mage::log("changes in configuration detected but not published as publish configuration automatically option has not been activated for account: " . $account, Zend_Log::WARN, self::BOXALINO_LOG_FILE);
                         }
@@ -229,6 +229,7 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
         $totalCount = 0;
         $page = 1;
         $header = true;
+        $duplicateIds = $this->getDuplicateIds($account, $languages);
 
         while (true) {
 
@@ -242,8 +243,8 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                 )
                 ->limit($limit, ($page - 1) * $limit)
                 ->joinLeft(
-                    array('p_t' => $db->getTableName($this->_prefix . 'catalog_product_super_link')),
-                    'e.entity_id = p_t.product_id', array('group_id' => 'parent_id')
+                    array('p_t' => $db->getTableName($this->_prefix . 'catalog_product_relation')),
+                    'e.entity_id = p_t.child_id', array('group_id' => 'parent_id')
                 );
             if($this->indexType == 'delta')$select->where('created_at >= ? OR updated_at >= ?', $this->_getLastIndex());
 
@@ -254,8 +255,13 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                 while($row = $result->fetch()){
                     if($this->indexType == 'delta') $this->deltaIds[] = $row['entity_id'];
                     if($row['group_id'] == null) $row['group_id'] = $row['entity_id'];
-                    $data[$row['entity_id']] = $row;
+                    $data[] = $row;
                     $totalCount++;
+                    if(isset($duplicateIds[$row['entity_id']])){
+                        $row['group_id'] = $row['entity_id'];
+                        $row['entity_id'] = 'duplicate' . $row['entity_id'];
+                        $data[] = $row;
+                    }
                 }
             }else{
                 if($totalCount == 0){
@@ -302,6 +308,7 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
             'datetime' => array()
         );
         $result = $db->query($select);
+
         if($result->rowCount()){
             while($row = $result->fetch()){
                 $type = $row['backend_type'];
@@ -314,8 +321,8 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
             }
         }
 
-        $this->exportProductAttributes($attrsFromDb, $languages, $account, $files, $attributeSourceKey);
-        $this->exportProductInformation($files);
+        $this->exportProductAttributes($attrsFromDb, $languages, $account, $files, $attributeSourceKey, $duplicateIds);
+        $this->exportProductInformation($files, $duplicateIds, $account, $languages);
         return true;
     }
 
@@ -325,10 +332,10 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
      * @param $account
      * @param $files
      */
-    protected function exportProductAttributes($attrs = array(), $languages, $account, $files, $mainSourceKey){
+    protected function exportProductAttributes($attrs = array(), $languages, $account, $files, $mainSourceKey, $duplicateIds){
         $paramPriceLabel = '';
         $paramSpecialPriceLabel = '';
-        
+
         $db = $this->_getReadAdapter();
         $columns = array(
             'entity_id',
@@ -336,29 +343,30 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
             'value',
             'store_id'
         );
-        $attrs['misc'][] = array('attribute_code' => 'categories');
+
         $files->prepareProductFiles($attrs);
-        unset($attrs['misc']);
 
         foreach($attrs as $attributeType => $types){
-            $select = $db->select()->from(
-                array('t_d' => $db->getTableName($this->_prefix . 'catalog_product_entity_' . $attributeType)),
-                $columns
-            );
-            if($this->indexType == 'delta')$select->where('t_d.entity_id IN(?)', $this->deltaIds);
+
             foreach ($types as $attributeID => $attribute) {
                 Mage::log('bxLog: Products - exporting attribute: ' . $attribute['attribute_code']  . ' for ' . $account, Zend_Log::INFO, self::BOXALINO_LOG_FILE);
-                
                 $optionSelect = in_array($attribute['frontend_input'], array('multiselect','select'));
                 $data = array();
                 $additionalData = array();
                 $exportAttribute = false;
                 $global = false;
+                $getValueForDuplicate = false;
                 $d = array();
                 $headerLangRow = array();
                 $optionValues = array();
 
                 foreach ($languages as $langIndex => $lang) {
+
+                    $select = $db->select()->from(
+                        array('t_d' => $db->getTableName($this->_prefix . 'catalog_product_entity_' . $attributeType)),
+                        $columns
+                    );
+                    if($this->indexType == 'delta')$select->where('t_d.entity_id IN(?)', $this->deltaIds);
 
                     $labelColumns[$lang] = 'value_' . $lang;
                     $storeObject = $this->config->getStore($account, $lang);
@@ -368,29 +376,8 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                         $storeBaseUrl = $storeObject->getBaseUrl();
                         $imageBaseUrl = $storeObject->getBaseUrl(Mage_Core_Model_Store::URL_TYPE_MEDIA) . "catalog/product";
                     }
+                    $storeObject = null;
 
-                    if ($attribute['attribute_code'] == 'visibility') {
-
-                        $select = $db->select()
-                            ->from(
-                                array('c_p_e' => $db->getTableName($this->_prefix . 'catalog_product_entity')),
-                                array('entity_id')
-                            )
-                            ->joinLeft(
-                                array('c_p_r' => $db->getTableName($this->_prefix . 'catalog_product_relation')),
-                                'c_p_e.entity_id = c_p_r.child_id',
-                                array('parent_id'))
-                            ->join(
-                                array('t_d' => $db->getTableName($this->_prefix . 'catalog_product_entity_' . $attributeType)),
-                                '(t_d.entity_id = c_p_r.parent_id) OR (t_d.entity_id = c_p_e.entity_id AND c_p_r.parent_id IS NULL)',
-                                array(
-                                    'attribute_id',
-                                    'value',
-                                    'store_id'
-                                )
-                            );
-                        if($this->indexType == 'delta')$select->where('c_p_e.entity_id IN(?)', $this->deltaIds);
-                    }
                     if ($attribute['attribute_code'] == 'price' || $attribute['attribute_code'] == 'special_price') {
                         if($langIndex == 0) {
                             $priceSelect = $db->select()
@@ -405,8 +392,9 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                                         'value' => 'MIN(value)'
                                     )
                                 )->group(array('parent_id'))->where('t_d.attribute_id = ?', $attributeID);
-                            $priceData = array();
+                            if($this->indexType == 'delta')$priceSelect->where('c_p_r.parent_id IN(?)', $this->deltaIds);
 
+                            $priceData = array();
                             foreach ($db->fetchAll($priceSelect) as $row) {
                                 $priceData[] = $row;
                             }
@@ -470,41 +458,92 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                         $fetchedOptionValues = null;
                     }
 
-                    $attributeSelect = clone $select;
-                    $attributeSelect
+                    $select
                         ->where('t_d.attribute_id = ?', $attributeID)
                         ->where('t_d.store_id = 0 OR t_d.store_id = ?',$storeId);
 
-                    $result = $db->query($attributeSelect);
+                    if ($attribute['attribute_code'] == 'visibility' || $attribute['attribute_code'] ==  'status') {
+                        $getValueForDuplicate = true;
+                        $select1 = $db->select()
+                            ->from(
+                                array('c_p_e' => $db->getTableName($this->_prefix . 'catalog_product_entity')),
+                                array('c_p_e.entity_id',)
+                            )
+                            ->joinLeft(
+                                array('c_p_r' => $db->getTableName($this->_prefix . 'catalog_product_relation')),
+                                'c_p_e.entity_id = c_p_r.child_id',
+                                array('parent_id')
+                            );
+
+                        $select1->where('t_d.attribute_id = ?', $attributeID)->where('t_d.store_id = 0 OR t_d.store_id = ?',$storeId);
+                        if($this->indexType == 'delta') $select1->where('c_p_e.entity_id IN(?)', $this->deltaIds);
+
+                        $select2 = clone $select1;
+                        $select2->join(array('t_d' => $db->getTableName($this->_prefix . 'catalog_product_entity_' . $attributeType)),
+                            't_d.entity_id = c_p_e.entity_id AND c_p_r.parent_id IS NULL',
+                            array(
+                                't_d.attribute_id',
+                                't_d.value',
+                                't_d.store_id'
+                            )
+                        );
+                        $select1->join(array('t_d' => $db->getTableName($this->_prefix . 'catalog_product_entity_' . $attributeType)),
+                            't_d.entity_id = c_p_r.parent_id',
+                            array(
+                                't_d.attribute_id',
+                                't_d.value',
+                                't_d.store_id'
+                            )
+                        );
+                        $select = $db->select()->union(
+                            array($select1, $select2),
+                            \Zend_Db_Select::SQL_UNION
+                        );
+                    }
+                    $result = $db->query($select);
 
                     if ($result->rowCount()) {
-
                         while ($row = $result->fetch()) {
-
                             if (isset($data[$row['entity_id']]) && !$optionSelect) {
-                                if($row['store_id'] > $data[$row['entity_id']]['store_id']) {
-                                    $data[$row['entity_id']]['value_' . $lang] = $row['value'];
-                                    $data[$row['entity_id']]['store_id'] = $row['store_id'];
-                                    if(isset($additionalData[$row['entity_id']])){
-                                        if ($attribute['attribute_code'] == 'url_key') {
-                                            $url = $storeBaseUrl . $row['value'] . '.html';
+
+                                if(isset($data[$row['entity_id']]['value_' . $lang])){
+                                    if($row['store_id'] > 0){
+                                        $data[$row['entity_id']]['value_' . $lang] = $row['value'];
+                                        if(isset($duplicateIds[$row['entity_id']])){
+                                            $data['duplicate'.$row['entity_id']]['value_' . $lang] = $getValueForDuplicate ?
+                                                $this->getProductAttributeFromId($row['entity_id'], $attributeID, $storeId) :
+                                                $row['value'];
+                                        }
+                                        if(isset($additionalData[$row['entity_id']])){
+                                            if ($attribute['attribute_code'] == 'url_key') {
+                                                $url = $storeBaseUrl . $row['value'] . '.html';
+                                            } else {
+                                                $url = $imageBaseUrl . $row['value'];
+                                            }
                                             $additionalData[$row['entity_id']]['value_' . $lang] = $url;
-                                        } else {
-                                            $url = $imageBaseUrl . $row['value'];
-                                            $additionalData[$row['entity_id']]['value_' . $lang] = $url;
+                                            if(isset($duplicateIds[$row['entity_id']])){
+                                                $additionalData['duplicate'.$row['entity_id']]['value_' . $lang] = $url;
+                                            }
                                         }
                                     }
-                                    continue;
-                                }
-                                $data[$row['entity_id']]['value_' . $lang] = $row['value'];
+                                }else{
+                                    $data[$row['entity_id']]['value_' . $lang] = $row['value'];
+                                    if(isset($duplicateIds[$row['entity_id']])){
+                                        $data['duplicate'.$row['entity_id']]['value_' . $lang] = $getValueForDuplicate ?
+                                            $this->getProductAttributeFromId($row['entity_id'], $attributeID, $storeId) :
+                                            $row['value'];
+                                    }
+                                    if (isset($additionalData[$row['entity_id']])) {
+                                        if ($attribute['attribute_code'] == 'url_key') {
+                                            $url = $storeBaseUrl . $row['value'] . '.html';
 
-                                if (isset($additionalData[$row['entity_id']])) {
-                                    if ($attribute['attribute_code'] == 'url_key') {
-                                        $url = $storeBaseUrl . $row['value'] . '.html';
+                                        } else {
+                                            $url = $imageBaseUrl . $row['value'];
+                                        }
                                         $additionalData[$row['entity_id']]['value_' . $lang] = $url;
-                                    } else {
-                                        $url = $imageBaseUrl . $row['value'];
-                                        $additionalData[$row['entity_id']]['value_' . $lang] = $url;
+                                        if(isset($duplicateIds[$row['entity_id']])){
+                                            $additionalData['duplicate'.$row['entity_id']]['value_' . $lang] = $url;
+                                        }
                                     }
                                 }
                                 continue;
@@ -515,6 +554,11 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                                         $additionalData[$row['entity_id']] = array('entity_id' => $row['entity_id'],
                                             'store_id' => $row['store_id'],
                                             'value_' . $lang => $url);
+                                        if(isset($duplicateIds[$row['entity_id']])){
+                                            $additionalData['duplicate'.$row['entity_id']] = array(
+                                                'entity_id' => 'duplicate'.$row['entity_id'],
+                                                'value_' . $lang => $url);
+                                        }
                                     }
                                 }
                                 if ($attribute['attribute_code'] == 'image') {
@@ -522,6 +566,11 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                                         $url = $imageBaseUrl . $row['value'];
                                         $additionalData[$row['entity_id']] = array('entity_id' => $row['entity_id'],
                                             'value_' . $lang => $url);
+                                        if(isset($duplicateIds[$row['entity_id']])){
+                                            $additionalData['duplicate'.$row['entity_id']] = array(
+                                                'entity_id' => 'duplicate'.$row['entity_id'],
+                                                'value_' . $lang => $url);
+                                        }
                                     }
                                 }
                                 if ($attribute['is_global'] != 1) {
@@ -530,11 +579,22 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                                         foreach($values as $v){
                                             $data[] = array('entity_id' => $row['entity_id'],
                                                 $attribute['attribute_code'] . '_id' => $v);
+                                            if(isset($duplicateIds[$row['entity_id']])){
+                                                $data[] = array('entity_id' => 'duplicate'.$row['entity_id'],
+                                                    $attribute['attribute_code'] . '_id' => $v);
+                                            }
                                         }
                                     }else{
-                                        if(!isset($data[$row['entity_id']]) || $data[$row['entity_id']]['store_id'] < $row['store_id']) {
-                                            $data[$row['entity_id']] = array('entity_id' => $row['entity_id'],
-                                                'store_id' => $row['store_id'],'value_' . $lang => $row['value']);
+                                        $data[$row['entity_id']] = array('entity_id' => $row['entity_id'],
+                                            'store_id' => $row['store_id'],'value_' . $lang => $row['value']);
+                                        if(isset($duplicateIds[$row['entity_id']])){
+                                            $data['duplicate'.$row['entity_id']] = array(
+                                                'entity_id' => 'duplicate'.$row['entity_id'],
+                                                'store_id' => $row['store_id'],
+                                                'value_' . $lang => $getValueForDuplicate ?
+                                                    $this->getProductAttributeFromId($row['entity_id'], $attributeID, $storeId)
+                                                    : $row['value']
+                                            );
                                         }
                                     }
                                     continue;
@@ -542,8 +602,14 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                                     if($optionSelect){
                                         $values = explode(',',$row['value']);
                                         foreach($values as $v){
-                                            $data[] = array('entity_id' => $row['entity_id'],
-                                                $attribute['attribute_code'] . '_id' => $v);
+                                            if(!isset($data[$row['entity_id'].$v])){
+                                                $data[$row['entity_id'].$v] = array('entity_id' => $row['entity_id'],
+                                                    $attribute['attribute_code'] . '_id' => $v);
+                                                if(isset($duplicateIds[$row['entity_id']])){
+                                                    $data[] = array('entity_id' => 'duplicate'.$row['entity_id'],
+                                                        $attribute['attribute_code'] . '_id' => $v);
+                                                }
+                                            }
                                         }
                                     }else{
                                         $valueLabel = $attribute['attribute_code'] == 'visibility' ||
@@ -553,11 +619,20 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                                         $data[$row['entity_id']] = array('entity_id' => $row['entity_id'],
                                             'store_id' => $row['store_id'],
                                             $valueLabel => $row['value']);
+                                        if(isset($duplicateIds[$row['entity_id']])){
+                                            $data['duplicate'.$row['entity_id']] = array(
+                                                'entity_id' => 'duplicate'.$row['entity_id'],
+                                                'store_id' => $row['store_id'],
+                                                $valueLabel => $getValueForDuplicate ?
+                                                    $this->getProductAttributeFromId($row['entity_id'], $attributeID, $storeId)
+                                                    : $row['value']
+                                            );
+                                        }
                                     }
                                 }
                             }
                         }
-                        if($attribute['is_global'] == 1){
+                        if($attribute['is_global'] == 1 && !$optionSelect){
                             $global = true;
                             if($attribute['attribute_code'] != 'visibility' &&
                                 $attribute['attribute_code'] != 'status' &&
@@ -588,7 +663,10 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                     }
                 }
                 if (sizeof($data)) {
-                    if(!$global){
+                    if(!$global || $type['attribute_code'] == 'visibility' ||
+                        $type['attribute_code'] == 'status' ||
+                        $type['attribute_code'] == 'special_from_date' ||
+                        $type['attribute_code'] == 'special_to_date'){
                         if(!$optionSelect){
                             $headerLangRow = array_merge(array('entity_id','store_id'), $labelColumns);
                             if(sizeof($additionalData)){
@@ -655,7 +733,7 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                             } else {
                                 $this->bxData->addSourceStringField($attributeSourceKey, "price_localized", 'value');
                             }
-                            
+
                             $paramPriceLabel = $global ? 'value' : reset($labelColumns);
                             $this->bxData->addFieldParameter($mainSourceKey,'bx_listprice', 'pc_fields', 'CASE WHEN (price.'.$paramPriceLabel.' IS NULL OR price.'.$paramPriceLabel.' <= 0) AND ref.value IS NOT NULL then ref.value ELSE price.'.$paramPriceLabel.' END as price_value');
                             $this->bxData->addFieldParameter($mainSourceKey,'bx_listprice', 'pc_tables', 'LEFT JOIN `%%EXTRACT_PROCESS_TABLE_BASE%%_products_product_price` as price ON t.entity_id = price.entity_id, LEFT JOIN `%%EXTRACT_PROCESS_TABLE_BASE%%_products_resource_price` as ref ON t.entity_id = ref.parent_id');
@@ -678,7 +756,7 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                             } else {
                                 $this->bxData->addSourceStringField($attributeSourceKey, "special_price_localized", 'value');
                             }
-                            
+
                             $paramSpecialPriceLabel = $global ? 'value' : reset($labelColumns);
                             $this->bxData->addFieldParameter($mainSourceKey,'bx_discountedprice', 'pc_fields', 'CASE WHEN (price.'.$paramSpecialPriceLabel.' IS NULL OR price.'.$paramSpecialPriceLabel.' <= 0) AND ref.value IS NOT NULL then ref.value ELSE price.'.$paramSpecialPriceLabel.' END as price_value');
                             $this->bxData->addFieldParameter($mainSourceKey,'bx_discountedprice', 'pc_tables', 'LEFT JOIN `%%EXTRACT_PROCESS_TABLE_BASE%%_products_product_special_price` as price ON t.entity_id = price.entity_id, LEFT JOIN `%%EXTRACT_PROCESS_TABLE_BASE%%_products_resource_special_price` as ref ON t.entity_id = ref.parent_id');
@@ -712,9 +790,9 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
     /**
      * @param $files
      */
-    protected function exportProductInformation($files){
+    protected function exportProductInformation($files, $duplicateIds, $account, $languages){
 
-        $fetchedResult = array();
+        $result = array();
         $db = $this->_getReadAdapter();
         //product stock
         $select = $db->select()
@@ -734,6 +812,9 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
         if($result->rowCount()){
             while($row = $result->fetch()){
                 $data[] = array('entity_id'=>$row['entity_id'], 'qty'=>$row['qty']);
+                if(isset($duplicateIds[$row['entity_id']])){
+                    $data[] = array('entity_id'=>'duplicate'.$row['entity_id'], 'qty'=>$row['qty']);
+                }
             }
 
             $d = array_merge(array(array_keys(end($data))), $data);
@@ -743,18 +824,38 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
             $attributeSourceKey = $this->bxData->addCSVItemFile($files->getPath('product_stock.csv'), 'entity_id');
             $this->bxData->addSourceNumberField($attributeSourceKey, 'qty', 'qty');
         }
+        $result = null;
 
-        //product categories
-        $select = $db->select()
+        //product parent categories
+        $select1 = $db->select()
             ->from(
-                $db->getTableName($this->_prefix . 'catalog_category_product'),
-                array(
-                    'entity_id' => 'product_id',
-                    'category_id',
-                    'position'
-                )
+                array('c_p_e' => $db->getTableName($this->_prefix . 'catalog_product_entity')),
+                array('c_p_e.entity_id',)
+            )
+            ->joinLeft(
+                array('c_p_r' => $db->getTableName($this->_prefix . 'catalog_product_relation')),
+                'c_p_e.entity_id = c_p_r.child_id',
+                array()
             );
-        if($this->indexType == 'delta')$select->where('entity_id IN(?)', $this->deltaIds);
+        if($this->indexType == 'delta')$select->where('c_p_e.entity_id IN(?)', $this->deltaIds);
+
+        $select2 = clone $select1;
+        $select2->join(array('c_c_p' => $db->getTableName($this->_prefix . 'catalog_category_product')),
+            'c_c_p.product_id = c_p_r.parent_id',
+            array(
+                'category_id'
+            )
+        );
+        $select1->join(array('c_c_p' => $db->getTableName($this->_prefix . 'catalog_category_product')),
+            'c_c_p.product_id = c_p_e.entity_id AND c_p_r.parent_id IS NULL',
+            array(
+                'category_id'
+            )
+        );
+        $select = $db->select()->union(
+            array($select1, $select2),
+            \Zend_Db_Select::SQL_UNION
+        );
 
         $result = $db->query($select);
 
@@ -762,11 +863,32 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
             while($row = $result->fetch()){
                 $data[] = $row;
             }
+            $result = null;
+
+            $select = $db->select()
+                ->from(
+                    array('c_p_e' => $db->getTableName($this->_prefix . 'catalog_product_entity')),
+                    array('entity_id')
+                )->join(
+                    array('c_c_p' => $db->getTableName($this->_prefix . 'catalog_category_product')),
+                    'c_c_p.product_id = c_p_e.entity_id',
+                    array(
+                        'category_id'
+                    )
+                )->where('c_p_e.entity_id IN(?)', $duplicateIds);
+
+            $result = $db->fetchAll($select);
+            foreach ($result as $row){
+                $row['entity_id'] = 'duplicate'.$row['entity_id'];
+                $data[] = $row;
+            }
+            $duplicateResult = null;
             $d = array_merge(array(array_keys(end($data))), $data);
             $files->savePartToCsv('product_categories.csv', $d);
             $data = null;
             $d = null;
         }
+        $result = null;
 
         //product super link
         $select = $db->select()
@@ -786,6 +908,10 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
         if($result->rowCount()){
             while($row = $result->fetch()){
                 $data[] = $row;
+                if(isset($duplicateIds[$row['entity_id']])){
+                    $row['entity_id'] = 'duplicate'.$row['entity_id'];
+                    $data[] = $row;
+                }
             }
 
             $d = array_merge(array(array_keys(end($data))), $data);
@@ -796,6 +922,7 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
             $this->bxData->addSourceStringField($attributeSourceKey, 'parent_id', 'parent_id');
             $this->bxData->addSourceStringField($attributeSourceKey, 'link_id', 'link_id');
         }
+        $result = null;
 
         //product link
         $select = $db->select()
@@ -814,12 +941,15 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
             ->where('lt.link_type_id = pl.link_type_id');
         if($this->indexType == 'delta')$select->where('pl.entity_id IN(?)', $this->deltaIds);
 
-
         $result = $db->query($select);
 
         if($result->rowCount()){
             while($row = $result->fetch()){
                 $data[] = $row;
+                if(isset($duplicateIds[$row['entity_id']])){
+                    $row['entity_id'] = 'duplicate'.$row['entity_id'];
+                    $data[] = $row;
+                }
             }
             $d = array_merge(array(array_keys(end($data))), $data);
             $files->savePartToCsv('product_links.csv', $d);
@@ -829,6 +959,103 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
             $this->bxData->addSourceStringField($attributeSourceKey, 'code', 'code');
             $this->bxData->addSourceStringField($attributeSourceKey, 'linked_product_id', 'linked_product_id');
         }
+        $result = null;
+
+        //product parent title
+        $entity_type = $this->getEntityTypeId('catalog_product');
+        $attrId = $this->getAttributeId('name', $entity_type);
+        $lvh = array();
+        foreach ($languages as $language) {
+            $lvh[$language] = 'value_'.$language;
+            $store = $this->config->getStore($account, $language);
+            $storeId = $store->getId();
+            $store = null;
+
+            $select1 = $db->select()
+                ->from(
+                    array('c_p_e' => $db->getTableName($this->_prefix . 'catalog_product_entity')),
+                    array('entity_id')
+                )
+                ->joinLeft(
+                    array('c_p_r' => $db->getTableName($this->_prefix . 'catalog_product_relation')),
+                    'c_p_e.entity_id = c_p_r.child_id',
+                    array('parent_id')
+                );
+
+            $select1->where('t_d.attribute_id = ?', $attrId)->where('t_d.store_id = 0 OR t_d.store_id = ?',$storeId);
+            if($this->indexType == 'delta')$select1->where('c_p_e.entity_id IN(?)', $this->deltaIds);
+
+            $select2 = clone $select1;
+            $select2->join(
+                array('t_d' => $db->getTableName($this->_prefix . 'catalog_product_entity_varchar')),
+                't_d.entity_id = c_p_e.entity_id AND c_p_r.parent_id IS NULL',
+                array(
+                    't_d.value',
+                    't_d.store_id'
+                )
+            );
+            $select1->join(
+                array('t_d' => $db->getTableName($this->_prefix . 'catalog_product_entity_varchar')),
+                't_d.entity_id = c_p_r.parent_id',
+                array(
+                    't_d.value',
+                    't_d.store_id'
+                )
+            );
+            $select = $db->select()->union(
+                array($select1, $select2),
+                \Zend_Db_Select::SQL_UNION
+            );
+
+            $result = $db->query($select);
+
+            if($result->rowCount()){
+                while($row = $result->fetch()){
+                    if (isset($data[$row['entity_id']])) {
+                        if(isset($data[$row['entity_id']]['value_' . $language])){
+                            if($row['store_id'] > 0){
+                                $data[$row['entity_id']]['value_' . $language] = $row['value'];
+                            }
+                        }else{
+                            $data[$row['entity_id']]['value_' . $language] = $row['value'];
+                        }
+                        continue;
+                    }
+                    $data[$row['entity_id']] = array('entity_id' => $row['entity_id'], 'value_' . $language => $row['value']);
+                }
+
+                $result = null;
+                $select = $db->select()
+                    ->from(
+                        array('c_p_e' => $db->getTableName($this->_prefix . 'catalog_product_entity')),
+                        array('entity_id', new \Zend_Db_Expr("CASE WHEN c_p_e_v_b.value IS NULL THEN c_p_e_v_a.value ELSE c_p_e_v_b.value END as value"))
+                    )->joinLeft(
+                        array('c_p_e_v_a' => $db->getTableName($this->_prefix . 'catalog_product_entity_varchar')),
+                        '(c_p_e_v_a.attribute_id = ' . $attrId . ' AND c_p_e_v_a.store_id = 0) AND (c_p_e_v_a.entity_id = c_p_e.entity_id)',
+                        array()
+                    )->joinLeft(
+                        array('c_p_e_v_b' => $db->getTableName($this->_prefix . 'catalog_product_entity_varchar')),
+                        '(c_p_e_v_b.attribute_id = ' . $attrId . ' AND c_p_e_v_b.store_id = ' . $storeId . ') AND (c_p_e_v_b.entity_id = c_p_e.entity_id)',
+                        array()
+                    )->where('c_p_e.entity_id IN (?)', $duplicateIds);
+
+                $result = $db->fetchAll($select);
+                foreach ($result as $row){
+                    $row['entity_id'] = 'duplicate'.$row['entity_id'];
+                    if (isset($data[$row['entity_id']])) {
+                        $data[$row['entity_id']]['value_' . $language] = $row['value'];
+                        continue;
+                    }
+                    $data[$row['entity_id']] = array('entity_id' => $row['entity_id'], 'value_' . $language => $row['value']);
+                }
+            }
+            $result = null;
+        }
+        $data = array_merge(array(array_keys(end($data))), $data);
+        $files->savePartToCsv('product_bx_parent_title.csv', $data);
+        $attributeSourceKey = $this->bxData->addCSVItemFile($files->getPath('product_bx_parent_title.csv'), 'entity_id');
+        $this->bxData->addSourceLocalizedTextField($attributeSourceKey, 'bx_parent_title', $lvh);
+        $this->bxData->addFieldParameter($attributeSourceKey,'bx_parent_title', 'multiValued', 'false');
     }
 
     /**
@@ -967,6 +1194,7 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                 }
             }
 
+            $customer_entity_type_id = $this->getEntityTypeId('customer_address');
             $select = null;
             $select1 = null;
             $select2 = null;
@@ -982,9 +1210,9 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                         'attribute_code',
                     )
                 )
-                ->where('entity_type_id = ?', $this->getEntityTypeId('customer_address'))
+                ->where('entity_type_id = ?', $customer_entity_type_id)
                 ->where('attribute_code IN (?)', array('country_id', 'postcode'));
-            
+
             $addressAttr = array();
 
             $result = $db->query($select);
@@ -1003,7 +1231,7 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                     ->from($db->getTableName($this->_prefix . 'customer_address_entity'),
                         array('entity_id')
                     )
-                    ->where('entity_type_id = ?', $this->getEntityTypeId('customer_address'))
+                    ->where('entity_type_id = ?', $customer_entity_type_id)
                     ->where('parent_id = ?', $id)
                     ->order('entity_id DESC')
                     ->limit(1);
@@ -1012,7 +1240,7 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                     ->from($db->getTableName($this->_prefix . 'customer_address_entity_varchar'),
                         array('attribute_id', 'value')
                     )
-                    ->where('entity_type_id = ?', $this->getEntityTypeId('customer_address'))
+                    ->where('entity_type_id = ?', $customer_entity_type_id)
                     ->where('entity_id = ?', $select)
                     ->where('attribute_id IN(?)', $addressIds);
 
@@ -1182,7 +1410,7 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                 ->limit($limit, ($page - 1) * $limit);
 
             $transaction_attributes = $this->getTransactionAttributes($account);
-            
+
             if (count($transaction_attributes)) {
                 $billing_columns = $shipping_columns = array();
                 foreach ($transaction_attributes as $attribute) {
@@ -1346,6 +1574,26 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
     }
 
     /**
+     * @param $attr_code
+     * @return mixed
+     * @throws \Exception
+     */
+    protected function getProductCategoryAttributeId($attr_code){
+
+        $db = $this->_getReadAdapter();
+        $select = $db->select()
+            ->from(
+                array('a_t' => $db->getTableName($this->_prefix . 'eav_attribute'))
+            )->where('a_t.entity_type_id = 3 AND a_t.attribute_code = ?', $attr_code);
+
+        try{
+            return $db->fetchRow($select)['attribute_id'];
+        }catch(\Exception $e){
+            throw $e;
+        }
+    }
+
+    /**
      * @param $store
      * @param $language
      * @param $transformedCategories
@@ -1365,7 +1613,7 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                 'c_v.entity_id = c_t.entity_id',
                 array('c_v.value', 'c_v.store_id')
             )
-            ->where('c_v.attribute_id = ?', $this->getAttributeId('name',$categoryTypeId))
+            ->where('c_v.attribute_id = ?', $this->getAttributeId('name', $categoryTypeId))
             ->where('c_v.store_id = ? OR c_v.store_id = 0', $store->getId());
 
 
@@ -1390,40 +1638,38 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
     }
 
     /**
-     * @param $entityType
+     * @param $entity_type_code
      * @return null
      */
-    protected function getEntityTypeId($entityType)
+    protected function getEntityTypeId($entity_type_code)
     {
-        if ($this->_entityTypeIds == null) {
-            $db = $this->_getReadAdapter();
-            $select = $db->select()
-                ->from(
-                    $db->getTableName($this->_prefix . 'eav_entity_type'),
-                    array('entity_type_id', 'entity_type_code')
-                );
+        $db = $this->_getReadAdapter();
+        $select = $db->select()
+            ->from(
+                array('e_e_t' => $db->getTableName($this->_prefix . 'eav_entity_type')),
+                array('entity_type_id')
+            )->where('e_e_t.entity_type_code = ?', $entity_type_code);
 
-            $result = $db->query($select);
-            if($result->rowCount()){
-                while ($row = $result->fetch()) {
-                    $this->_entityTypeIds[$row['entity_type_code']] = $row['entity_type_id'];
-                }
+        $result = $db->query($select);
+        if($result->rowCount()){
+            while ($row = $result->fetch()) {
+                return $row['entity_type_id'];
             }
         }
-        return array_key_exists($entityType, $this->_entityTypeIds) ? $this->_entityTypeIds[$entityType] : null;
+        return null;
     }
 
     /**
      * @param $attr_code
      * @return null
      */
-    protected function getAttributeId($attr_code){
+    protected function getAttributeId($attr_code, $type_id){
         $db = $this->_getReadAdapter();
         $select = $db->select()
             ->from(
-                array('a_t' => $db->getTableName($this->_prefix . 'eav_attribute')),
+                array('e_a' => $db->getTableName($this->_prefix . 'eav_attribute')),
                 array('attribute_id')
-            )->where('a_t.attribute_code = ?', $attr_code);
+            )->where('e_a.attribute_code = ?', $attr_code)->where('e_a.entity_type_id = ?', $type_id);
 
         $result = $db->query($select);
         if($result->rowCount()){
@@ -1433,6 +1679,50 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
 
         }
         return null;
+    }
+
+
+    /**
+     * @param $account
+     * @param $languages
+     * @return array
+     * @throws \Exception
+     */
+    protected function getDuplicateIds($account, $languages){
+        $ids = array();
+        $db = $this->_getReadAdapter();
+        $entity_type = $this->getEntityTypeId('catalog_product');
+        $attrId = $this->getAttributeId('visibility', $entity_type);
+        foreach ($languages as $language){
+            $storeObject = $this->config->getStore($account, $language);
+            $storeId = $storeObject->getId();
+            $storeObject = null;
+            $select = $db->select()
+                ->from(
+                    array('c_p_r' => $db->getTableName($this->_prefix . 'catalog_product_relation')),
+                    array(
+                        'parent_id',
+                        'child_id',
+                        new \Zend_Db_Expr("CASE WHEN c_p_e_b.value IS NULL THEN c_p_e_a.value ELSE c_p_e_b.value END as value")
+                    )
+                )->joinLeft(
+                    array('c_p_e_a' => $db->getTableName($this->_prefix . 'catalog_product_entity_int')),
+                    'c_p_e_a.entity_id = c_p_r.child_id AND c_p_e_a.store_id = 0 AND c_p_e_a.attribute_id = ' . $attrId,
+                    array('c_p_e_a.store_id')
+                )->joinLeft(
+                    array('c_p_e_b' => $db->getTableName($this->_prefix . 'catalog_product_entity_int')),
+                    'c_p_e_b.entity_id = c_p_r.child_id AND c_p_e_b.store_id = ' . $storeId . ' AND c_p_e_b.attribute_id = ' . $attrId,
+                    array('c_p_e_b.store_id')
+                );
+            $fetchedResult = $db->fetchAll($select);
+
+            foreach ($fetchedResult as $r){
+                if($r['value'] != Mage_Catalog_Model_Product_Visibility::VISIBILITY_NOT_VISIBLE) {
+                    $ids[$r['child_id']] = $r['child_id'];
+                }
+            }
+        }
+        return $ids;
     }
 
     /**
@@ -1472,10 +1762,41 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
 
         $this->_lastIndex = $date;
     }
-    
+
+    /**
+     *
+     */
     protected function loadBxLibrary(){
         $libPath = __DIR__ . '/../../lib';
         require_once($libPath . '/BxClient.php');
         \com\boxalino\bxclient\v1\BxClient::LOAD_CLASSES($libPath);
+    }
+
+    /**
+     * @param $id
+     * @param $attributeId
+     * @param $storeId
+     * @return mixed
+     */
+    protected function getProductAttributeFromId($id, $attributeId, $storeId){
+        $db = $this->_getReadAdapter();
+        $select = $db->select()
+            ->from(
+                array('c_p_e' => $db->getTableName($this->_prefix . 'catalog_product_entity')),
+                array(new \Zend_Db_Expr("CASE WHEN c_p_e_b.value IS NULL THEN c_p_e_a.value ELSE c_p_e_b.value END as value"))
+            )
+            ->joinLeft(
+                array('c_p_e_a' => $db->getTableName($this->_prefix . 'catalog_product_entity_int')),
+                'c_p_e_a.entity_id = c_p_e.entity_id AND c_p_e_a.store_id = 0 AND c_p_e_a.attribute_id = ' . $attributeId,
+                array()
+            )
+            ->joinLeft(
+                array('c_p_e_b' => $db->getTableName($this->_prefix . 'catalog_product_entity_int')),
+                'c_p_e_b.entity_id = c_p_e.entity_id AND c_p_e_b.store_id = ' . $storeId . ' AND c_p_e_b.attribute_id = ' . $attributeId,
+                array()
+            )
+            ->where('c_p_e.entity_id = ?', $id);
+
+        return $db->fetchRow($select)['value'];
     }
 }

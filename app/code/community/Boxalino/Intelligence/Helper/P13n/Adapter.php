@@ -9,7 +9,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
      * @var \com\boxalino\bxclient\v1\BxClient
      */
     private static $bxClient = null;
-    
+
     /**
      * @var array
      */
@@ -26,10 +26,15 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
     protected $currentSearchChoice;
 
     /**
+     * @var bool
+     */
+    protected $navigation = false;
+
+    /**
      * Boxalino_Intelligence_Helper_P13n_Adapter constructor.
      */
     public function __construct(){
-        
+
         $this->bxHelperData = Mage::helper('boxalino_intelligence');
         $libPath = Mage::getModuleDir('','Boxalino_Intelligence') . DIRECTORY_SEPARATOR . 'lib';
         require_once($libPath . DIRECTORY_SEPARATOR . 'BxClient.php');
@@ -41,10 +46,10 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
     }
 
     /**
-     * Initialize BxClient 
+     * Initialize BxClient
      */
     protected function initializeBXClient() {
-        
+
         if(self::$bxClient == null) {
             $generalConfig = Mage::getStoreConfig('bxGeneral');
             $account = $generalConfig['general']['account_name'];
@@ -102,6 +107,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
                 $choice = "navigation";
             }
             $this->currentSearchChoice = $choice;
+            $this->navigation = true;
             return $choice;
         }
 
@@ -117,7 +123,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
      * @return mixed|string
      */
     public function getEntityIdFieldName() {
-        
+
         $entityIdFieldName = Mage::getStoreConfig('bxGeneral/advanced/entity_id');
         if (!isset($entityIdFieldName) || $entityIdFieldName === '') {
             $entityIdFieldName = 'products_group_id';
@@ -197,7 +203,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
      * @param null $categoryId
      */
     public function search($queryText, $pageOffset = 0, $overwriteHitCount = null, \com\boxalino\bxclient\v1\BxSortFields $bxSortFields=null, $categoryId=null){
-        
+
         $returnFields = array($this->getEntityIdFieldName(), 'categories', 'discountedPrice', 'products_bx_grouped_price', 'title', 'score');
         $additionalFields = explode(',', Mage::getStoreConfig('bxGeneral/advanced/additional_fields'));
         $returnFields = array_merge($returnFields, $additionalFields);
@@ -223,7 +229,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
     }
 
     /**
-     * 
+     *
      */
     public function simpleSearch(){
 
@@ -234,49 +240,48 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
         }
 
         $field = '';
-        $dir = '';
-        $order = $request->getParam('order');
-        if (isset($order)) {
-            if ($order == 'name') {
-                $field = 'title';
-            } elseif ($order == 'price') {
-                $field = 'products_bx_grouped_price';
-            }
+        $order = $request->getParam('order') != null ? $request->getParam('order') : $this->getMagentoStoreConfigListOrder();
+
+        if ($order == 'name') {
+            $field = 'products_bx_parent_title';
+        } elseif ($order == 'price') {
+            $field = 'products_bx_grouped_price';
         }
 
+        $dir = false;
         $dirOrder = $request->getParam('dir');
         if ($dirOrder) {
             $dir = $dirOrder == 'asc' ? false : true;
-        } else {
-            $dir = true;
         }
 
-        $categoryId = $request->getParam($this->getUrlParameterPrefix() . 'category_id');
-        if (empty($categoryId)) {
-
-            $category = Mage::registry('current_category');
-            if (!empty($category)) {
-                $_REQUEST[$this->getUrlParameterPrefix() . 'category_id'][0] = $category->getId();
-            }
-            // GET param 'cat' may override the current_category,
-            // i.e. when clicking on subcategories in a category page
-            $cat = $request->getParam('id');
-            if (!empty($cat)) {
-                $_REQUEST[$this->getUrlParameterPrefix() . 'category_id'][0] = $cat;
-            }
-        }
-
-        $toolbar = Mage::getBlockSingleton('catalog/product_list_toolbar');
-        $overWriteLimit = $toolbar->getLimit();
+        $categoryId = Mage::registry('current_category') != null ? Mage::registry('current_category')->getId() : null;
+        $overWriteLimit = $request->getParam('limit') != null ? $request->getParam('limit') : Mage::getBlockSingleton('catalog/product_list_toolbar')->getLimit();
         $pageOffset = isset($_REQUEST['p'])? ($_REQUEST['p']-1)*($overWriteLimit) : 0;
         $this->search($queryText, $pageOffset, $overWriteLimit, new \com\boxalino\bxclient\v1\BxSortFields($field, $dir), $categoryId);
+    }
+
+    /**
+     * @return mixed
+     */
+    protected function getMagentoStoreConfigListOrder(){
+
+        $storeConfig = $this->getMagentoStoreConfig();
+        return $storeConfig['default_sort_by'];
+    }
+
+    /**
+     * @return mixed
+     */
+    private function getMagentoStoreConfig(){
+
+        return Mage::getStoreConfig('catalog/frontend');
     }
 
     /**
      * @return string
      */
     private function getUrlParameterPrefix() {
-        
+
         return 'bx_';
     }
 
@@ -288,26 +293,38 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
         $bxFacets = new \com\boxalino\bxclient\v1\BxFacets();
         $bxHelperData = Mage::helper('boxalino_intelligence');
         $selectedValues = array();
+        $attributeCollection = $bxHelperData->getFilterProductAttributes();
         foreach ($_REQUEST as $key => $values) {
             if (strpos($key, $this->getUrlParameterPrefix()) !== false) {
                 $fieldName = substr($key, 3);
                 $selectedValues[$fieldName] = !is_array($values)?array($values):$values;
             }
+            if(isset($attributeCollection['products_' . $key])){
+                $paramValues = !is_array($values) ? array($values) : $values;
+                $attributeModel = Mage::getModel('eav/config')->getAttribute('catalog_product', $key)->getSource();
+                foreach ($paramValues as $paramValue){
+                    $selectedValues['products_' . $key][] = $attributeModel->getOptionText($paramValue);
+                }
+            }
         }
 
-        $catId = isset($selectedValues['category_id']) && sizeof($selectedValues['category_id']) > 0 ? $selectedValues['category_id'][0] : null;
+        if(!$this->navigation){
+            $catId = isset($selectedValues['category_id']) && sizeof($selectedValues['category_id']) > 0 ? $selectedValues['category_id'][0] : null;
+            $bxFacets->addCategoryFacet($catId);
+        }
 
-        $bxFacets->addCategoryFacet($catId);
-        $attributeCollection = $bxHelperData->getLeftFacets();
-        
         foreach($attributeCollection as $code => $attribute){
+            if($this->navigation && $code == 'categories'){
+                $this->bxHelperData->setRemovedAttributes($code);
+                continue;
+            }
             $bound = $code == 'discountedPrice' ? true : false;
             list($label, $type, $order, $position) = array_values($attribute);
             $selectedValue = isset($selectedValues[$code]) ? $selectedValues[$code][0] : null;
 
             $bxFacets->addFacet($code, $selectedValue, $type, $label, $order, $bound);
         }
-        list($topField, $topOrder) = $bxHelperData->getTopFacetConfig();
+        list($topField, $topOrder) = $bxHelperData->getTopFacetValues();
 
         if($topField) {
             $selectedValue = isset($selectedValues[$topField][0]) ? $selectedValues[$topField][0] : null;
@@ -320,7 +337,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
      * @return int
      */
     public function getTotalHitCount(){
-        
+
         $this->simpleSearch();
         return self::$bxClient->getResponse()->getTotalHitCount($this->currentSearchChoice);
     }
@@ -338,7 +355,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
      * @return null
      */
     public function getFacets() {
-        
+
         $this->simpleSearch();
         $facets = self::$bxClient->getResponse()->getFacets($this->currentSearchChoice);
         if(empty($facets)){
@@ -352,7 +369,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
      * @return null
      */
     public function getCorrectedQuery() {
-        
+
         $this->simpleSearch();
         return self::$bxClient->getResponse()->getCorrectedQuery($this->currentSearchChoice);
     }
@@ -361,7 +378,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
      * @return bool
      */
     public function areResultsCorrected() {
-        
+
         $this->simpleSearch();
         return self::$bxClient->getResponse()->areResultsCorrected($this->currentSearchChoice);
     }
@@ -370,7 +387,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
      * @return bool
      */
     public function areThereSubPhrases() {
-        
+
         $this->simpleSearch();
         return self::$bxClient->getResponse()->areThereSubPhrases($this->currentSearchChoice);
     }
@@ -379,7 +396,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
      * @return array
      */
     public function getSubPhrasesQueries() {
-        
+
         $this->simpleSearch();
         return self::$bxClient->getResponse()->getSubPhrasesQueries($this->currentSearchChoice);
     }
@@ -389,7 +406,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
      * @return int|mixed
      */
     public function getSubPhraseTotalHitCount($queryText) {
-        
+
         $this->simpleSearch();
         return self::$bxClient->getResponse()->getSubPhraseTotalHitCount($queryText,$this->currentSearchChoice);
     }
@@ -414,8 +431,10 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
      */
     public function getRecommendation($widgetName, $context = array(), $widgetType = '', $minAmount = 3, $amount = 3, $execute=true){
 
-        if (!isset(self::$choiceContexts[$widgetName])) {
-            self::$choiceContexts[$widgetName] = [];
+        if(!$execute){
+            if (!isset(self::$choiceContexts[$widgetName])) {
+                self::$choiceContexts[$widgetName] = [];
+            }
             if(in_array(json_encode($context), self::$choiceContexts[$widgetName])) {
                 return;
             }
@@ -455,12 +474,9 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
                     self::$bxClient->addRequest($bxRequest);
                 }
             }
+            return array();
         }
-
-        if ($execute) {
-            $count = array_search(json_encode(array($context)), self::$choiceContexts[$widgetName]);
-            return self::$bxClient->getResponse()->getHitIds($widgetName, true, $count);
-        }
-        return [];
+        $count = array_search(json_encode(array($context)), self::$choiceContexts[$widgetName]);
+        return self::$bxClient->getResponse()->getHitIds($widgetName, true, $count);
     }
 }

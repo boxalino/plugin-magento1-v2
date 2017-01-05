@@ -7,7 +7,7 @@
             <codePool>community</codePool>
             <depends>
                 <Mage_Catalog/>
-                <Mage_Catalogsearch/>
+                <Mage_CatalogSearch/>
                 <Mage_Checkout/>
                 <Mage_Widget/>
             </depends>

@@ -24,18 +24,6 @@ class Boxalino_Intelligence_CategoryController extends Mage_Catalog_CategoryCont
                 }
             }
         }
-
-        $bxHelperData = Mage::helper('boxalino_intelligence');
-        try{
-            if($bxHelperData->isNavigationEnabled()){
-                if(count($bxHelperData->getAdapter()->getEntitiesIds()) == 0){
-                    $bxHelperData->setFallback(true);
-                }
-            }
-        }catch(\Exception $e){
-            Mage::logException($e);
-            $bxHelperData->setFallback(true);
-        }
         return parent::viewAction();
     }
 }
