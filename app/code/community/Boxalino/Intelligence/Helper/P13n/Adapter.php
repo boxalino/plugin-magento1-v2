@@ -46,14 +46,13 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
     protected function initializeBXClient() {
         
         if(self::$bxClient == null) {
-            $generalConfig = Mage::getStoreConfig('bxGeneral');
-            $account = $generalConfig['general']['account_name'];
-            $password = $generalConfig['general']['password'];
-            $isDev = $generalConfig['general']['dev'];
-            $host = $generalConfig['advanced']['host'];
-            $p13n_username = $generalConfig['advanced']['p13n_username'];
-            $p13n_password = $generalConfig['advanced']['p13n_password'];
-            $domain = $generalConfig['general']['domain'];
+            $account = Mage::getStoreConfig('bxGeneral/general/account_name');
+            $password = Mage::getStoreConfig('bxGeneral/general/password');
+            $isDev = Mage::getStoreConfig('bxGeneral/general/dev');
+            $host = Mage::getStoreConfig('bxGeneral/advanced/host');
+            $p13n_username = Mage::getStoreConfig('bxGeneral/advanced/p13n_username');
+            $p13n_password = Mage::getStoreConfig('bxGeneral/advanced/p13n_password');
+            $domain = Mage::getStoreConfig('bxGeneral/general/domain');
             self::$bxClient = new \com\boxalino\bxclient\v1\BxClient($account, $password, $domain, $isDev, $host, null, null, null, $p13n_username, $p13n_password);
             self::$bxClient->setTimeout(Mage::getStoreConfig('bxGeneral/advanced/thrift_timeout'));
 

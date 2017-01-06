@@ -3,17 +3,13 @@
  /**
   * Class Boxalino_Intelligence_Helper_Data
   */
-class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data{
+class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
+{
 
     /**
      * @var array
      */
     protected $_countries = array();
-
-    /**
-     * @var array Plugin Configuration Object
-     */
-    protected $bxConfig = null;
 
     /**
      * @var Boxalino_Intelligence_Helper_P13n_Adapter
@@ -209,24 +205,25 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data{
     /**
      * @param $widgetName
      * @return array Widget Configuration
+     *
+     * @throws Exception
      */
-    public function getWidgetConfig($widgetName){
+    public function getWidgetConfig($widgetName)
+    {
+        $widgetNames = explode(',', Mage::getStoreConfig('bxRecommendations/others/widget'));
+        $widgetScenarios = explode(',', Mage::getStoreConfig('bxRecommendations/others/scenario'));
+        $widgetMin = explode(',', Mage::getStoreConfig('bxRecommendations/others/min'));
+        $widgetMax = explode(',', Mage::getStoreConfig('bxRecommendations/others/max'));
 
-        if(!$this->bxConfig == null || !isset($this->bxConfig['bxRecommendations'])){
-            $this->bxConfig['bxRecommendations'] =  Mage::getStoreConfig('bxRecommendations');
-        }
-
-        $widgetNames = explode(',', $this->bxConfig['bxRecommendations']['others']['widget']);
-        $widgetScenarios = explode(',', $this->bxConfig['bxRecommendations']['others']['scenario']);
-        $widgetMin = explode(',', $this->bxConfig['bxRecommendations']['others']['min']);
-        $widgetMax = explode(',', $this->bxConfig['bxRecommendations']['others']['max']);
-
-        $index =  array_search($widgetName, $widgetNames);
-        $widgetConfig = array();
-        if($index !== false){
-            $widgetConfig = array('widget' => $widgetNames[$index], 'scenario' => $widgetScenarios[$index],
-                'min' => $widgetMin[$index], 'max' => $widgetMax[$index]);
-        }else{
+        $index = array_search($widgetName, $widgetNames);
+        if ($index !== false) {
+            $widgetConfig = array(
+                'widget' => $widgetNames[$index],
+                'scenario' => $widgetScenarios[$index],
+                'min' => $widgetMin[$index],
+                'max' => $widgetMax[$index]
+            );
+        } else {
             throw new \Exception("There is no configuration for this widget name: " . $widgetName);
         }
         return $widgetConfig;
@@ -258,11 +255,8 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data{
      */
     public function getTopFacetConfig() {
 
-        if(!$this->bxConfig == null || !isset($this->bxConfig['bxSearch'])){
-            $this->bxConfig['bxSearch'] = Mage::getStoreConfig('bxSearch');
-        }
-        $field = $this->bxConfig['bxSearch']['top_facet']['field'];
-        $order = $this->bxConfig['bxSearch']['top_facet']['order'];
+        $field = Mage::getStoreConfig('bxSearch/top_facet/field');
+        $order = Mage::getStoreConfig('bxSearch/top_facet/order');
         return array($field, $order);
     }
     
@@ -299,15 +293,12 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data{
      */
     public function getLeftFacetConfig() {
 
-        if(!isset($this->bxConfig['bxSearch'])){
-            $this->bxConfig['bxSearch'] =  Mage::getStoreConfig('bxSearch');
-        }
         try{
-            $fields = explode(',', $this->bxConfig['bxSearch']['left_facets']['fields']);
-            $labels = explode(',', $this->bxConfig['bxSearch']['left_facets']['labels']);
-            $types = explode(',', $this->bxConfig['bxSearch']['left_facets']['types']);
-            $orders = explode(',', $this->bxConfig['bxSearch']['left_facets']['orders']);
-            $position = explode(',', $this->bxConfig['bxSearch']['left_facets']['position']);
+            $fields = explode(',', Mage::getStoreConfig('bxSearch/left_facets/fields'));
+            $labels = explode(',', Mage::getStoreConfig('bxSearch/left_facets/labels'));
+            $types = explode(',', Mage::getStoreConfig('bxSearch/left_facets/types'));
+            $orders = explode(',', Mage::getStoreConfig('bxSearch/left_facets/orders'));
+            $position = explode(',', Mage::getStoreConfig('bxSearch/left_facets/position'));
 
         }catch (\Exception $e){
             Mage::logException($e);
@@ -396,17 +387,13 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data{
      * @param $fieldName
      * @return bool
      */
-    public function isHierarchical($fieldName){
+    public function isHierarchical($fieldName)
+    {
+        $fields = explode(",", Mage::getStoreConfig('bxSearch/left_facets/fields'));
+        $type = explode(",", Mage::getStoreConfig('bxSearch/left_facets/types'));
 
-        if(!$this->bxConfig == null || !isset($this->bxConfig['bxSearch'])){
-            $this->bxConfig['bxSearch'] = Mage::getStoreConfig('bxSearch');
-        }
-        $facetConfig =   $this->bxConfig['bxSearch']['left_facets'];
-        $fields = explode(",", $facetConfig['fields']);
-        $type = explode(",", $facetConfig['types']);
-
-        if(in_array($fieldName,$fields )){
-            if($type[array_search($fieldName, $fields)] == 'hierarchical'){
+        if (in_array($fieldName, $fields)) {
+            if ($type[array_search($fieldName, $fields)] == 'hierarchical') {
                 return true;
             }
         }
@@ -416,14 +403,10 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data{
     /**
      * @return int
      */
-    public function getCategoriesSortOrder(){
-
-        if(!$this->bxConfig == null || !isset($this->bxConfig['bxSearch'])){
-            $this->bxConfig['bxSearch'] = Mage::getStoreConfig('bxSearch');
-        }
-
-        $fields = explode(',', $this->bxConfig['bxSearch']['left_facets']['fields']);
-        $orders = explode(',', $this->bxConfig['bxSearch']['left_facets']['orders']);
+    public function getCategoriesSortOrder()
+    {
+        $fields = explode(',', Mage::getStoreConfig('bxSearch/left_facets/fields'));
+        $orders = explode(',', Mage::getStoreConfig('bxSearch/left_facets/orders'));
 
         foreach($fields as $index => $field){
             if($field == 'categories'){
@@ -444,8 +427,8 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data{
     /**
      * @param $block
      */
-    public function setCmsBlock($block){
-        
+    public function setCmsBlock($block)
+    {
         $this->cmsBlock = $block;
         return $this;
     }
@@ -477,11 +460,9 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data{
     /**
      * @return mixed
      */
-    public function getSubPhrasesLimit(){
-        if(!$this->bxConfig == null || !isset($this->bxConfig['bxSearch'])){
-            $this->bxConfig['bxSearch'] = Mage::getStoreConfig('bxSearch');
-        }
-        return $this->bxConfig['bxSearch']['advanced']['search_sub_phrases_limit'];
+    public function getSubPhrasesLimit()
+    {
+        return Mage::getStoreConfig('bxSearch/advanced/search_sub_phrases_limit');
     }
     
     /**
@@ -508,31 +489,25 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data{
     /**
      * @return bool
      */
-    public function isPluginEnabled(){
-        if(!$this->bxConfig == null || !isset($this->bxConfig['bxGeneral'])){
-            $this->bxConfig['bxGeneral'] = Mage::getStoreConfig('bxGeneral');
-        }
-        return (bool)($this->bxConfig['bxGeneral']['general']['enabled'] && !$this->fallback);
+    public function isPluginEnabled()
+    {
+        return Mage::getStoreConfigFlag('bxGeneral/general/enabled') && !$this->fallback;
     }
 
     /**
      * @return bool
      */
-    public function isSearchEnabled(){
-        if(!$this->bxConfig == null || !isset($this->bxConfig['bxSearch'])) {
-            $this->bxConfig['bxSearch'] = Mage::getStoreConfig('bxSearch');
-        }
-        return (bool)$this->isPluginEnabled() && $this->bxConfig['bxSearch']['search']['enabled'];
+    public function isSearchEnabled()
+    {
+        return $this->isPluginEnabled() && Mage::getStoreConfigFlag('bxSearch/search/enabled');
     }
 
     /**
      * @return bool
      */
-    public function isAutocompleteEnabled(){
-        if(!$this->bxConfig == null || !isset($this->bxConfig['bxSearch'])) {
-            $this->bxConfig['bxSearch'] = Mage::getStoreConfig('bxSearch');
-        }
-        return (bool)$this->isPluginEnabled() && $this->bxConfig['bxSearch']['autocomplete']['enabled'];
+    public function isAutocompleteEnabled()
+    {
+        return $this->isPluginEnabled() && Mage::getStoreConfigFlag('bxSearch/autocomplete/enabled');
     }
 
     /**
@@ -540,10 +515,7 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data{
      */
     public function isTrackerEnabled()
     {
-        if (!$this->bxConfig == null || !isset($this->bxConfig['bxGeneral'])) {
-            $this->bxConfig['bxGeneral'] = Mage::getStoreConfig('bxGeneral');
-        }
-        return (bool)$this->isPluginEnabled() && $this->bxConfig['bxGeneral']['tracker']['enabled'];
+        return $this->isPluginEnabled() && Mage::getStoreConfigFlag('bxGeneral/tracker/enabled');
     }
 
     /**
@@ -551,10 +523,7 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data{
      */
     public function isCrosssellEnabled()
     {
-        if(!$this->bxConfig == null || !isset($this->bxConfig['bxRecommendations'])){
-            $this->bxConfig['bxRecommendations'] = Mage::getStoreConfig('bxRecommendations');
-        }
-        return (bool)$this->isPluginEnabled() && $this->bxConfig['bxRecommendations']['cart']['status'];
+        return $this->isPluginEnabled() && Mage::getStoreConfigFlag('bxRecommendations/cart/status');
     }
 
     /**
@@ -562,10 +531,7 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data{
      */
     public function isRelatedEnabled()
     {
-        if(!$this->bxConfig == null || !isset($this->bxConfig['bxRecommendations'])){
-            $this->bxConfig['bxRecommendations'] = Mage::getStoreConfig('bxRecommendations');
-        }
-        return (bool)$this->isPluginEnabled() && $this->bxConfig['bxRecommendations']['related']['status'];
+        return $this->isPluginEnabled() && Mage::getStoreConfigFlag('bxRecommendations/related/status');
     }
 
     /**
@@ -573,10 +539,7 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data{
      */
     public function isUpsellEnabled()
     {
-        if(!$this->bxConfig == null || !isset($this->bxConfig['bxRecommendations'])){
-            $this->bxConfig['bxRecommendations'] = Mage::getStoreConfig('bxRecommendations');
-        }
-        return (bool)$this->isPluginEnabled() && $this->bxConfig['bxRecommendations']['upsell']['status'];
+        return $this->isPluginEnabled() && Mage::getStoreConfigFlag('bxRecommendations/upsell/status');
     }
 
     /**
@@ -584,10 +547,7 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data{
      */
     public function isNavigationEnabled()
     {
-        if(!$this->bxConfig == null || !isset($this->bxConfig['bxSearch'])) {
-            $this->bxConfig['bxSearch'] = Mage::getStoreConfig('bxSearch');
-        }
-        return (bool)($this->isPluginEnabled() && $this->bxConfig['bxSearch']['navigation']['enabled']);
+        return $this->isPluginEnabled() && Mage::getStoreConfigFlag('bxSearch/navigation/enabled');
     }
 
     /**
@@ -595,10 +555,7 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data{
      */
     public function isLeftFilterEnabled()
     {
-        if(!$this->bxConfig == null || !isset($this->bxConfig['bxSearch'])) {
-            $this->bxConfig['bxSearch'] = Mage::getStoreConfig('bxSearch');
-        }
-        return $this->bxConfig['bxSearch']['left_facets']['enabled'];
+        return Mage::getStoreConfigFlag('bxSearch/left_facets/enabled');
     }
 
     /**
@@ -606,17 +563,14 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data{
      */
     public function isTopFilterEnabled()
     {
-        if(!$this->bxConfig == null || !isset($this->bxConfig['bxSearch'])) {
-            $this->bxConfig['bxSearch'] = Mage::getStoreConfig('bxSearch');
-        }
-        return (bool)$this->bxConfig['bxSearch']['top_facet']['enabled'];
+        return Mage::getStoreConfigFlag('bxSearch/top_facet/enabled');
     }
 
     /**
      * @return bool
      */
-    public function isFilterLayoutEnabled($layer){
-        
+    public function isFilterLayoutEnabled($layer)
+    {
         $type = null;
         if ($layer instanceof Mage_CatalogSearch_Model_Layer) {
             $type = 'search';
@@ -626,10 +580,7 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data{
         if (null === $type) {
             return false;
         }
-        if(!isset($this->bxConfig['bxSearch'])){
-            $this->bxConfig['bxSearch'] = Mage::getStoreConfig('bxSearch');
-        }
-        return (bool)($this->isEnabledOnLayer($layer) && $this->bxConfig['bxSearch'][$type]['filter']);
+        return $this->isEnabledOnLayer($layer) && Mage::getStoreConfig("bxSearch/{$type}/filter");
     }
 
     /**
