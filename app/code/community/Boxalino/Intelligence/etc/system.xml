@@ -2,13 +2,13 @@
 
 <config>
     <tabs>
-        <boxalino translate="label" module="intelligence">
+        <boxalino translate="label" module="boxalino_intelligence">
             <label>Boxalino Extension</label>
             <sort_order>100</sort_order>
         </boxalino>
     </tabs>
     <sections>
-        <bxGeneral translate="label" module="intelligence">
+        <bxGeneral translate="label" module="boxalino_intelligence">
             <label>General</label>
             <tab>boxalino</tab>
             <frontend_type>text</frontend_type>
@@ -181,7 +181,7 @@
                 </advanced>
             </groups>
         </bxGeneral>
-        <bxExporter translate="label" module="intelligence">
+        <bxExporter translate="label" module="boxalino_intelligence">
             <label>Exporter</label>
             <tab>boxalino</tab>
             <frontend_type>text</frontend_type>
@@ -404,7 +404,7 @@
             </groups>
         </bxExporter>
 
-        <bxSearch translate="label" module="intelligence">
+        <bxSearch translate="label" module="boxalino_intelligence">
             <label>Search - Navigation</label>
             <tab>boxalino</tab>
             <frontend_type>text</frontend_type>
@@ -706,7 +706,7 @@
                 </advanced>
             </groups>
         </bxSearch>
-        <bxRecommendations translate="label" module="intelligence">
+        <bxRecommendations translate="label" module="boxalino_intelligence">
             <label>Recommendation</label>
             <tab>boxalino</tab>
             <frontend_type>text</frontend_type>
