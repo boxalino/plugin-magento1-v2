@@ -75,7 +75,7 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
             foreach ($this->config->getAccounts() as $account) {
 
                 Mage::log("bxLog: initialize files on account: " . $account, Zend_Log::INFO, self::BOXALINO_LOG_FILE);
-                $files = Mage::helper('boxalino_intelligence/bxFiles');
+                $files = Mage::helper('boxalino_intelligence/bxFiles')->init($account, $this->indexType);
 
                 $bxClient = new \com\boxalino\bxclient\v1\BxClient($account, $this->config->getAccountPassword($account), "");
                 $this->bxData = new \com\boxalino\bxclient\v1\BxData($bxClient, $this->config->getAccountLanguages($account), $this->config->isAccountDev($account), false);

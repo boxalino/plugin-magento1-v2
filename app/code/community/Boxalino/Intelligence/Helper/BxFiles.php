@@ -84,12 +84,12 @@ class Boxalino_Intelligence_Helper_BxFiles
     /**
      * @var
      */
-    private $account;
+    protected $account;
 
     /**
      * @var
      */
-    private $config;
+    protected $type;
 
     /**
      * @var array
@@ -102,35 +102,22 @@ class Boxalino_Intelligence_Helper_BxFiles
     private $filesMtM = array();
 
     /**
-     * BxFiles constructor.
-     * @param $filesystem
-     * @param $account
-     * @param $config
+     * @param string $account
+     * @param string $type
      */
-    public function __construct($account, $config) {
+    public function init($account = 'undefined', $type = 'full')
+    {
         $this->account = $account;
-        $this->config = $config;
-        $this->init();
-    }
-
-    /**
-     * Initializes directory for csv files
-     */
-    public function init() {
+        $this->type = $type;
 
         $this->_mainDir = Mage::getBaseDir() . "/var/tmp/boxalino";
-        
-        if (!file_exists($this->_mainDir)) {
-            mkdir($this->_mainDir, 0777 , true);
-        }
-//
-//        if(!file_exists(Mage::getBaseDir() . "/var/log")){
-//            mkdir(Mage::getBaseDir() . "/var/log", 0777, true);
-//        }
-        $this->_dir = $this->_mainDir . '/' . $this->account;
+        $this->_dir = $this->_mainDir . DS . $this->account . DS . $this->type;
+
         if (file_exists($this->_dir)) {
             $this->delTree($this->_dir);
         }
+        mkdir($this->_dir, 0777 , true);
+        return $this;
     }
 
     /**
