@@ -315,7 +315,7 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
         }
 
         $this->exportProductAttributes($attrsFromDb, $languages, $account, $files, $attributeSourceKey);
-        $this->exportProductInformation($files);
+        $this->exportProductInformation($account, $languages, $files);
         return true;
     }
 
@@ -712,7 +712,7 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
     /**
      * @param $files
      */
-    protected function exportProductInformation($files){
+    protected function exportProductInformation($account, $languages, $files){
 
         $fetchedResult = array();
         $db = $this->_getReadAdapter();

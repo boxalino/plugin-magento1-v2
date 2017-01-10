@@ -3,7 +3,8 @@
 /**
  * Class Boxalino_Intelligence_Block_Product_List
  */
-class Boxalino_Intelligence_Block_Product_List extends Mage_Catalog_Block_Product_List{
+class Boxalino_Intelligence_Block_Product_List extends Mage_Catalog_Block_Product_List
+{
 
     /**
      * @var int
@@ -25,7 +26,9 @@ class Boxalino_Intelligence_Block_Product_List extends Mage_Catalog_Block_Produc
                 if ($bxHelperData->isEnabledOnLayer($layer) && !$p13nHelper->areThereSubPhrases()) {
                     if ($layer instanceof Mage_Catalog_Model_Layer) {
                         // We skip boxalino processing if category is static cms block only.
-                        if (Mage::getBlockSingleton('catalog/category_view')->isContentMode()) {
+                        if (Mage::getBlockSingleton('catalog/category_view')->getCurrentCategory()
+                            && Mage::getBlockSingleton('catalog/category_view')->isContentMode()
+                        ) {
                             return parent::_getProductCollection();
                         }
                     }
@@ -56,15 +59,21 @@ class Boxalino_Intelligence_Block_Product_List extends Mage_Catalog_Block_Produc
      * @param $entity_ids
      * @throws Exception
      */
-    private function _setupCollection($entity_ids){
-
+    protected function _setupCollection($entity_ids)
+    {
         $this->_productCollection = Mage::getResourceModel('catalog/product_collection');
-
         $this->_productCollection
             ->setStore($this->getLayer()->getCurrentStore())
             ->addFieldToFilter('entity_id', $entity_ids)
             ->addAttributeToSelect(Mage::getSingleton('catalog/config')->getProductAttributes())
-            ->addUrlRewrite($this->getLayer()->getCurrentCategory()->getId());
+            ->addMinimalPrice()
+            ->addFinalPrice()
+            ->addTaxPercents()
+            ->addStoreFilter()
+            ->addUrlRewrite();
+
+        Mage::getSingleton('catalog/product_status')->addVisibleFilterToCollection($this->_productCollection);
+        Mage::getSingleton('catalog/product_visibility')->addVisibleInSearchFilterToCollection($this->_productCollection);
 
         $this->_productCollection
             ->getSelect()
@@ -80,7 +89,7 @@ class Boxalino_Intelligence_Block_Product_List extends Mage_Catalog_Block_Produc
             throw $e;
         }
 
-        $lastPage = ceil($totalHitCount /$limit);
+        $lastPage = ceil($totalHitCount / $limit);
         $this->_productCollection
             ->setLastBxPage($lastPage)
             ->setBxTotal($totalHitCount)
