@@ -1,4 +1,4 @@
- <?php
+<?php
 
  /**
   * Class Boxalino_Intelligence_Helper_Data

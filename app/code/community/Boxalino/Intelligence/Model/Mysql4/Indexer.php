@@ -437,30 +437,20 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                         }
                     }
                     if($optionSelect){
-                        $optionValueSelect = $db->select()
-                            ->from(
-                                array('a_o' => $db->getTableName($this->_prefix . 'eav_attribute_option')),
-                                array(
-                                    'option_id',
-                                    new \Zend_Db_Expr("CASE WHEN c_o.value IS NULL THEN b_o.value ELSE c_o.value END as value")
-                                )
-                            )->joinLeft(array('b_o' => $db->getTableName($this->_prefix . 'eav_attribute_option_value')),
-                                'b_o.option_id = a_o.option_id AND b_o.store_id = 0',
-                                array()
-                            )->joinLeft(array('c_o' => $db->getTableName($this->_prefix . 'eav_attribute_option_value')),
-                                'c_o.option_id = a_o.option_id AND c_o.store_id = ' . $storeId,
-                                array()
-                            )->where('a_o.attribute_id = ?', $attributeID);
-
-                        $fetchedOptionValues = $db->fetchAll($optionValueSelect);
-
+                        // Fetch attribute options through method to respect source model implementation.
+                        $fetchedOptionValues = Mage::getModel('eav/config')->getAttribute('catalog_product', $attribute['attribute_code'])
+                            ->setStoreId($storeId)->getSource()->getAllOptions();
                         if($fetchedOptionValues){
                             foreach($fetchedOptionValues as $v){
-                                if(isset($optionValues[$v['option_id']])){
-                                    $optionValues[$v['option_id']]['value_' . $lang] = $v['value'];
-                                }else{
-                                    $optionValues[$v['option_id']] = array($attribute['attribute_code'] . '_id' => $v['option_id'],
-                                        'value_' . $lang => $v['value']);
+                                if (!empty($v['value'])) {
+                                    if (isset($optionValues[$v['value']])) {
+                                        $optionValues[$v['value']]['value_' . $lang] = $v['label'];
+                                    } else {
+                                        $optionValues[$v['value']] = array(
+                                            $attribute['attribute_code'] . '_id' => $v['value'],
+                                            'value_' . $lang => $v['label']
+                                        );
+                                    }
                                 }
                             }
                         }else{
@@ -710,6 +700,8 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
     }
 
     /**
+     * @param $account
+     * @param $languages
      * @param $files
      */
     protected function exportProductInformation($account, $languages, $files){
@@ -720,14 +712,10 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
         $select = $db->select()
             ->from(
                 $db->getTableName($this->_prefix . 'cataloginventory_stock_status'),
-                array(
-                    'entity_id' => 'product_id',
-                    'stock_status',
-                    'qty'
-                )
+                array('entity_id' => 'product_id', 'stock_status', 'qty')
             )
             ->where('stock_id = ?', 1);
-        if($this->indexType == 'delta')$select->where('entity_id IN(?)', $this->deltaIds);
+        if($this->indexType == 'delta')$select->where('product_id IN(?)', $this->deltaIds);
 
         $result = $db->query($select);
 
@@ -748,13 +736,9 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
         $select = $db->select()
             ->from(
                 $db->getTableName($this->_prefix . 'catalog_category_product'),
-                array(
-                    'entity_id' => 'product_id',
-                    'category_id',
-                    'position'
-                )
+                array('entity_id' => 'product_id', 'category_id', 'position')
             );
-        if($this->indexType == 'delta')$select->where('entity_id IN(?)', $this->deltaIds);
+        if($this->indexType == 'delta')$select->where('product_id IN(?)', $this->deltaIds);
 
         $result = $db->query($select);
 
@@ -772,13 +756,9 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
         $select = $db->select()
             ->from(
                 $db->getTableName($this->_prefix . 'catalog_product_super_link'),
-                array(
-                    'entity_id' => 'product_id',
-                    'parent_id',
-                    'link_id'
-                )
+                array('entity_id' => 'product_id', 'parent_id', 'link_id')
             );
-        if($this->indexType == 'delta')$select->where('entity_id IN(?)', $this->deltaIds);
+        if($this->indexType == 'delta')$select->where('product_id IN(?)', $this->deltaIds);
 
 
         $result = $db->query($select);
@@ -812,7 +792,7 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                 'pl.link_type_id = lt.link_type_id', array()
             )
             ->where('lt.link_type_id = pl.link_type_id');
-        if($this->indexType == 'delta')$select->where('pl.entity_id IN(?)', $this->deltaIds);
+        if($this->indexType == 'delta')$select->where('pl.product_id IN(?)', $this->deltaIds);
 
 
         $result = $db->query($select);
