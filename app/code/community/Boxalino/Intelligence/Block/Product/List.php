@@ -3,8 +3,7 @@
 /**
  * Class Boxalino_Intelligence_Block_Product_List
  */
-class Boxalino_Intelligence_Block_Product_List extends Mage_Catalog_Block_Product_List
-{
+class Boxalino_Intelligence_Block_Product_List extends Mage_Catalog_Block_Product_List{
 
     /**
      * @var int
@@ -59,9 +58,10 @@ class Boxalino_Intelligence_Block_Product_List extends Mage_Catalog_Block_Produc
      * @param $entity_ids
      * @throws Exception
      */
-    protected function _setupCollection($entity_ids)
-    {
+    protected function _setupCollection($entity_ids){
+
         $this->_productCollection = Mage::getResourceModel('catalog/product_collection');
+
         $this->_productCollection
             ->setStore($this->getLayer()->getCurrentStore())
             ->addFieldToFilter('entity_id', $entity_ids)

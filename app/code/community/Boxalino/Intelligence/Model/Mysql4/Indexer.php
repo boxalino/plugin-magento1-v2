@@ -437,9 +437,13 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                         }
                     }
                     if($optionSelect){
-                        // Fetch attribute options through method to respect source model implementation.
-                        $fetchedOptionValues = Mage::getModel('eav/config')->getAttribute('catalog_product', $attribute['attribute_code'])
-                            ->setStoreId($storeId)->getSource()->getAllOptions();
+                        $attributeSourceModel = Mage::getModel('eav/config')->getAttribute('catalog_product', $attribute['attribute_code'])
+                            ->setStoreId($storeId)->getSource();
+                        $fetchedOptionValues = null;
+                        if ($attributeSourceModel instanceof Mage_Eav_Model_Entity_Attribute_Source_Table) {
+                            // Fetch attribute options through method to respect source model implementation.
+                            $fetchedOptionValues = $attributeSourceModel->getAllOptions();
+                        }
                         if($fetchedOptionValues){
                             foreach($fetchedOptionValues as $v){
                                 if (!empty($v['value'])) {
@@ -457,7 +461,6 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                             $exportAttribute = true;
                             $optionSelect = false;
                         }
-                        $fetchedOptionValues = null;
                     }
 
                     $attributeSelect = clone $select;

@@ -448,7 +448,7 @@ class BxData
 
         curl_close($s);
         if (strpos($responseBody, 'Internal Server Error') !== false) {
-            throw new \Exception($this->getError($responseBody));;
+            throw new \Exception($this->getError($responseBody));
         }
         return $this->checkResponseBody($responseBody, $url);
     }
