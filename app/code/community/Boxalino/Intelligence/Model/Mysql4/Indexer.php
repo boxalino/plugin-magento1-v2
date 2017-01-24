@@ -78,7 +78,10 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                 $files = Mage::helper('boxalino_intelligence/bxFiles')->init($account, $this->indexType);
 
                 $bxClient = new \com\boxalino\bxclient\v1\BxClient($account, $this->config->getAccountPassword($account), "");
-                $this->bxData = new \com\boxalino\bxclient\v1\BxData($bxClient, $this->config->getAccountLanguages($account), $this->config->isAccountDev($account), false);
+
+                // Indicate index type as boolean variable.
+                $isDelta = ($this->indexType == 'delta');
+                $this->bxData = new \com\boxalino\bxclient\v1\BxData($bxClient, $this->config->getAccountLanguages($account), $this->config->isAccountDev($account), $isDelta);
                 Mage::log("bxLog: verify credentials for account: " . $account, Zend_Log::INFO, self::BOXALINO_LOG_FILE);
                 $this->bxData->verifyCredentials();
 
