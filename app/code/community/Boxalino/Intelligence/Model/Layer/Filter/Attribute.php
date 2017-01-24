@@ -16,6 +16,11 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
     private $fieldName = array();
 
     /**
+     * @var
+     */
+    private $is_bx_attribute;
+
+    /**
      * @param $bxFacets
      */
     public function setFacets($bxFacets) {
@@ -30,7 +35,7 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
     public function getFacets(){
         return $this->bxFacets;
     }
-    
+
     /**
      * @param $fieldName
      */
@@ -60,7 +65,8 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
      *
      */
     public function _initItems(){
-        
+
+        $this->is_bx_attribute = Mage::helper('boxalino_intelligence')->isBxAttribute($this->fieldName);
         $data = $this->_getItemsData();
         $items = [];
         foreach ($data as $itemData) {
@@ -81,7 +87,7 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
      * @return mixed
      */
     public function _createItem($label, $value, $count = 0, $selected = null, $type = null){
-        
+
         return Mage::getModel('catalog/layer_filter_item')
             ->setFilter($this)
             ->setLabel($label)
@@ -96,27 +102,48 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
      */
     protected function _getItemsData(){
 
+        if($this->fieldName == 'discountedPrice'){
+            return array('label' => null, 'value' => null, 'count' => null, 'selected' => null, 'type' => null);
+        }
         $data = [];
         $bxDataHelper = Mage::helper('boxalino_intelligence');
-        $this->_requestVar = $this->bxFacets->getFacetParameterName($this->fieldName);
+        $this->_requestVar = str_replace('bx_products_', '', $this->bxFacets->getFacetParameterName($this->fieldName));
         if (!$bxDataHelper->isHierarchical($this->fieldName)) {
-            foreach ($this->bxFacets->getFacetValues($this->fieldName) as $facetValue) {
-                if ($this->bxFacets->getSelectedValues($this->fieldName) && $this->bxFacets->getSelectedValues($this->fieldName)[0] == $facetValue) {
-                    $value = $this->bxFacets->getSelectedValues($this->fieldName)[0] == $facetValue ? true : false;
+            $attributeModel = Mage::getModel('eav/config')->getAttribute('catalog_product', substr($this->fieldName,9))->getSource();
+            $order = $bxDataHelper->getFieldSortOrder($this->fieldName);
+            if($order == 2){
+                $values = $attributeModel->getAllOptions();
+                $responseValues = $bxDataHelper->useValuesAsKeys($this->bxFacets->getFacetValues($this->fieldName));
+                $selectedValues = $bxDataHelper->useValuesAsKeys($this->bxFacets->getSelectedValues($this->fieldName));
+                foreach($values as $value){
+
+                    $label = is_array($value) ? $value['label'] : $value;
+                    if(isset($responseValues[$label])){
+                        $facetValue = $responseValues[$label];
+                        $selected = isset($selectedValues[$facetValue]) ? true : false;
+                        $paramValue = $this->is_bx_attribute ? $this->bxFacets->getFacetValueParameterValue($this->fieldName, $facetValue): $attributeModel->getOptionId($this->bxFacets->getFacetValueParameterValue($this->fieldName, $facetValue));
+                        $data[] = array(
+                            'label' => strip_tags($this->bxFacets->getFacetValueLabel($this->fieldName, $facetValue)),
+                            'value' => $selected ? 0 : $paramValue,
+                            'count' => $this->bxFacets->getFacetValueCount($this->fieldName, $facetValue),
+                            'selected' => $selected,
+                            'type' => 'flat'
+                        );
+                    }
+                }
+            }else{
+                $selectedValues = $bxDataHelper->useValuesAsKeys($this->bxFacets->getSelectedValues($this->fieldName));
+                $responseValues = $this->bxFacets->getFacetValues($this->fieldName);
+
+                foreach ($responseValues as $facetValue){
+
+                    $selected = isset($selectedValues[$facetValue]) ? true : false;
+                    $paramValue = $this->is_bx_attribute ? $this->bxFacets->getFacetValueParameterValue($this->fieldName, $facetValue): $attributeModel->getOptionId($this->bxFacets->getFacetValueParameterValue($this->fieldName, $facetValue));
                     $data[] = array(
                         'label' => strip_tags($this->bxFacets->getFacetValueLabel($this->fieldName, $facetValue)),
-                        'value' => 0,
+                        'value' => $selected ? 0 : $paramValue,
                         'count' => $this->bxFacets->getFacetValueCount($this->fieldName, $facetValue),
-                        'selected' => $value,
-                        'type' => 'flat'
-                    );
-                } else {
-                    $value = false;
-                    $data[] = array(
-                        'label' => strip_tags($this->bxFacets->getFacetValueLabel($this->fieldName, $facetValue)),
-                        'value' => $this->bxFacets->getFacetValueParameterValue($this->fieldName, $facetValue),
-                        'count' => $this->bxFacets->getFacetValueCount($this->fieldName, $facetValue),
-                        'selected' => $value,
+                        'selected' => $selected,
                         'type' => 'flat'
                     );
                 }
@@ -151,16 +178,17 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
                     'type' => 'parent'
                 );
             }
-            $sortOrder = $bxDataHelper->getCategoriesSortOrder();
+            $sortOrder = $bxDataHelper->getFieldSortOrder($this->fieldName);
             if($sortOrder == 2){
                 $facetLabels = $this->bxFacets->getCategoriesKeyLabels();
                 $childId = explode('/',end($facetLabels))[0];
-                $childParentId = Mage::getModel('catalog/category')->load($childId)->getParentId();
+                $category_model = Mage::getModel('catalog/category');
+                $childParentId = $category_model->load($childId)->getParentId();
                 end($parentCategories);
                 $parentId = key($parentCategories);
                 $id = (($parentId == null) ? 2 : (($parentId == $childParentId) ? $parentId : $childParentId));
 
-                $cat = $this->categoryFactory->create()->load($id);
+                $cat = $category_model->load($id);
                 foreach($cat->getChildrenCategories() as $category){
                     if(isset($facetLabels[$category->getName()])) {
                         $facetValues[] = $facetLabels[$category->getName()];

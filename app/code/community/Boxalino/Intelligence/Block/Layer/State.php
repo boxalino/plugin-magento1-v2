@@ -39,7 +39,7 @@ class Boxalino_Intelligence_Block_Layer_State extends Mage_Catalog_Block_Layer_S
                         $filter = Mage::getModel('boxalino_intelligence/layer_filter_attribute')
                             ->setFacets($facets)
                             ->setFieldName($fieldName)
-                            ->setRequestVar($facets->getFacetParameterName($fieldName));
+                            ->setRequestVar(str_replace('bx_products_', '', $facets->getFacetParameterName($fieldName)));
                         $filters[] = Mage::getModel('catalog/layer_filter_item')
                             ->setFilter($filter)
                             ->setValue($value)
