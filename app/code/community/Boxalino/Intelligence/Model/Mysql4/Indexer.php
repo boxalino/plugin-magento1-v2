@@ -660,10 +660,11 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                     }
                 }
                 if (sizeof($data)) {
-                    if(!$global || $type['attribute_code'] == 'visibility' ||
-                        $type['attribute_code'] == 'status' ||
-                        $type['attribute_code'] == 'special_from_date' ||
-                        $type['attribute_code'] == 'special_to_date'){
+                    if(!$global || $attribute['attribute_code'] == 'visibility' ||
+                        $attribute['attribute_code'] == 'status' ||
+                        $attribute['attribute_code'] == 'special_from_date' ||
+                        $attribute['attribute_code'] == 'special_to_date')
+                    {
                         if(!$optionSelect){
                             $headerLangRow = array_merge(array('entity_id','store_id'), $labelColumns);
                             if(sizeof($additionalData)){
