@@ -157,7 +157,7 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
             foreach ($parentCategories as $key => $parentCategory) {
                 if ($count == 1) {
                     $count++;
-                    $homeLabel = __("All Categories");
+                    $homeLabel = Mage::helper('boxalino_intelligence')->__("All Categories");
                     $data[] = array(
                         'label' => strip_tags($homeLabel),
                         'value' => 2,

@@ -430,7 +430,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
      */
     public function getRecommendation($widgetName, $context = array(), $widgetType = '', $minAmount = 3, $amount = 3, $execute=true){
 
-        if(!$execute){
+        if(!$execute || !isset(self::$choiceContexts[$widgetName])){
             if (!isset(self::$choiceContexts[$widgetName])) {
                 self::$choiceContexts[$widgetName] = [];
             }
@@ -473,7 +473,9 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
                     self::$bxClient->addRequest($bxRequest);
                 }
             }
-            return array();
+            if (!$execute) {
+                return array();
+            }
         }
         $count = array_search(json_encode(array($context)), self::$choiceContexts[$widgetName]);
         return self::$bxClient->getResponse()->getHitIds($widgetName, true, $count);
