@@ -182,6 +182,7 @@
             </search>
             <autocomplete>
                 <enabled>1</enabled>
+                <category>1</category>
                 <limit>7</limit>
                 <products_limit>1</products_limit>
             </autocomplete>

@@ -22,16 +22,16 @@ class Boxalino_Intelligence_Block_Layer_State extends Mage_Catalog_Block_Layer_S
      * @return array
      */
     public function getActiveFilters(){
-        
+
         $bxHelperData = Mage::helper('boxalino_intelligence');
-        if ($bxHelperData->isFilterLayoutEnabled($this->getLayer())) {
-            
+        if ($bxHelperData->isFilterLayoutEnabled($this->getLayer()) && !$bxHelperData->getAdapter()->areThereSubPhrases()) {
             $filters = array();
             try{
                 $facets = $bxHelperData->getAdapter()->getFacets();
                 foreach ($bxHelperData->getAllFacetFieldNames() as $fieldName){
 
                     if($facets->isSelected($fieldName)){
+
                         $value = $facets->getSelectedValueLabel($fieldName);
                         if($fieldName == 'discountedPrice'){
                             $value = substr_replace($value, '0', strlen($value)-1);

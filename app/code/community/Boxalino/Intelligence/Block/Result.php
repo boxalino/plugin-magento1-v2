@@ -21,14 +21,23 @@ class Boxalino_Intelligence_Block_Result extends Mage_CatalogSearch_Block_Result
     protected $queries = array();
 
     /**
+     * @var null
+     */
+    protected $correctedQuery = null;
+    
+    /**
      * Boxalino_Intelligence_Block_Result constructor
      */
     public function _construct(){
 
         $this->bxHelperData = Mage::helper('boxalino_intelligence');
+        $p13nHelper = $this->bxHelperData->getAdapter();
         try{
             if( $this->bxHelperData->isSearchEnabled()){
                 if($this->hasSubPhrases()){
+                    if($p13nHelper->areResultsCorrectedAndAlsoProvideSubPhrases()) {
+                        $this->correctedQuery = $p13nHelper->getCorrectedQuery();
+                    }
                     $this->queries =  $this->bxHelperData->getAdapter()->getSubPhrasesQueries();
                 }
             }else{
@@ -51,6 +60,13 @@ class Boxalino_Intelligence_Block_Result extends Mage_CatalogSearch_Block_Result
     }
 
     /**
+     * @return string
+     */
+    public function getCorrectedQueryLink(){
+        return Mage::getUrl('*/*', array('_query' => 'q=' . $this->correctedQuery));
+    }
+
+    /**
      * @return int|null
      */
     public function hasSubPhrases(){
@@ -58,7 +74,7 @@ class Boxalino_Intelligence_Block_Result extends Mage_CatalogSearch_Block_Result
         if($this->fallback){
             return 0;
         }
-
+        
         try{
             return Mage::helper('boxalino_intelligence')->getAdapter()->areThereSubPhrases();
         }catch(\Exception $e){
@@ -85,7 +101,7 @@ class Boxalino_Intelligence_Block_Result extends Mage_CatalogSearch_Block_Result
      * @return string
      */
     public function getResultCount(){
-
+        
         if($this->fallback){
             return parent::getResultCount();
         }
@@ -113,7 +129,7 @@ class Boxalino_Intelligence_Block_Result extends Mage_CatalogSearch_Block_Result
         }
         return parent::getHeaderText();
     }
-
+    
     /**
      * @return string
      */
