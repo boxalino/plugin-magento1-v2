@@ -128,7 +128,7 @@ class BxData
 	
 	public function getSourceCSVRow($container, $sourceId, $row=0, $maxRow = 2) {
 		if(!isset($this->sources[$container][$sourceId]['rows'])) {
-			if (($handle = fopen($this->sources[$container][$sourceId]['filePath'], "r")) !== FALSE) {
+			if (($handle = @fopen($this->sources[$container][$sourceId]['filePath'], "r")) !== FALSE) {
 				$count = 1;
 				$this->sources[$container][$sourceId]['rows'] = array();
 				while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
@@ -157,7 +157,7 @@ class BxData
 	
 	public function validateColumnExistance($container, $sourceId, $col) {
 		$row = $this->getSourceCSVRow($container, $sourceId, 0);
-		if(!in_array($col, $row)) {
+		if($row !== null && !in_array($col, $row)) {
 			throw new \Exception("the source '$sourceId' in the container '$container' declares an column '$col' which is not present in the header row of the provided CSV file: " . implode(',', $row));
 		}
 	}
@@ -262,6 +262,38 @@ class BxData
 		$this->sources[$container][$sourceId]['fields'][$fieldName]['fieldParameters'][$parameterName] = $parameterValue;
 	}
 	
+	private $ftpSources = array();
+	public function setFtpSource($sourceKey, $host="di1.bx-cloud.com", $port=21, $user=null, $password=null, $remoteDir = '/sources/production', $protocol=0, $type=0, $logontype=1,
+				$timezoneoffset=0, $pasvMode='MODE_DEFAULT', $maximumMultipeConnections=0, $encodingType='Auto', $bypassProxy=0, $syncBrowsing=0) {
+					
+		if($user==null){
+			$user = $this->bxClient->getAccount(false);
+		}
+		
+		if($password==null){
+			$password = $this->bxClient->getPassword();
+		}
+		
+		$params = array();
+		$params['Host'] = $host;
+		$params['Port'] = $port;
+		$params['User'] = $user;
+		$params['Pass'] = $password;
+		$params['Protocol'] = $protocol;
+		$params['Type'] = $type;
+		$params['Logontype'] = $logontype;
+		$params['TimezoneOffset'] = $timezoneoffset;
+		$params['PasvMode'] = $pasvMode;
+		$params['MaximumMultipleConnections'] = $maximumMultipeConnections;
+		$params['EncodingType'] = $encodingType;
+		$params['BypassProxy'] = $bypassProxy;
+		$params['Name'] = $user . " at " . $host;
+		$params['RemoteDir'] = $remoteDir;
+		$params['SyncBrowsing'] = $syncBrowsing;
+		list($container, $sourceId) = $this->decodeSourceKey($sourceKey);
+		$this->ftpSources[$sourceId] = $params;
+	}
+	
 	public function getXML() {
 		
 		$xml = new \SimpleXMLElement('<root/>');
@@ -363,6 +395,18 @@ class BxData
 					}
 				}
 				
+				if(isset($this->ftpSources[$sourceId])) {
+					$param = $source->addChild('location');
+					$param->addAttribute('type', 'ftp');
+					
+					$ftp = $source->addChild('ftp');
+					$ftp->addAttribute('name', 'ftp');
+					
+					foreach($this->ftpSources[$sourceId] as $ftpPn => $ftpPv) {
+						$ftp->$ftpPn = $ftpPv;
+					}
+				}
+				
 				if(isset($sourceValues['fields'])) {
 					foreach($sourceValues['fields'] as $fieldId => $fieldValues) {
 						
@@ -426,14 +470,14 @@ class BxData
         $s = curl_init();
 		
         curl_setopt($s, CURLOPT_URL, $url);
-        curl_setopt($s, CURLOPT_TIMEOUT, 600);
+        curl_setopt($s, CURLOPT_TIMEOUT, 35000);
         curl_setopt($s, CURLOPT_POST, true);
         curl_setopt($s, CURLOPT_ENCODING, '');
         curl_setopt($s, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($s, CURLOPT_POSTFIELDS, $fields);
 
         $responseBody = curl_exec($s);
-
+		
 		if($responseBody === false)
 		{
 			if(strpos(curl_error($s), "couldn't open file") !== false) {
@@ -538,6 +582,9 @@ class BxData
 		$files = array();
 		foreach($this->sources as $container => $containerSources) {
 			foreach($containerSources as $sourceId => $sourceValues) {
+				if(isset($this->ftpSources[$sourceId])) {
+					continue;
+				}
 				if(!isset($sourceValues['file'])) {
 					$sourceValues['file'] = $this->getFileNameFromPath($sourceValues['filePath']);
 				}
@@ -602,9 +649,9 @@ class BxData
 		return $zipFilePath;
     }
 	
-	public function pushData($temporaryFilePath = null, $archiveName = 'bxdata.zip') {
+	public function pushData($temporaryFilePath=null) {
 		
-		$zipFile = $this->createZip($temporaryFilePath, $archiveName);
+		$zipFile = $this->createZip($temporaryFilePath);
 		
 		$fields = array(
             'username' => $this->bxClient->getUsername(),
