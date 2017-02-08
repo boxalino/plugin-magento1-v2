@@ -470,7 +470,7 @@ class BxData
         $s = curl_init();
 		
         curl_setopt($s, CURLOPT_URL, $url);
-        curl_setopt($s, CURLOPT_TIMEOUT, 35000);
+        curl_setopt($s, CURLOPT_TIMEOUT, 600);
         curl_setopt($s, CURLOPT_POST, true);
         curl_setopt($s, CURLOPT_ENCODING, '');
         curl_setopt($s, CURLOPT_RETURNTRANSFER, true);
@@ -593,7 +593,7 @@ class BxData
 		}
 		return $files;
 	}
-	
+
     public function createZip($temporaryFilePath=null, $name='bxdata.zip')
     {
 		if($temporaryFilePath === null) {
@@ -648,12 +648,12 @@ class BxData
 		
 		return $zipFilePath;
     }
-	
-	public function pushData($temporaryFilePath=null) {
-		
-		$zipFile = $this->createZip($temporaryFilePath);
-		
-		$fields = array(
+
+    public function pushData($temporaryFilePath = null, $archiveName = 'bxdata.zip') {
+
+        $zipFile = $this->createZip($temporaryFilePath, $archiveName);
+
+        $fields = array(
             'username' => $this->bxClient->getUsername(),
             'password' => $this->bxClient->getPassword(),
             'account' => $this->bxClient->getAccount(false),
