@@ -191,9 +191,16 @@
             </search>
             <autocomplete>
                 <enabled>1</enabled>
+                <category>1</category>
                 <limit>7</limit>
                 <products_limit>1</products_limit>
             </autocomplete>
+            <noresults>
+                <status>1</status>
+                <min>3</min>
+                <max>3</max>
+                <widget>noresults</widget>
+            </noresults>
             <advanced>
                 <search_sub_phrases_limit>3</search_sub_phrases_limit>
             </advanced>
@@ -203,16 +210,19 @@
                 <status>1</status>
                 <min>3</min>
                 <max>3</max>
+                <widget>basket</widget>
             </cart>
             <related>
                 <status>1</status>
                 <min>3</min>
                 <max>3</max>
+                <widget>similar</widget>
             </related>
             <upsell>
                 <status>1</status>
                 <min>3</min>
                 <max>3</max>
+                <widget>complementary</widget>
             </upsell>
         </bxRecommendations>
     </default>

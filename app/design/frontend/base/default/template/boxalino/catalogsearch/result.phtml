@@ -1,3 +1,12 @@
+<?php
+if ($this->correctedQuery != null) {
+    ?>
+    <h1>
+        <a href="<?php echo $this->getCorrectedQueryLink(); ?>"><?php echo $this->__("Did you mean") . ": "; echo "'" . $this->correctedQuery ."' ?"; ?></a>
+    </h1>
+    <?php
+}
+?>
 <?php for($i=0; $i<$this->getSubPhrasesResultCount(); $i++) : ?>
     <h1>
         <a href="<?php echo $this->getSearchQueryLink($i); ?>"><?php echo $this->getSubPhrasesResultText($i); ?></a>

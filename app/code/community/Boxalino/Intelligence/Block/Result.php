@@ -3,7 +3,7 @@
 /**
  * Class Boxalino_Intelligence_Block_Result
  */
-class Boxalino_Intelligence_Block_Result extends Mage_CatalogSearch_Block_Result{
+class Boxalino_Intelligence_Block_Result extends Mage_CatalogSearch_Block_Result {
 
     /**
      * @var bool
@@ -21,20 +21,29 @@ class Boxalino_Intelligence_Block_Result extends Mage_CatalogSearch_Block_Result
     protected $queries = array();
 
     /**
+     * @var null
+     */
+    protected $correctedQuery = null;
+    
+    /**
      * Boxalino_Intelligence_Block_Result constructor
      */
-    public function _construct(){
+    public function _construct() {
 
         $this->bxHelperData = Mage::helper('boxalino_intelligence');
-        try{
-            if( $this->bxHelperData->isSearchEnabled()){
-                if($this->hasSubPhrases()){
+        $p13nHelper = $this->bxHelperData->getAdapter();
+        try {
+            if ($this->bxHelperData->isSearchEnabled()) {
+                if ($this->hasSubPhrases()) {
+                    if ($p13nHelper->areResultsCorrectedAndAlsoProvideSubPhrases()) {
+                        $this->correctedQuery = $p13nHelper->getCorrectedQuery();
+                    }
                     $this->queries =  $this->bxHelperData->getAdapter()->getSubPhrasesQueries();
                 }
-            }else{
+            } else {
                 $this->fallback = true;
             }
-        }catch(\Exception $e){
+        } catch (\Exception $e){
             $this->fallback = true;
             Mage::logException($e);
         }
@@ -45,23 +54,30 @@ class Boxalino_Intelligence_Block_Result extends Mage_CatalogSearch_Block_Result
      * @param $index
      * @return string
      */
-    public function getSearchQueryLink($index){
+    public function getSearchQueryLink($index) {
 
         return Mage::getUrl('*/*', array('_query' => 'q=' . $this->queries[$index]));
     }
 
     /**
+     * @return string
+     */
+    public function getCorrectedQueryLink() {
+        return Mage::getUrl('*/*', array('_query' => 'q=' . $this->correctedQuery));
+    }
+
+    /**
      * @return int|null
      */
-    public function hasSubPhrases(){
+    public function hasSubPhrases() {
 
-        if($this->fallback){
+        if ($this->fallback) {
             return 0;
         }
-
-        try{
+        
+        try {
             return Mage::helper('boxalino_intelligence')->getAdapter()->areThereSubPhrases();
-        }catch(\Exception $e){
+        } catch (\Exception $e){
             Mage::logException($e);
         }
         return null;
@@ -71,22 +87,27 @@ class Boxalino_Intelligence_Block_Result extends Mage_CatalogSearch_Block_Result
      * @param string $template
      * @return $this|Mage_Core_Block_Template
      */
-    public function setTemplate($template){
+    public function setTemplate($template) {
 
-        if(!$this->hasSubPhrases()){
-            return parent::setTemplate($template);
+        if ($this->hasSubPhrases()) {
+            $this->_template = 'boxalino/catalogsearch/result.phtml';
+            return $this;
         }
-        $this->_template = 'boxalino/catalogsearch/result.phtml';
-        return $this;
+        if ($this->hasNoResult()) {
+            $this->_template = 'boxalino/catalogsearch/noresults.phtml';
+            return $this;
+        }
+
+        return parent::setTemplate($template);
     }
     /**
      * Retrieve search result count
      *
      * @return string
      */
-    public function getResultCount(){
-
-        if($this->fallback){
+    public function getResultCount() {
+        
+        if ($this->fallback) {
             return parent::getResultCount();
         }
         if (!$this->getData('result_count')) {
@@ -105,21 +126,21 @@ class Boxalino_Intelligence_Block_Result extends Mage_CatalogSearch_Block_Result
     /**
      * @return string
      */
-    public function getHeaderText(){
+    public function getHeaderText() {
 
         $bxHelperData = Mage::helper('boxalino_intelligence');
-        if(!$this->fallback && $bxHelperData->getAdapter()->areResultsCorrected()){
+        if (!$this->fallback && $bxHelperData->getAdapter()->areResultsCorrected()) {
             return $this->__("Corrected search results for '%s'", $bxHelperData->getAdapter()->getCorrectedQuery());
         }
         return parent::getHeaderText();
     }
-
+    
     /**
      * @return string
      */
-    public function getProductListHtml(){
+    public function getProductListHtml() {
 
-        if($this->fallback){
+        if ($this->fallback) {
             return parent::getProductListHtml();
         }
         // We do not want to render toolbar.
@@ -142,9 +163,19 @@ class Boxalino_Intelligence_Block_Result extends Mage_CatalogSearch_Block_Result
      * @param $index
      * @return string
      */
-    public function getSubPhrasesResultText($index){
+    public function getSubPhrasesResultText($index) {
 
         $query = $this->queries[$index];
         return $this->__("Search result for: '%s'", $query);
     }
+
+    /**
+     * @return bool
+     */
+    protected function hasNoResult() {
+
+        $bxHelperData = Mage::helper('boxalino_intelligence');
+        return (boolean) !count($bxHelperData->getAdapter()->getEntitiesIds());
+    }
+
 }
