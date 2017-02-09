@@ -455,6 +455,10 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
         return self::$bxClient->getResponse()->getSubPhraseHitIds($queryText, $this->currentSearchChoice, 0, $this->getEntityIdFieldName());
     }
 
+    public function flushResponses() {
+        self::$bxClient->flushResponses();
+    }
+
     /**
      * @param $widgetName
      * @param array $context

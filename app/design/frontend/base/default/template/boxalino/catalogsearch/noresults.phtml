@@ -1,0 +1,20 @@
+<div class="page-title">
+    <h1><?php echo ($this->getHeaderText() || $this->getHeaderText() === false) ? $this->getHeaderText() : $this->__("Search results for '%s'", $this->helper('catalogsearch')->getEscapedQueryText()) ?></h1>
+</div>
+<p class="note-msg">
+    <?php echo ($this->getNoResultText()) ? $this->getNoResultText() : $this->__('Your search returns no results.') ?>
+    <?php if ($messages = $this->getNoteMessages()):?>
+        <?php foreach ($messages as $message):?>
+            <br /><?php echo $message?>
+        <?php endforeach;?>
+    <?php endif; ?>
+</p>
+<br><br>
+<?php
+echo $this->getLayout()
+    ->createBlock("boxalino_intelligence/recommendation")
+    ->setTemplate("boxalino/recommendation.phtml")
+    ->setData('widget', 'noresults')
+    ->setData('title', $this->__('You may be interested in the following products'))
+    ->toHtml();
+?>
