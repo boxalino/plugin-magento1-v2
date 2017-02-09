@@ -51,7 +51,6 @@ class Boxalino_Intelligence_Block_Layer_View extends Mage_Catalog_Block_Layer_Vi
      */
     public function getFilters(){
 
-        echo "view";exit;
         $bxHelperData = Mage::helper('boxalino_intelligence');
         if($bxHelperData->isFilterLayoutEnabled($this->getLayer()) && $bxHelperData->isLeftFilterEnabled() && !$bxHelperData->getAdapter()->areThereSubPhrases()){
             if(empty($this->bxFilters)){
