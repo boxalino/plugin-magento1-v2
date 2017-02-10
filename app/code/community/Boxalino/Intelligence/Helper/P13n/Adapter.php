@@ -182,11 +182,15 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
                 if ($i == 0) {
                     $textualSuggestionFacets = $bxAutocompleteResponse->getTextualSuggestionFacets($suggestion);
                     if ($textualSuggestionFacets != null) {
-                        foreach ($textualSuggestionFacets->getCategories() as $category) {
+						$count = 0;
+                        foreach ($textualSuggestionFacets->getCategories('counter', 1) as $category) {
                             $_data['categories'][] = ['id' => $facets->getCategoryValueId($category),
                                 'title' => $facets->getCategoryValueLabel($category),
                                 'num_results' => $facets->getCategoryValueCount($category)
                             ];
+							if($count++>=3) {
+								break;
+							}
                         }
                     }
                 }
