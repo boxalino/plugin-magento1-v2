@@ -72,11 +72,13 @@ class BxFacets
     }
 
     protected function getFacetResponse($fieldName) {
-        foreach($this->facetResponse as $facetResponse) {
-            if($facetResponse->fieldName == $fieldName) {
-                return $facetResponse;
-            }
-        }
+        if($this->facetResponse != null) {
+			foreach($this->facetResponse as $facetResponse) {
+				if($facetResponse->fieldName == $fieldName) {
+					return $facetResponse;
+				}
+			}
+		}
         throw new \Exception("trying to get facet response on unexisting fieldname " . $fieldName);
     }
 	
@@ -208,9 +210,15 @@ class BxFacets
 	
 	public function getSelectedValues($fieldName) {
 		$selectedValues = array();
-        foreach($this->getFacetValues($fieldName) as $key) {
-			if($this->isFacetValueSelected($fieldName, $key)) {
-				$selectedValues[] = $key;
+        try {
+			foreach($this->getFacetValues($fieldName) as $key) {
+				if($this->isFacetValueSelected($fieldName, $key)) {
+					$selectedValues[] = $key;
+				}
+			}
+		} catch(\Exception $e) {
+			if(isset($this->facets[$fieldName]['selectedValues'])) {
+				return $this->facets[$fieldName]['selectedValues'];
 			}
 		}
 		return $selectedValues;
@@ -328,8 +336,6 @@ class BxFacets
 			}
 			if($facet['type'] == 'ranged') {
 				if(isset($this->facets[$fieldName]['selectedValues'][0])) {
-					$values = explode('-', $this->facets[$fieldName]['selectedValues'][0]);
-
 					return $this->facets[$fieldName]['selectedValues'][0];
 				}
 			}
