@@ -166,7 +166,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
 			$collection = Mage::getResourceModel('catalog/product_collection');
 			$entity_ids = $bxAutocompleteResponse->getBxSearchResponse()->getHitIds($this->currentSearchChoice);
 			$list = $collection->addFieldToFilter('entity_id', $entity_ids)
-				->addAttributeToselect('*')->load();
+				->addAttributeToSelect('*')->load();
 			$data['global_products'] = $autocomplete->getListValues($list);
 					
             foreach ($bxAutocompleteResponse->getTextualSuggestions() as $i => $suggestion) {
@@ -209,7 +209,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
                 if (count($entity_ids) > 0) {
                     $collection = Mage::getResourceModel('catalog/product_collection');
                     $list = $collection->addFieldToFilter('entity_id', $entity_ids)
-                        ->addAttributeToselect('*')->load();
+                        ->addAttributeToSelect('*')->load();
                     $_data['products'] = $autocomplete->getListValues($list);
                 }
 

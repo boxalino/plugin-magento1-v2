@@ -50,7 +50,7 @@ class Boxalino_Intelligence_Block_Autocomplete extends Mage_CatalogSearch_Block_
                     $catalogSearchHelper = Mage::helper('catalogsearch');
                     $resultUrl = $catalogSearchHelper->getResultUrl();
                     foreach ($item['categories'] as $category){
-                        $suggestionHtml .= $this->__("in") . ' <a href="'.$resultUrl.'?q='.$item['title'].'&bx_category_id='.$category['id'].'" class="facet"> <li class="facet"><span class="query-title">'.$category['title'].'</span>';
+                        $suggestionHtml .= '<a href="'.$resultUrl.'?q='.$item['title'].'&bx_category_id='.$category['id'].'" class="facet"> <li class="facet"><span class="query-title">' . $this->__("in") . ' ' .  $category['title'].'</span>';
                         $suggestionHtml .= '<span class="amount">'.$category['num_result'].'</span></li></a>';
                     }
                 }
