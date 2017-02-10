@@ -192,6 +192,9 @@
             <autocomplete>
                 <enabled>1</enabled>
                 <category>1</category>
+                <count>3</count>
+                <ranking>counter</ranking>
+                <level>1</level>
                 <limit>7</limit>
                 <products_limit>1</products_limit>
             </autocomplete>
