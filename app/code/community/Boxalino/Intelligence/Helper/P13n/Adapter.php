@@ -190,12 +190,12 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
                     $textualSuggestionFacets = $bxAutocompleteResponse->getTextualSuggestionFacets($suggestion);
                     if ($textualSuggestionFacets != null) {
 						$count = 0;
-                        foreach ($textualSuggestionFacets->getCategories('counter', 1) as $category) {
+                        foreach ($textualSuggestionFacets->getCategories($autocompleteConfig['ranking'], $autocompleteConfig['level']) as $category) {
                             $_data['categories'][] = ['id' => $facets->getCategoryValueId($category),
                                 'title' => $facets->getCategoryValueLabel($category),
                                 'num_results' => $facets->getCategoryValueCount($category)
                             ];
-							if($count++>=3) {
+							if($count++>=$autocompleteConfig['count']) {
 								break;
 							}
                         }
