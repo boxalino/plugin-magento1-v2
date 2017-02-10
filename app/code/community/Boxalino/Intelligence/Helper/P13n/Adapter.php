@@ -162,6 +162,13 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
             self::$bxClient->autocomplete();
 
             $bxAutocompleteResponse = self::$bxClient->getAutocompleteResponse();
+			
+			$collection = Mage::getResourceModel('catalog/product_collection');
+			$entity_ids = $bxAutocompleteResponse->getBxSearchResponse()->getHitIds($this->currentSearchChoice);
+			$list = $collection->addFieldToFilter('entity_id', $entity_ids)
+				->addAttributeToselect('*')->load();
+			$data['global_products'] = $autocomplete->getListValues($list);
+					
             foreach ($bxAutocompleteResponse->getTextualSuggestions() as $i => $suggestion) {
 
                 $entity_ids = array();
@@ -195,16 +202,6 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
                     }
                 }
 
-                if ($i == 0) {
-                    $collection = Mage::getResourceModel('catalog/product_collection');
-                    $entity_ids = $bxAutocompleteResponse->getBxSearchResponse()->getHitIds($this->currentSearchChoice);
-                    $list = $collection->addFieldToFilter('entity_id', $entity_ids)
-                        ->addAttributeToselect('*')->load();
-                    $data['global_products'] = $autocomplete->getListValues($list);
-                    $list = null;
-                    $entity_ids = null;
-                }
-
                 foreach ($bxAutocompleteResponse->getBxSearchResponse($suggestion)->getHitIds($this->currentSearchChoice) as $id) {
                     $entity_ids[$id] = $id;
                 }
@@ -214,7 +211,6 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
                     $list = $collection->addFieldToFilter('entity_id', $entity_ids)
                         ->addAttributeToselect('*')->load();
                     $_data['products'] = $autocomplete->getListValues($list);
-                    $list = null;
                 }
 
                 if ($_data['title'] == $queryText) {
