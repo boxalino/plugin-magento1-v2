@@ -151,7 +151,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
 
             if($autocompleteConfig['category']){
                 $facets = new \com\boxalino\bxclient\v1\BxFacets();
-                $facets->addCategoryFacet();
+                $facets->addCategoryFacet(null, 1, 20);
                 $searchRequest->setFacets($facets);
             }
             $searchRequest->setReturnFields(array('products_group_id'));
