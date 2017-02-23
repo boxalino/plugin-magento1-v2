@@ -25,7 +25,7 @@ class Boxalino_Intelligence_Block_Autocomplete extends Mage_CatalogSearch_Block_
         }
 
         $productHtml = '<ul class="products">';
-        $globalProducts = $suggestData['global_products'];
+        $globalProducts = isset($suggestData['global_products']) ? $suggestData['global_products'] : [];
         foreach ($globalProducts as $product) {
             $global_html = '';
             $global_html = '<li title="global products" ';
@@ -50,8 +50,11 @@ class Boxalino_Intelligence_Block_Autocomplete extends Mage_CatalogSearch_Block_
                     $catalogSearchHelper = Mage::helper('catalogsearch');
                     $resultUrl = $catalogSearchHelper->getResultUrl();
                     foreach ($item['categories'] as $category){
-                        $suggestionHtml .= '<a href="'.$resultUrl.'?q='.$item['title'].'&bx_category_id='.$category['id'].'" class="facet"> <li class="facet"><span class="query-title">' . $this->__("in") . ' ' .  $category['title'].'</span>';
-                        $suggestionHtml .= '<span class="amount">'.$category['num_result'].'</span></li></a>';
+                        if (!isset($category['num_results'])) {
+                            $category['num_results'] = 0;
+                        }
+                        $suggestionHtml .= '<li class="facet"><a href="' . $resultUrl . '?q=' . $item['title'] . '&bx_category_id=' . $category['id'] . '" class="facet"><span class="query-title">' . $this->__("in %s", $category['title']) . '</span>';
+                        $suggestionHtml .= '<span class="amount">('.$category['num_results'].')</span></li></a>';
                     }
                 }
                 foreach($item['products'] as $product){

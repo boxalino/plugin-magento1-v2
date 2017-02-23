@@ -1,15 +1,16 @@
 <?php
+/** @var Mage_CatalogSearch_Block_Result $this */
 if ($this->correctedQuery != null) {
     ?>
     <h1>
-        <a href="<?php echo $this->getCorrectedQueryLink(); ?>"><?php echo $this->__("Did you mean") . ": "; echo "'" . $this->correctedQuery ."' ?"; ?></a>
+        <a href="<?php echo $this->escapeUrl($this->getCorrectedQueryLink()); ?>"><?php echo $this->__("Did you mean") . ": "; echo "'" . $this->escapeHtml($this->correctedQuery) ."' ?"; ?></a>
     </h1>
     <?php
 }
 ?>
 <?php for($i=0; $i<$this->getSubPhrasesResultCount(); $i++) : ?>
     <h1>
-        <a href="<?php echo $this->getSearchQueryLink($i); ?>"><?php echo $this->getSubPhrasesResultText($i); ?></a>
+        <a href="<?php echo $this->escapeUrl($this->getSearchQueryLink($i)); ?>"><?php echo $this->escapeHtml($this->getSubPhrasesResultText($i)); ?></a>
     </h1>
     <?php
     Boxalino_Intelligence_Block_Product_List::$number = $i;

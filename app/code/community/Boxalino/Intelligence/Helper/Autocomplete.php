@@ -15,7 +15,8 @@ class Boxalino_Intelligence_Helper_Autocomplete{
             $value = array();
             $value['name'] = $product->getName();
             $value['url'] = $product->getProductUrl();
-            $value['price'] = strip_tags($product->getFormatedPrice());
+            // FIXME Because we do not need this for now we do not want to load it.
+//            $value['price'] = strip_tags($product->getFormatedPrice());
             $value['image'] = $product->getThumbnailUrl();
             $values[$product->getId()] = $value;
         }

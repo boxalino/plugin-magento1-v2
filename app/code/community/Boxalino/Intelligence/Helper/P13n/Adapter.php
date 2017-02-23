@@ -163,9 +163,12 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
             $bxAutocompleteResponse = self::$bxClient->getAutocompleteResponse();
 			
 			$collection = Mage::getResourceModel('catalog/product_collection');
-			$entity_ids = $bxAutocompleteResponse->getBxSearchResponse()->getHitIds($this->currentSearchChoice);
-			$list = $collection->addFieldToFilter('entity_id', $entity_ids)
-				->addAttributeToSelect('*')->load();
+            $list = [];
+			if (($entityIds = $bxAutocompleteResponse->getBxSearchResponse()->getHitIds($this->currentSearchChoice))) {
+                $list = $collection->addFieldToFilter('entity_id', $entityIds)
+                    ->addAttributeToSelect('name')
+                    ->addUrlRewrite();
+            }
 			$data['global_products'] = $autocomplete->getListValues($list);
 					
             foreach ($bxAutocompleteResponse->getTextualSuggestions() as $i => $suggestion) {
