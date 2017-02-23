@@ -144,11 +144,7 @@ class Boxalino_Intelligence_Block_Result extends Mage_CatalogSearch_Block_Result
         if ($this->fallback) {
             return parent::getProductListHtml();
         }
-        // We do not want to render toolbar.
-        if ($this->hasSubPhrases()) {
-            $listBlock = $this->getChild('search_result_list');
-            $listBlock->setRenderWithoutToolbar(true);
-        }
+        // Be careful: This will render toolbar in every subphrase result set if subphrases exist.
         return $this->getChildHtml('search_result_list', false);
     }
 
