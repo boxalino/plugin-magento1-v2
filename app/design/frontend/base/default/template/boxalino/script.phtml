@@ -21,7 +21,7 @@ $account = Mage::getStoreConfig('bxGeneral/general/account_name');
     <?php endif; ?>
 
     <?php if ($this->isSearch()): ?>
-    <?php echo $_helper->reportSearch($_GET['q'], $_helper->getFiltersValues($_GET)); ?>
+    <?php echo $_helper->reportSearch(Mage::app()->getRequest()->getParam('q'), Mage::app()->getRequest()->getParams()); ?>
     <?php endif; ?>
 
     (function () {

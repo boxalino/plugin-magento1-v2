@@ -81,6 +81,15 @@
                 </observers>
             </customer_login>
         </events>
+        <translate>
+            <modules>
+                <Boxalino_Intelligence>
+                    <files>
+                        <default>Boxalino_Intelligence.csv</default>
+                    </files>
+                </Boxalino_Intelligence>
+            </modules>
+        </translate>
     </frontend>
     <global>
         <index>

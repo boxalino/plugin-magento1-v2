@@ -51,14 +51,13 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
     protected function initializeBXClient() {
         
         if(self::$bxClient == null) {
-            $generalConfig = Mage::getStoreConfig('bxGeneral');
-            $account = $generalConfig['general']['account_name'];
-            $password = $generalConfig['general']['password'];
-            $isDev = $generalConfig['general']['dev'];
-            $host = $generalConfig['advanced']['host'];
-            $p13n_username = $generalConfig['advanced']['p13n_username'];
-            $p13n_password = $generalConfig['advanced']['p13n_password'];
-            $domain = $generalConfig['general']['domain'];
+            $account = Mage::getStoreConfig('bxGeneral/general/account_name');
+            $password = Mage::getStoreConfig('bxGeneral/general/password');
+            $isDev = Mage::getStoreConfig('bxGeneral/general/dev');
+            $host = Mage::getStoreConfig('bxGeneral/advanced/host');
+            $p13n_username = Mage::getStoreConfig('bxGeneral/advanced/p13n_username');
+            $p13n_password = Mage::getStoreConfig('bxGeneral/advanced/p13n_password');
+            $domain = Mage::getStoreConfig('bxGeneral/general/domain');
             self::$bxClient = new \com\boxalino\bxclient\v1\BxClient($account, $password, $domain, $isDev, $host, null, null, null, $p13n_username, $p13n_password);
             self::$bxClient->setTimeout(Mage::getStoreConfig('bxGeneral/advanced/thrift_timeout'));
 
@@ -164,9 +163,12 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
             $bxAutocompleteResponse = self::$bxClient->getAutocompleteResponse();
 			
 			$collection = Mage::getResourceModel('catalog/product_collection');
-			$entity_ids = $bxAutocompleteResponse->getBxSearchResponse()->getHitIds($this->currentSearchChoice);
-			$list = $collection->addFieldToFilter('entity_id', $entity_ids)
-				->addAttributeToSelect('*')->load();
+            $list = [];
+			if (($entityIds = $bxAutocompleteResponse->getBxSearchResponse()->getHitIds($this->currentSearchChoice))) {
+                $list = $collection->addFieldToFilter('entity_id', $entityIds)
+                    ->addAttributeToSelect('name')
+                    ->addUrlRewrite();
+            }
 			$data['global_products'] = $autocomplete->getListValues($list);
 					
             foreach ($bxAutocompleteResponse->getTextualSuggestions() as $i => $suggestion) {
@@ -470,7 +472,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
      */
     public function getRecommendation($widgetName, $context = array(), $widgetType = '', $minAmount = 3, $amount = 3, $execute=true){
 
-        if(!$execute){
+        if(!$execute || !isset(self::$choiceContexts[$widgetName])){
             if (!isset(self::$choiceContexts[$widgetName])) {
                 self::$choiceContexts[$widgetName] = [];
             }
@@ -513,7 +515,9 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
                     self::$bxClient->addRequest($bxRequest);
                 }
             }
-            return array();
+            if (!$execute) {
+                return array();
+            }
         }
         $count = array_search(json_encode(array($context)), self::$choiceContexts[$widgetName]);
         return self::$bxClient->getResponse()->getHitIds($widgetName, true, $count);

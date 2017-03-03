@@ -29,9 +29,8 @@ class Boxalino_Intelligence_Block_Layer_State extends Mage_Catalog_Block_Layer_S
             try{
                 $facets = $bxHelperData->getAdapter()->getFacets();
                 foreach ($bxHelperData->getAllFacetFieldNames() as $fieldName){
-
-                    if($facets->isSelected($fieldName)){
-
+                    // Even if facets are empty we like to display filters.
+                    if($facets && $facets->isSelected($fieldName)){
                         $value = $facets->getSelectedValueLabel($fieldName);
                         if($fieldName == 'discountedPrice'){
                             $value = substr_replace($value, '0', strlen($value)-1);
@@ -42,6 +41,7 @@ class Boxalino_Intelligence_Block_Layer_State extends Mage_Catalog_Block_Layer_S
                             ->setRequestVar(str_replace('bx_products_', '', $facets->getFacetParameterName($fieldName)));
                         $filters[] = Mage::getModel('catalog/layer_filter_item')
                             ->setFilter($filter)
+                            ->setLabel($value)
                             ->setValue($value)
                             ->setFieldName($fieldName);
                     }

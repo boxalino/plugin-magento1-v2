@@ -89,15 +89,16 @@ class Boxalino_Intelligence_Block_Result extends Mage_CatalogSearch_Block_Result
      */
     public function setTemplate($template) {
 
-        if ($this->hasSubPhrases()) {
-            $this->_template = 'boxalino/catalogsearch/result.phtml';
-            return $this;
+        if ($this->bxHelperData->isSearchEnabled()) {
+            if ($this->hasSubPhrases()) {
+                $this->_template = 'boxalino/catalogsearch/result.phtml';
+                return $this;
+            }
+            if ($this->hasNoResult()) {
+                $this->_template = 'boxalino/catalogsearch/noresults.phtml';
+                return $this;
+            }
         }
-        if ($this->hasNoResult()) {
-            $this->_template = 'boxalino/catalogsearch/noresults.phtml';
-            return $this;
-        }
-
         return parent::setTemplate($template);
     }
     /**
@@ -143,6 +144,7 @@ class Boxalino_Intelligence_Block_Result extends Mage_CatalogSearch_Block_Result
         if ($this->fallback) {
             return parent::getProductListHtml();
         }
+        // Be careful: This will render toolbar in every subphrase result set if subphrases exist.
         return $this->getChildHtml('search_result_list', false);
     }
 

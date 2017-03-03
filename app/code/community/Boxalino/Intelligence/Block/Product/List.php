@@ -10,6 +10,8 @@ class Boxalino_Intelligence_Block_Product_List extends Mage_Catalog_Block_Produc
      */
     public static $number = 0;
 
+    protected $_subPhraseCollections = [];
+
     /**
      * @return Mage_Eav_Model_Entity_Collection_Abstract
      */
@@ -19,47 +21,51 @@ class Boxalino_Intelligence_Block_Product_List extends Mage_Catalog_Block_Produc
         $bxHelperData = Mage::helper('boxalino_intelligence');
         $p13nHelper = $bxHelperData->getAdapter();
         $layer = $this->getLayer();
-
-        try {
-            if ($bxHelperData->isEnabledOnLayer($layer)) {
-                if(count($this->_productCollection) && !$p13nHelper->areThereSubPhrases()){
-                    return $this->_productCollection;
-                }
-
-                if(get_class($layer) == 'Mage_Catalog_Model_Layer'){
-                    // We skip boxalino processing if category is static cms block only.
-                    if (Mage::getBlockSingleton('catalog/category_view')->isContentMode()) {
-                        return parent::_getProductCollection();
+        if (null === $this->_productCollection && !(isset($this->_subPhraseCollections[self::$number]))) {
+            try {
+                if ($bxHelperData->isEnabledOnLayer($layer)) {
+                    if ($layer instanceof Mage_Catalog_Model_Layer) {
+                        // We skip boxalino processing if category is static cms block only.
+                        if (Mage::getBlockSingleton('catalog/category_view')->getCurrentCategory()
+                            && Mage::getBlockSingleton('catalog/category_view')->isContentMode()
+                        ) {
+                            return parent::_getProductCollection();
+                        }
                     }
-                }
 
-                if ($p13nHelper->areThereSubPhrases()) {
-                    $queries = $p13nHelper->getSubPhrasesQueries();
-                    $entity_ids = $p13nHelper->getSubPhraseEntitiesIds($queries[self::$number]);
-                    $entity_ids = array_slice($entity_ids, 0, $bxHelperData->getSubPhrasesLimit());
+                    if ($p13nHelper->areThereSubPhrases()) {
+                        $queries = $p13nHelper->getSubPhrasesQueries();
+                        $entity_ids = $p13nHelper->getSubPhraseEntitiesIds($queries[self::$number]);
+                        $entity_ids = array_slice($entity_ids, 0, $bxHelperData->getSubPhrasesLimit());
+                    } else {
+                        $entity_ids = $p13nHelper->getEntitiesIds();
+                    }
+
+                    if (count($entity_ids) == 0) {
+                        $entity_ids = array(0);
+                    }
+                    $this->_setupCollection($entity_ids);
+                    // Soft cache subphrases to prevent multiple requests.
+                    if ($p13nHelper->areThereSubPhrases()) {
+                        $this->_subPhraseCollections[self::$number] = $this->_productCollection;
+                        $this->_productCollection = null;
+                    }
                 } else {
-                    $entity_ids = $p13nHelper->getEntitiesIds();
+                    $this->_productCollection = parent::_getProductCollection();
                 }
-
-                if (count($entity_ids) == 0) {
-                    $entity_ids = array(0);
-                }
-                $this->_setupCollection($entity_ids);
-            } else {
-                parent::_getProductCollection();
+            } catch (\Exception $e) {
+                Mage::logException($e);
             }
-        } catch (\Exception $e) {
-            Mage::logException($e);
-            parent::_getProductCollection();
         }
-        return $this->_productCollection;
+        return (isset($this->_subPhraseCollections[self::$number]))
+            ? $this->_subPhraseCollections[self::$number] : $this->_productCollection;
     }
 
     /**
      * @param $entity_ids
      * @throws Exception
      */
-    private function _setupCollection($entity_ids){
+    protected function _setupCollection($entity_ids){
 
         $this->_productCollection = Mage::getResourceModel('catalog/product_collection');
 
@@ -67,7 +73,14 @@ class Boxalino_Intelligence_Block_Product_List extends Mage_Catalog_Block_Produc
             ->setStore($this->getLayer()->getCurrentStore())
             ->addFieldToFilter('entity_id', $entity_ids)
             ->addAttributeToSelect(Mage::getSingleton('catalog/config')->getProductAttributes())
-            ->addUrlRewrite($this->getLayer()->getCurrentCategory()->getId());
+            ->addMinimalPrice()
+            ->addFinalPrice()
+            ->addTaxPercents()
+            ->addStoreFilter()
+            ->addUrlRewrite();
+
+        Mage::getSingleton('catalog/product_status')->addVisibleFilterToCollection($this->_productCollection);
+        Mage::getSingleton('catalog/product_visibility')->addVisibleInSearchFilterToCollection($this->_productCollection);
 
         $this->_productCollection
             ->getSelect()
@@ -83,7 +96,7 @@ class Boxalino_Intelligence_Block_Product_List extends Mage_Catalog_Block_Produc
             throw $e;
         }
 
-        $lastPage = ceil($totalHitCount /$limit);
+        $lastPage = ceil($totalHitCount / $limit);
         $this->_productCollection
             ->setLastBxPage($lastPage)
             ->setBxTotal($totalHitCount)
