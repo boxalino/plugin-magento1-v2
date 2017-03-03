@@ -165,9 +165,14 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
 			$collection = Mage::getResourceModel('catalog/product_collection');
             $list = [];
 			if (($entityIds = $bxAutocompleteResponse->getBxSearchResponse()->getHitIds($this->currentSearchChoice))) {
+
+                $show_price = Mage::getStoreConfig('bxSearch/autocomplete/show_price');
                 $list = $collection->addFieldToFilter('entity_id', $entityIds)
                     ->addAttributeToSelect('name')
                     ->addUrlRewrite();
+                if($show_price) {
+                    $list->addAttributeToSelect('price');
+                }
             }
 			$data['global_products'] = $autocomplete->getListValues($list);
 					

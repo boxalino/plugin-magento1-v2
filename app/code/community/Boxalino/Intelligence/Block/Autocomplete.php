@@ -26,6 +26,8 @@ class Boxalino_Intelligence_Block_Autocomplete extends Mage_CatalogSearch_Block_
 
         $productHtml = '<ul class="products">';
         $globalProducts = isset($suggestData['global_products']) ? $suggestData['global_products'] : [];
+        $show_price = Mage::getStoreConfig('bxSearch/autocomplete/show_price');
+
         foreach ($globalProducts as $product) {
             $global_html = '';
             $global_html = '<li title="global products" ';
@@ -33,6 +35,9 @@ class Boxalino_Intelligence_Block_Autocomplete extends Mage_CatalogSearch_Block_
             $global_html .= '<a href="'.$product['url'].'">';
             $global_html .= '<div class="product-image"><img src="'.$product['image'].'" alt="'.$this->escapeHtml($product['name']).'" /></div>';
             $global_html .= '<div class="product-title"><span>'.$this->escapeHtml($product['name']).'</span></div>';
+            if ($show_price) {
+                $global_html .= '<div class="product-price"><span>'.$this->escapeHtml($product['price']).'</span></div>';
+            }
             $global_html .= '</a></li>';
             $productHtml .= $global_html;
 
@@ -67,11 +72,15 @@ class Boxalino_Intelligence_Block_Autocomplete extends Mage_CatalogSearch_Block_
     }
 
     private function generateProductHtml($product, $item) {
+        ;
         $html = '<li title="'.$this->escapeHtml($item['title']).'" style="display:none" ';
         $html .= 'class="product-autocomplete" data-word="'.$item['hash'].'">';
         $html .= '<a href="'.$product['url'].'">';
         $html .= '<div class="product-image"><img src="'.$product['image'].'" alt="'.$this->escapeHtml($product['name']).'" /></div>';
         $html .= '<div class="product-title"><span>'.$this->escapeHtml($product['name']).'</span></div>';
+        if (Mage::getStoreConfig('bxSearch/autocomplete/show_price')) {
+            $html .= '<div class="product-price"><span>'.$this->escapeHtml($product['price']).'</span></div>';
+        }
         $html .= '</a></li>';
         return $html;
     }

@@ -11,12 +11,14 @@ class Boxalino_Intelligence_Helper_Autocomplete{
      */
     public function getListValues($products){
         $values = array();
+        $show_price = Mage::getStoreConfig('bxSearch/autocomplete/show_price');
         foreach($products as $product){
             $value = array();
             $value['name'] = $product->getName();
             $value['url'] = $product->getProductUrl();
-            // FIXME Because we do not need this for now we do not want to load it.
-//            $value['price'] = strip_tags($product->getFormatedPrice());
+            if ($show_price) {
+                $value['price'] = strip_tags($product->getFormatedPrice());
+            }
             $value['image'] = $product->getThumbnailUrl();
             $values[$product->getId()] = $value;
         }

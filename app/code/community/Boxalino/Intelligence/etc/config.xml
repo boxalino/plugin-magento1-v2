@@ -195,6 +195,7 @@
                 <count>3</count>
                 <ranking>counter</ranking>
                 <level>1</level>
+                <show_price>0</show_price>
                 <limit>7</limit>
                 <products_limit>1</products_limit>
             </autocomplete>
