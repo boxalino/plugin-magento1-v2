@@ -500,15 +500,22 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
         return 'products_';
     }
 
+    public function layerCheck($layer, $class){
+        if (Mage::getEdition() == Mage::EDITION_ENTERPRISE) {
+            return $layer instanceof $class;
+        } else {
+            return get_class($layer) == $class;
+        }
+    }
     /**
      * @param $layer
      * @return bool
      */
     public function isEnabledOnLayer($layer)
     {
-        if ($layer instanceof Mage_CatalogSearch_Model_Layer) {
+        if ($this->layerCheck($layer, 'Mage_CatalogSearch_Model_Layer')) {
             return $this->isSearchEnabled();
-        } elseif ($layer instanceof Mage_Catalog_Model_Layer) {
+        } elseif ($this->layerCheck($layer, 'Mage_Catalog_Model_Layer')) {
             return $this->isNavigationEnabled();
         }
         return false;
@@ -600,9 +607,9 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
     public function isFilterLayoutEnabled($layer)
     {
         $type = null;
-        if ($layer instanceof Mage_CatalogSearch_Model_Layer) {
+        if ($this->layerCheck($layer, 'Mage_CatalogSearch_Model_Layer')) {
             $type = 'search';
-        } elseif ($layer instanceof Mage_Catalog_Model_Layer) {
+        } elseif ($this->layerCheck($layer, 'Mage_Catalog_Model_Layer')) {
             $type = 'navigation';
         }
         if (null === $type) {

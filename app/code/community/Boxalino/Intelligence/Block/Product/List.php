@@ -24,7 +24,8 @@ class Boxalino_Intelligence_Block_Product_List extends Mage_Catalog_Block_Produc
         if (null === $this->_productCollection && !(isset($this->_subPhraseCollections[self::$number]))) {
             try {
                 if ($bxHelperData->isEnabledOnLayer($layer)) {
-                    if ($layer instanceof Mage_Catalog_Model_Layer) {
+                   
+                    if ($bxHelperData->layerCheck($layer, 'Mage_Catalog_Model_Layer')) {
                         // We skip boxalino processing if category is static cms block only.
                         if (Mage::getBlockSingleton('catalog/category_view')->getCurrentCategory()
                             && Mage::getBlockSingleton('catalog/category_view')->isContentMode()
