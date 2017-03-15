@@ -1507,7 +1507,10 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                     $final_transaction = null;
                 }
             }else{
-                return ;
+                if($page == 1) {
+                    return ;
+                }
+                break;
             }
 
             $data[] = $transactions_to_save;
