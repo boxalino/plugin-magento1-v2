@@ -164,6 +164,14 @@ class Boxalino_Intelligence_Helper_BxIndexConfig
     }
 
     /**
+     * @param $account
+     * @return int
+     */
+    public function getTransactionMode($account) {
+        return (int) $this->getFirstAccountStore($account)->getConfig('bxExporter/transactions/export_mode');
+    }
+    
+    /**
      * @return string
      */
     public function toString() {

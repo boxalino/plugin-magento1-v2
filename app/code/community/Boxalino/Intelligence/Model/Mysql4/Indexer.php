@@ -1351,8 +1351,7 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
         }
 
         $db = $this->_getReadAdapter();
-        $limit = 1000;
-        $count = $limit;
+        $limit = 5000;
         $page = 1;
         $header = true;
         $transactions_to_save = array();
@@ -1362,7 +1361,10 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
             $account
         );
 
-        while($count >= $limit){
+        $export_mode = $this->config->getTransactionMode($account);
+        $date = date("Y-m-d H:i:s", strtotime("-1 month"));
+
+        while(true){
 
             $configurable = array();
             $select = $db
@@ -1399,8 +1401,12 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                     )
                 )
                 ->where('order.status <> ?', 'canceled')
-                ->order(array('order.entity_id', 'item.product_type'))
-                ->limit($limit, ($page - 1) * $limit);
+                ->limit($limit, ($page - 1) * $limit)
+                ->order('order.created_at DESC');
+
+            if ($export_mode == 0) {
+                $select->where('order.created_at >= ?', $date);
+            }
 
             $transaction_attributes = $this->getTransactionAttributes($account);
 
@@ -1422,7 +1428,6 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                     );
             }
 
-            $transactions = array();
             $result = $db->query($select);
             if($result->rowCount()){
                 while($transaction = $result->fetch()){
@@ -1506,7 +1511,6 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
             }
 
             $data[] = $transactions_to_save;
-            $count = count($transactions);
             $configurable = null;
             $transactions = null;
 
