@@ -1346,6 +1346,7 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
      * @param $files
      */
     protected function exportTransactions($account, $files){
+
         if(!$this->config->isTransactionsExportEnabled($account)){
             return;
         }
@@ -1363,72 +1364,75 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
 
         $export_mode = $this->config->getTransactionMode($account);
         $date = date("Y-m-d H:i:s", strtotime("-1 month"));
+        $transaction_attributes = $this->getTransactionAttributes($account);
+        $sales_order_table = $db->getTableName($this->_prefix . 'sales_flat_order');
+        $sales_order_item = $db->getTableName($this->_prefix . 'sales_flat_order_item');
+        $sales_order_address = $db->getTableName($this->_prefix . 'sales_flat_order_address');
+        $temp_select = $db
+            ->select()
+            ->from(
+                array('order' => $sales_order_table),
+                array(
+                    'entity_id',
+                    'status',
+                    'updated_at',
+                    'created_at',
+                    'customer_id',
+                    'base_subtotal',
+                    'shipping_amount',
+                )
+            )
+            ->joinLeft(
+                array('item' => $sales_order_item),
+                'order.entity_id = item.order_id',
+                array(
+                    'product_id',
+                    'product_options',
+                    'price',
+                    'original_price',
+                    'product_type',
+                    'qty_ordered',
+                )
+            )
+            ->joinLeft(
+                array('guest' => $sales_order_address),
+                'order.billing_address_id = guest.entity_id',
+                array(
+                    'guest_id' => 'IF(guest.email IS NOT NULL, SHA1(CONCAT(guest.email, ' . $salt . ')), NULL)'
+                )
+            );
+
+        if ($export_mode == 0) {
+            $temp_select->where('order.created_at >= ?', $date);
+        }
+
+        if (count($transaction_attributes)) {
+            $billing_columns = $shipping_columns = array();
+            foreach ($transaction_attributes as $attribute) {
+                $billing_columns['billing_' . $attribute] = $attribute;
+                $shipping_columns['shipping_' . $attribute] = $attribute;
+            }
+            $temp_select
+                ->joinLeft(
+                    array('billing_address' => $sales_order_address),
+                    'order.billing_address_id = billing_address.entity_id',
+                    $billing_columns
+                )
+                ->joinLeft(
+                    array('shipping_address' => $sales_order_address),
+                    'order.shipping_address_id = shipping_address.entity_id',
+                    $shipping_columns
+                );
+        }
 
         while(true){
 
             $configurable = array();
-            $select = $db
-                ->select()
-                ->from(
-                    array('order' => $db->getTableName($this->_prefix . 'sales_flat_order')),
-                    array(
-                        'entity_id',
-                        'status',
-                        'updated_at',
-                        'created_at',
-                        'customer_id',
-                        'base_subtotal',
-                        'shipping_amount',
-                    )
-                )
-                ->joinLeft(
-                    array('item' => $db->getTableName($this->_prefix . 'sales_flat_order_item')),
-                    'order.entity_id = item.order_id',
-                    array(
-                        'product_id',
-                        'product_options',
-                        'price',
-                        'original_price',
-                        'product_type',
-                        'qty_ordered',
-                    )
-                )
-                ->joinLeft(
-                    array('guest' => $db->getTableName($this->_prefix . 'sales_flat_order_address')),
-                    'order.billing_address_id = guest.entity_id',
-                    array(
-                        'guest_id' => 'IF(guest.email IS NOT NULL, SHA1(CONCAT(guest.email, ' . $salt . ')), NULL)'
-                    )
-                )
-                ->where('order.status <> ?', 'canceled')
-                ->limit($limit, ($page - 1) * $limit)
-                ->order('order.created_at DESC');
-
-            if ($export_mode == 0) {
-                $select->where('order.created_at >= ?', $date);
-            }
-
-            $transaction_attributes = $this->getTransactionAttributes($account);
-
-            if (count($transaction_attributes)) {
-                $billing_columns = $shipping_columns = array();
-                foreach ($transaction_attributes as $attribute) {
-                    $billing_columns['billing_' . $attribute] = $attribute;
-                    $shipping_columns['shipping_' . $attribute] = $attribute;
-                }
-                $select->joinLeft(
-                    array('billing_address' => $db->getTableName($this->_prefix . 'sales_flat_order_address')),
-                    'order.billing_address_id = billing_address.entity_id',
-                    $billing_columns
-                )
-                    ->joinLeft(
-                        array('shipping_address' => $db->getTableName($this->_prefix . 'sales_flat_order_address')),
-                        'order.shipping_address_id = shipping_address.entity_id',
-                        $shipping_columns
-                    );
-            }
-
+            $select = clone $temp_select;
+            $select->limit($limit, ($page - 1) * $limit);
             $result = $db->query($select);
+            $select = null;
+
             if($result->rowCount()){
                 while($transaction = $result->fetch()){
 
@@ -1436,6 +1440,7 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                         $configurable[$transaction['product_id']] = $transaction;
                         continue;
                     }
+
                     $productOptions = unserialize($transaction['product_options']);
                     if (intval($transaction['price']) == 0 && $transaction['product_type'] == 'simple' && isset($productOptions['info_buyRequest']['product'])) {
                         if (isset($configurable[$productOptions['info_buyRequest']['product']])) {
@@ -1444,7 +1449,6 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                             $transaction['original_price'] = $pid['original_price'];
                             $transaction['price'] = $pid['price'];
                         } else {
-                            $product = $this->productFactory->create();
                             try {
                                 $pid = Mage::getModel('catalog/product')->load($productOptions['info_buyRequest']['product']);
 
@@ -1456,13 +1460,12 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                                 $tmp['price'] = $transaction['price'];
 
                                 $configurable[$productOptions['info_buyRequest']['product']] = $tmp;
-
-                                $pid = null;
                                 $tmp = null;
                             } catch (\Exception $e) {
                                 Mage::log($e, Zend_Log::CRIT, self::BOXALINO_LOG_FILE);
                             }
                         }
+                        $pid = null;
                     }
 
                     $status = 0;
@@ -1494,7 +1497,7 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                         'shipping_date' => $status == 2 ? $transaction['updated_at'] : null,
                         'status' => $transaction['status'],
                     );
-
+                    $status = null;
                     if (count($transaction_attributes)) {
                         foreach ($transaction_attributes as $attribute) {
                             $final_transaction['billing_' . $attribute] = $transaction['billing_' . $attribute];
@@ -1503,6 +1506,7 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                     }
 
                     $transactions_to_save[] = $final_transaction;
+                    $productOptions = null;
                     $guest_id_transaction = null;
                     $final_transaction = null;
                 }
@@ -1513,18 +1517,20 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                 break;
             }
 
-            $data[] = $transactions_to_save;
+            $data = $transactions_to_save;
+            $transactions_to_save = null;
             $configurable = null;
             $transactions = null;
+            $transaction = null;
 
             if ($header) {
-                $data = array_merge(array(array_keys(end($transactions_to_save))), $transactions_to_save);
+                $data = array_merge(array(array_keys(end($data))), $data);
                 $header = false;
-                $transactions_to_save = null;
             }
             Mage::log('bxLog: Transactions - save to file for account ' . $account, Zend_Log::INFO, self::BOXALINO_LOG_FILE);
             $files->savePartToCsv('transactions.csv', $data);
             $data = null;
+            $result = null;
             $page++;
         }
         $sourceKey = $this->bxData->setCSVTransactionFile($files->getPath('transactions.csv'), 'order_id', 'entity_id', 'customer_id', 'order_date', 'total_order_value', 'price', 'discounted_price');
