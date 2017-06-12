@@ -33,7 +33,7 @@ class Boxalino_Intelligence_Block_Layer extends Mage_CatalogSearch_Block_Layer
         $filters = array();
         $facets = $bxHelperData->getAdapter()->getFacets();
         if ($facets) {
-            foreach ($bxHelperData->getLeftFacetFieldNames() as $fieldName) {
+            foreach ($facets->getLeftFacets() as $fieldName) {
                 $filter = $this->getLayout()->createBlock('boxalino_intelligence/layer_filter_attribute')
                     ->setLayer($this->getLayer())
                     ->setFacets($facets)
@@ -53,7 +53,7 @@ class Boxalino_Intelligence_Block_Layer extends Mage_CatalogSearch_Block_Layer
     public function getFilters(){
         
         $bxHelperData = Mage::helper('boxalino_intelligence');
-        if($bxHelperData->isFilterLayoutEnabled($this->getLayer()) && $bxHelperData->isLeftFilterEnabled()){
+        if($bxHelperData->isEnabledOnLayer($this->getLayer())){
             if(empty($this->bxFilters)){
                 $this->_prepareFilters();
             }

@@ -14,6 +14,8 @@ class BxClient
 	private $p13n_username;
 	private $p13n_password;
 	private $domain;
+	
+	private $isTest = null;
 
 	private $autocompleteRequests = null;
 	private $autocompleteResponses = null;
@@ -30,6 +32,11 @@ class BxClient
 	private $profileId = null;
 	
 	private $requestMap = array();
+	
+	private $socketHost = null;
+	private $socketPort = null;
+	private $socketSendTimeout = null;
+	private $socketRecvTimeout = null;
 
 	public function __construct($account, $password, $domain, $isDev=false, $host=null, $port=null, $uri=null, $schema=null, $p13n_username=null, $p13n_password=null) {
 		$this->account = $account;
@@ -61,6 +68,17 @@ class BxClient
 			$this->p13n_password = "tkZ8EXfzeZc6SdXZntCU";
 		}
 		$this->domain = $domain;
+	}
+	
+	public function setTestMode($isTest) {
+		$this->isTest = $isTest;
+	}
+	
+	public function setSocket($socketHost, $socketPort=4040, $socketSendTimeout=1000, $socketRecvTimeout=1000) {
+		$this->socketHost = $socketHost;
+		$this->socketPort = $socketPort;
+		$this->socketSendTimeout = $socketSendTimeout;
+		$this->socketRecvTimeout = $socketRecvTimeout;
 	}
 	
 	public function setRequestMap($requestMap) {
@@ -157,6 +175,15 @@ class BxClient
 	}
 	
 	private function getP13n($timeout=2, $useCurlIfAvailable=true){
+		
+		if($this->socketHost != null) {
+			$transport = new \Thrift\Transport\TSocket($this->socketHost, $this->socketPort);
+			$transport->setSendTimeout($this->socketSendTimeout);
+			$transport->setRecvTimeout($this->socketRecvTimeout);
+			$client = new \com\boxalino\p13n\api\thrift\P13nServiceClient(new \Thrift\Protocol\TBinaryProtocol($transport));
+			$transport->open();
+			return $client;
+		}
 
 		if($useCurlIfAvailable && function_exists('curl_version')) {
 			$transport = new \Thrift\Transport\P13nTCurlClient($this->host, $this->port, $this->uri, $this->schema);
@@ -209,6 +236,10 @@ class BxClient
 		$protocol = strpos(strtolower(@$_SERVER['SERVER_PROTOCOL']), 'https') === false ? 'http' : 'https';
 		$hostname = @$_SERVER['HTTP_HOST'];
 		$requesturi = @$_SERVER['REQUEST_URI'];
+		
+		if($hostname == "") {
+			return "";
+		}
 
 		return $protocol . '://' . $hostname . $requesturi;
 	}
@@ -285,8 +316,8 @@ class BxClient
 		if(strpos($e->getMessage(), 'Solr returned status 404') !== false) {
 			throw new \Exception("Data not live on account " . $this->getAccount() . ": index returns status 404. Please publish your data first, like in example backend_data_basic.php.");
 		}
-		if(strpos($e->getMessage(), 'undefined field ') !== false) {
-			$parts = explode('undefined field ', $e->getMessage());
+		if(strpos($e->getMessage(), 'undefined field') !== false) {
+			$parts = explode('undefined field', $e->getMessage());
 			$pieces = explode('	at ', $parts[1]);
 			$field = str_replace(':', '', trim($pieces[0]));
 			throw new \Exception("You request in your filter or facets a non-existing field of your account " . $this->getAccount() . ": field $field doesn't exist.");
@@ -349,8 +380,8 @@ class BxClient
 		}
 		return $requests;
 	}
-	
-	public function getThriftChoiceRequest() {
+
+	public function getThriftChoiceRequest($size=0) {
 		
 		if(sizeof($this->chooseRequests) == 0 && sizeof($this->autocompleteRequests) > 0) {
 			list($sessionid, $profileid) = $this->getSessionAndProfile();
@@ -362,11 +393,14 @@ class BxClient
 		}
 		
 		$choiceInquiries = array();
-		
-		foreach($this->chooseRequests as $request) {
+		$requests = $size === 0 ? $this->chooseRequests : array_slice($this->chooseRequests, -$size);
+		foreach($requests as $request) {
 			
 			$choiceInquiry = new \com\boxalino\p13n\api\thrift\ChoiceInquiry();
 			$choiceInquiry->choiceId = $request->getChoiceId();
+			if($this->isTest === true || ($this->isDev && $this->isTest === null)) {
+				$choiceInquiry->choiceId .= "_debugtest";
+			}
 			$choiceInquiry->simpleSearchQuery = $request->getSimpleSearchQuery($this->getAccount());
 			$choiceInquiry->contextItems = $request->getContextItems();
 			$choiceInquiry->minHitCount = $request->getMin();
@@ -379,8 +413,12 @@ class BxClient
 		return $choiceRequest;
 	}
 	
-	protected function choose() {
-		$this->chooseResponses = $this->p13nchoose($this->getThriftChoiceRequest());
+	protected function choose($size=0) {
+		$response = $this->p13nchoose($this->getThriftChoiceRequest($size));
+		if($size > 0) {
+			$response->variants = array_merge($this->chooseResponses->variants, $response->variants);
+		}
+		$this->chooseResponses = $response;
 	}
 	
 	public function flushResponses() {
@@ -390,7 +428,12 @@ class BxClient
 	public function getResponse() {
 		if(!$this->chooseResponses) {
 			$this->choose();
+		} else {
+			if($size = sizeof($this->chooseRequests) - sizeof($this->chooseResponses)) {
+				$this->choose($size);
+			}
 		}
+
 		return new \com\boxalino\bxclient\v1\BxChooseResponse($this->chooseResponses, $this->chooseRequests);
 	}
 	
@@ -411,7 +454,16 @@ class BxClient
 	
 	private function p13nautocomplete($autocompleteRequest) {
 		try {
-			return $this->getP13n($this->_timeout)->autocomplete($autocompleteRequest);
+			$choiceResponse = $this->getP13n($this->_timeout)->autocomplete($autocompleteRequest);
+			if(isset($this->requestMap['dev_bx_disp']) && $this->requestMap['dev_bx_disp'] == 'true') {
+				echo "<pre><h1>Autocomplete Request</h1>";
+				var_dump($autocompleteRequest);
+				echo "<br><h1>Choice Response</h1>";
+				var_dump($choiceResponse);
+				echo "</pre>";
+				exit;
+			}
+			return $choiceResponse;
 		} catch(\Exception $e) {
 			$this->throwCorrectP13nException($e);
 		}
@@ -444,7 +496,16 @@ class BxClient
 		$requestBundle = new \com\boxalino\p13n\api\thrift\AutocompleteRequestBundle();
 		$requestBundle->requests = $requests;
 		try {
-			return $this->getP13n($this->_timeout)->autocompleteAll($requestBundle)->responses;
+			$choiceResponse = $this->getP13n($this->_timeout)->autocompleteAll($requestBundle)->responses;
+			if(isset($this->requestMap['dev_bx_disp']) && $this->requestMap['dev_bx_disp'] == 'true') {
+				echo "<pre><h1>Request bundle</h1>";
+				var_dump($requestBundle);
+				echo "<br><h1>Choice Response</h1>";
+				var_dump($choiceResponse);
+				echo "</pre>";
+				exit;
+			}
+			return $choiceResponse;
 		} catch(\Exception $e) {
 			$this->throwCorrectP13nException($e);
 		}

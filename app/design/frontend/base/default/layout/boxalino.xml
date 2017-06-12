@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 
 <layout version="0.1.0">
+    <!--All pages-->
     <default>
         <reference name="head">
             <action method="addItem">
@@ -24,37 +25,38 @@
             <block type="boxalino_intelligence/script" name="intelligence_script" template="boxalino/script.phtml"/>
         </reference>
     </default>
-
+    <!--Search-->
     <catalogsearch_result_index>
         <reference name="head">
-            <action method="addItem" ifconfig="bxSearch/search/filter">
+            <action method="addItem">
                 <type>skin_css</type>
                 <name>css/nouislider.css</name>
             </action>
-            <action method="addItem" ifconfig="bxSearch/search/filter">
+            <action method="addItem">
                 <type>skin_js</type>
                 <name>js/nouislider.js</name>
             </action>
         </reference>
         <reference name="content">
             <block type="boxalino_intelligence/facets" name="top_filter" as="search_top_filter" before="-"
-                   template="boxalino/top_filter.phtml" ifconfig="bxSearch/top_facet/enabled"/>
+                   template="boxalino/top_filter.phtml" />
         </reference>
     </catalogsearch_result_index>
+    <!--Navigation-->
     <catalog_category_layered>
         <reference name="head">
-            <action method="addItem" ifconfig="bxSearch/navigation/filter">
+            <action method="addItem">
                 <type>skin_css</type>
                 <name>css/nouislider.css</name>
             </action>
-            <action method="addItem" ifconfig="bxSearch/navigation/filter">
+            <action method="addItem">
                 <type>skin_js</type>
                 <name>js/nouislider.js</name>
             </action>
         </reference>
         <reference name="content">
-            <block type="boxalino_intelligence/facets" name="top_filter" as="category_top_filter" before="-"
-                   template="boxalino/top_filter.phtml" ifconfig="bxSearch/top_facet/enabled"/>
+            <block type="boxalino_intelligence/facets" name="top_filter" as="listing_top_filter" before="-"
+                   template="boxalino/top_filter.phtml" />
         </reference>
     </catalog_category_layered>
 </layout>

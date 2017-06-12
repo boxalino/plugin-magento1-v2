@@ -9,9 +9,16 @@ class Boxalino_Intelligence_Helper_Autocomplete{
      * @param $products
      * @return array
      */
-    public function getListValues($products){
+    public function getListValues($entityIds){
         $values = array();
         $show_price = Mage::getStoreConfig('bxSearch/autocomplete/show_price');
+        $collection = Mage::getResourceModel('catalog/product_collection');
+        $products = $collection->addFieldToFilter('entity_id', $entityIds)
+            ->addAttributeToSelect('name')
+            ->addUrlRewrite();
+        if($show_price) {
+            $products->addAttributeToSelect('price');
+        }
         foreach($products as $product){
             $value = array();
             $value['name'] = $product->getName();
@@ -24,5 +31,4 @@ class Boxalino_Intelligence_Helper_Autocomplete{
         }
         return $values;
     }
-    
 }

@@ -13,12 +13,12 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
     /**
      * @var array
      */
-    private $fieldName = array();
+    protected $fieldName = array();
 
     /**
-     * @var
+     * @var null
      */
-    protected $is_bx_attribute;
+    protected $locale = null;
 
     /**
      * @param $bxFacets
@@ -50,7 +50,7 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
      */
     public function getName(){
 
-        return $this->bxFacets->getFacetLabel($this->fieldName);
+        return $this->bxFacets->getFacetLabel($this->fieldName, $this->getLocale());
     }
 
     /**
@@ -62,19 +62,29 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
     }
 
     /**
+     * @return null|string
+     */
+    public function getLocale(){
+        if(is_null($this->locale)){
+            $this->locale = substr(Mage::getStoreConfig('general/locale/code'), 0, 2);
+        }
+        return $this->locale;
+    }
+
+    /**
      *
      */
     public function _initItems(){
 
         $bxHelperData =  Mage::helper('boxalino_intelligence');
         if(!$bxHelperData->getAdapter()->areThereSubPhrases()){
-            $this->is_bx_attribute = $bxHelperData->isBxAttribute($this->fieldName);
             $data = $this->_getItemsData();
             $items = [];
             foreach ($data as $itemData) {
                 $selected = isset($itemData['selected']) ? $itemData['selected'] : null;
                 $type = isset($itemData['type']) ? $itemData['type'] : null;
-                $items[] = $this->_createItem($itemData['label'], $itemData['value'], $itemData['count'], $selected, $type);
+                $hidden = isset($itemData['hidden']) ? $itemData['hidden'] : null;
+                $items[] = $this->_createItem($itemData['label'], $itemData['value'], $itemData['count'], $selected, $type, $hidden);
             }
             $this->_items = $items;
         }
@@ -89,7 +99,7 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
      * @param null $type
      * @return mixed
      */
-    public function _createItem($label, $value, $count = 0, $selected = null, $type = null){
+    public function _createItem($label, $value, $count = 0, $selected = null, $type = null, $hidden = null){
         
         return Mage::getModel('catalog/layer_filter_item')
             ->setFilter($this)
@@ -97,64 +107,29 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
             ->setValue($value)
             ->setCount($count)
             ->setSelected($selected)
-            ->setType($type);
+            ->setType($type)
+            ->setHidden($hidden);
     }
 
     /**
      * @return array
      */
     protected function _getItemsData(){
+        $fieldName = $this->fieldName;
 
-        if($this->fieldName == 'discountedPrice'){
+        if ($fieldName == 'discountedPrice'){
             return array('label' => null, 'value' => null, 'count' => null, 'selected' => null, 'type' => null);
+        } else if ($fieldName == 'category_id'){
+            return [];
         }
         $data = [];
         $bxDataHelper = Mage::helper('boxalino_intelligence');
-        $this->_requestVar = str_replace('bx_products_', '', $this->bxFacets->getFacetParameterName($this->fieldName));
-        if (!$bxDataHelper->isHierarchical($this->fieldName)) {
-            $attributeModel = Mage::getModel('eav/config')->getAttribute('catalog_product', substr($this->fieldName,9))->getSource();
-            $order = $bxDataHelper->getFieldSortOrder($this->fieldName);
-            if($order == 2){
-                $values = $attributeModel->getAllOptions();
-                $responseValues = $bxDataHelper->useValuesAsKeys($this->bxFacets->getFacetValues($this->fieldName));
-                $selectedValues = $bxDataHelper->useValuesAsKeys($this->bxFacets->getSelectedValues($this->fieldName));
-                foreach($values as $value){
-
-                    $label = is_array($value) ? $value['label'] : $value;
-                    if(isset($responseValues[$label])){
-                        $facetValue = $responseValues[$label];
-                        $selected = isset($selectedValues[$facetValue]) ? true : false;
-                        $paramValue = $this->is_bx_attribute ? $this->bxFacets->getFacetValueParameterValue($this->fieldName, $facetValue): $attributeModel->getOptionId($this->bxFacets->getFacetValueParameterValue($this->fieldName, $facetValue));
-                        $data[] = array(
-                            'label' => strip_tags($this->bxFacets->getFacetValueLabel($this->fieldName, $facetValue)),
-                            'value' => $selected ? 0 : $paramValue,
-                            'count' => $this->bxFacets->getFacetValueCount($this->fieldName, $facetValue),
-                            'selected' => $selected,
-                            'type' => 'flat'
-                        );
-                    }
-                }
-            }else{
-                $selectedValues = $bxDataHelper->useValuesAsKeys($this->bxFacets->getSelectedValues($this->fieldName));
-                $responseValues = $this->bxFacets->getFacetValues($this->fieldName);
-
-                foreach ($responseValues as $facetValue){
-
-                    $selected = isset($selectedValues[$facetValue]) ? true : false;
-                    $paramValue = $this->is_bx_attribute ? $this->bxFacets->getFacetValueParameterValue($this->fieldName, $facetValue): $attributeModel->getOptionId($this->bxFacets->getFacetValueParameterValue($this->fieldName, $facetValue));
-                    $data[] = array(
-                        'label' => strip_tags($this->bxFacets->getFacetValueLabel($this->fieldName, $facetValue)),
-                        'value' => $selected ? 0 : $paramValue,
-                        'count' => $this->bxFacets->getFacetValueCount($this->fieldName, $facetValue),
-                        'selected' => $selected,
-                        'type' => 'flat'
-                    );
-                }
-            }
-        } else {
+        $bxFacets = $this->bxFacets;
+        $order = $bxFacets->getFacetExtraInfo($fieldName, 'valueorderEnums');
+        $this->_requestVar = str_replace('bx_products_', '', $bxFacets->getFacetParameterName($fieldName));
+        if ($fieldName == $bxFacets->getCategoryfieldName()) {
             $count = 1;
-            $facetValues = array();
-            $parentCategories = $this->bxFacets->getParentCategories();
+            $parentCategories = $bxFacets->getParentCategories();
             $parentCount = count($parentCategories);
             $value = false;
             foreach ($parentCategories as $key => $parentCategory) {
@@ -164,9 +139,10 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
                     $data[] = array(
                         'label' => strip_tags($homeLabel),
                         'value' => 2,
-                        'count' => $this->bxFacets->getParentCategoriesHitCount($key),
+                        'count' => $bxFacets->getParentCategoriesHitCount($key),
                         'selected' => $value,
-                        'type' => 'home parent'
+                        'type' => 'home parent',
+                        'hidden' => false
                     );
                     continue;
                 }
@@ -176,14 +152,15 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
                 $data[] = array(
                     'label' => strip_tags($parentCategory),
                     'value' => $key,
-                    'count' => $this->bxFacets->getParentCategoriesHitCount($key),
+                    'count' => $bxFacets->getParentCategoriesHitCount($key),
                     'selected' => $value,
-                    'type' => 'parent'
+                    'type' => 'parent',
+                    'hidden' => false
                 );
             }
-            $sortOrder = $bxDataHelper->getFieldSortOrder($this->fieldName);
-            if($sortOrder == 2){
-                $facetLabels = $this->bxFacets->getCategoriesKeyLabels();
+            $facetValues = null;
+            if(!is_null($order)){
+                $facetLabels = $bxFacets->getCategoriesKeyLabels();
                 $childId = explode('/',end($facetLabels))[0];
                 $category_model = Mage::getModel('catalog/category');
                 $childParentId = $category_model->load($childId)->getParentId();
@@ -199,18 +176,57 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
                 }
             }
             if($facetValues == null){
-                $facetValues = $this->bxFacets->getCategories();
+                $facetValues = $bxFacets->getFacetValues($fieldName);
             }
 
             foreach ($facetValues as $facetValue) {
-                $id =  $this->bxFacets->getFacetValueParameterValue($this->fieldName, $facetValue);
-                if ($sortOrder == 2 || Mage::helper('catalog/category')->canShow((int)$id)) {
+                $id =  $bxFacets->getFacetValueParameterValue($fieldName, $facetValue);
+                if (Mage::helper('catalog/category')->canShow((int)$id)) {
                     $data[] = array(
-                        'label' => strip_tags($this->bxFacets->getFacetValueLabel($this->fieldName, $facetValue)),
+                        'label' => strip_tags($bxFacets->getFacetValueLabel($fieldName, $facetValue)),
                         'value' => $id,
-                        'count' => $this->bxFacets->getFacetValueCount($this->fieldName, $facetValue),
+                        'count' => $bxFacets->getFacetValueCount($fieldName, $facetValue),
                         'selected' => false,
                         'type' => $value ? 'children' : 'home'
+                    );
+                }
+            }
+        } else {
+            $attributeModel = Mage::getModel('eav/config')->getAttribute('catalog_product', substr($fieldName, 9))->getSource();
+            if ($order == 2) {
+                $values = $attributeModel->getAllOptions();
+                $responseValues = $bxDataHelper->useValuesAsKeys($bxFacets->getFacetValues($fieldName));
+                $selectedValues = $bxDataHelper->useValuesAsKeys($bxFacets->getSelectedValues($fieldName));
+                foreach ($values as $value) {
+
+                    $label = is_array($value) ? $value['label'] : $value;
+                    if (isset($responseValues[$label])) {
+                        $facetValue = $responseValues[$label];
+                        $selected = isset($selectedValues[$facetValue]) ? true : false;
+                        $paramValue = $this->is_bx_attribute ? $bxFacets->getFacetValueParameterValue($fieldName, $facetValue) : $attributeModel->getOptionId($this->bxFacets->getFacetValueParameterValue($fieldName, $facetValue));
+                        $data[] = array(
+                            'label' => strip_tags($bxFacets->getFacetValueLabel($fieldName, $facetValue)),
+                            'value' => $selected ? 0 : $paramValue,
+                            'count' => $bxFacets->getFacetValueCount($fieldName, $facetValue),
+                            'selected' => $selected,
+                            'type' => 'flat'
+                        );
+                    }
+                }
+            } else {
+                $selectedValues = $bxDataHelper->useValuesAsKeys($bxFacets->getSelectedValues($fieldName));
+                $responseValues = $bxFacets->getFacetValues($fieldName);
+
+                foreach ($responseValues as $facetValue) {
+
+                    $selected = isset($selectedValues[$facetValue]) ? true : false;
+                    $paramValue = $this->is_bx_attribute ? $bxFacets->getFacetValueParameterValue($fieldName, $facetValue) : $attributeModel->getOptionId($this->bxFacets->getFacetValueParameterValue($fieldName, $facetValue));
+                    $data[] = array(
+                        'label' => strip_tags($bxFacets->getFacetValueLabel($fieldName, $facetValue)),
+                        'value' => $selected ? 0 : $paramValue,
+                        'count' => $bxFacets->getFacetValueCount($fieldName, $facetValue),
+                        'selected' => $selected,
+                        'type' => 'flat'
                     );
                 }
             }

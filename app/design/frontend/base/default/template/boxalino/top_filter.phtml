@@ -1,10 +1,8 @@
 <?php
 $_helper = Mage::helper('boxalino_intelligence');
-$_filter = $this->getTopFilter();
-if($_helper->isPluginEnabled()): ?>
-    <?php if(!empty($_filter)): ?>
-        <div class="top_filter">
-            <?php echo $_filter->getHtml(); ?>
-        </div>
-    <?php endif; ?>
+$_filter = $this->getTopFilter(); ?>
+<?php if(!empty($_filter)): ?>
+    <div class="top_filter">
+        <?php echo $_filter->getHtml(); ?>
+    </div>
 <?php endif; ?>

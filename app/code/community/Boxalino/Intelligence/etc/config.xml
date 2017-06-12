@@ -9,13 +9,6 @@
 
     <frontend>
         <routers>
-            <catalogsearch>
-                <args>
-                    <modules>
-                        <Boxalino_Intelligence before="Mage_CatalogSearch">Boxalino_Intelligence</Boxalino_Intelligence>
-                    </modules>
-                </args>
-            </catalogsearch>
             <catalog>
                 <args>
                     <modules>
@@ -23,6 +16,13 @@
                     </modules>
                 </args>
             </catalog>
+            <boxalinointelligence>
+                <use>standard</use>
+                <args>
+                    <module>Boxalino_Intelligence</module>
+                    <frontName>boxalinointelligence</frontName>
+                </args>
+            </boxalinointelligence>
         </routers>
         <layout>
             <updates>

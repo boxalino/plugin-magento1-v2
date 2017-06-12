@@ -82,7 +82,7 @@ class BxData
 	
 	
 	
-	public function setCSVTransactionFile($filePath, $orderIdColumn, $productIdColumn, $customerIdColumn, $orderDateIdColumn, $totalOrderValueColumn, $productListPriceColumn, $productDiscountedPriceColumn, $productIdField='bx_item_id', $customerIdField='bx_customer_id', $productsContainer = 'products', $customersContainer = 'customers', $format = 'CSV', $encoding = 'UTF-8', $delimiter = ',', $enclosure = "\&", $escape = "\\\\", $lineSeparator = "\\n",$container = 'transactions', $sourceId = 'transactions', $validate=true) {
+	public function setCSVTransactionFile($filePath, $orderIdColumn, $productIdColumn, $customerIdColumn, $orderDateIdColumn, $totalOrderValueColumn, $productListPriceColumn, $productDiscountedPriceColumn, $productIdField='bx_item_id', $customerIdField='bx_customer_id', $productsContainer = 'products', $customersContainer = 'customers', $format = 'CSV', $encoding = 'UTF-8', $delimiter = ',', $enclosure = '"', $escape = "\\\\", $lineSeparator = "\\n",$container = 'transactions', $sourceId = 'transactions', $validate=true) {
 		
 		$params = array('encoding'=>$encoding, 'delimiter'=>$delimiter, 'enclosure'=>$enclosure, 'escape'=>$escape, 'lineSeparator'=>$lineSeparator);
 		
@@ -322,7 +322,9 @@ class BxData
 				$source = $sources->addChild('source');				
 				$source->addAttribute('id', $sourceId);
 				$source->addAttribute('type', $sourceValues['type']);
-				
+				if(isset($sourceValues['additional_item_source'])){
+					$source->addAttribute('additional_item_source', $sourceValues['additional_item_source']);
+				}
 				$sourceValues['file'] = $this->getFileNameFromPath($sourceValues['filePath']);
 				
 				$parameters = array(
@@ -470,13 +472,13 @@ class BxData
         $s = curl_init();
 		
         curl_setopt($s, CURLOPT_URL, $url);
-        curl_setopt($s, CURLOPT_TIMEOUT, 600);
+        curl_setopt($s, CURLOPT_TIMEOUT, 60);
         curl_setopt($s, CURLOPT_POST, true);
         curl_setopt($s, CURLOPT_ENCODING, '');
         curl_setopt($s, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($s, CURLOPT_POSTFIELDS, $fields);
 
-        $responseBody = curl_exec($s);
+        $responseBody = @curl_exec($s);
 		
 		if($responseBody === false)
 		{
@@ -593,7 +595,7 @@ class BxData
 		}
 		return $files;
 	}
-
+	
     public function createZip($temporaryFilePath=null, $name='bxdata.zip')
     {
 		if($temporaryFilePath === null) {
@@ -648,12 +650,12 @@ class BxData
 		
 		return $zipFilePath;
     }
-
-    public function pushData($temporaryFilePath = null, $archiveName = 'bxdata.zip') {
-
-        $zipFile = $this->createZip($temporaryFilePath, $archiveName);
-
-        $fields = array(
+	
+	public function pushData($temporaryFilePath=null) {
+		
+		$zipFile = $this->createZip($temporaryFilePath);
+		
+		$fields = array(
             'username' => $this->bxClient->getUsername(),
             'password' => $this->bxClient->getPassword(),
             'account' => $this->bxClient->getAccount(false),

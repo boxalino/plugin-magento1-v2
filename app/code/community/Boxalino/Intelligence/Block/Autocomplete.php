@@ -29,7 +29,6 @@ class Boxalino_Intelligence_Block_Autocomplete extends Mage_CatalogSearch_Block_
         $show_price = Mage::getStoreConfig('bxSearch/autocomplete/show_price');
 
         foreach ($globalProducts as $product) {
-            $global_html = '';
             $global_html = '<li title="global products" ';
             $global_html .= 'class="product-autocomplete global-products">';
             $global_html .= '<a href="'.$product['url'].'">';
@@ -72,7 +71,6 @@ class Boxalino_Intelligence_Block_Autocomplete extends Mage_CatalogSearch_Block_
     }
 
     private function generateProductHtml($product, $item) {
-        ;
         $html = '<li title="'.$this->escapeHtml($item['title']).'" style="display:none" ';
         $html .= 'class="product-autocomplete" data-word="'.$item['hash'].'">';
         $html .= '<a href="'.$product['url'].'">';

@@ -11,7 +11,7 @@ class Boxalino_Intelligence_Block_Product_List extends Mage_Catalog_Block_Produc
     public static $number = 0;
 
     protected $_subPhraseCollections = [];
-
+    
     /**
      * @return Mage_Eav_Model_Entity_Collection_Abstract
      */
@@ -27,7 +27,9 @@ class Boxalino_Intelligence_Block_Product_List extends Mage_Catalog_Block_Produc
                    
                     if ($bxHelperData->layerCheck($layer, 'Mage_Catalog_Model_Layer')) {
                         // We skip boxalino processing if category is static cms block only.
-                        if (Mage::getBlockSingleton('catalog/category_view')->getCurrentCategory()
+
+                        if (Mage::registry('current_category')
+                            && Mage::getBlockSingleton('catalog/category_view')->getCurrentCategory()
                             && Mage::getBlockSingleton('catalog/category_view')->isContentMode()
                         ) {
                             return parent::_getProductCollection();
@@ -69,7 +71,6 @@ class Boxalino_Intelligence_Block_Product_List extends Mage_Catalog_Block_Produc
     protected function _setupCollection($entity_ids){
 
         $this->_productCollection = Mage::getResourceModel('catalog/product_collection');
-
         $this->_productCollection
             ->setStore($this->getLayer()->getCurrentStore())
             ->addFieldToFilter('entity_id', $entity_ids)
@@ -86,7 +87,6 @@ class Boxalino_Intelligence_Block_Product_List extends Mage_Catalog_Block_Produc
         $this->_productCollection
             ->getSelect()
             ->order(new Zend_Db_Expr('FIELD(e.entity_id,' . implode(',', $entity_ids).')'));
-
         $this->_productCollection->setCurBxPage($this->getToolbarBlock()->getCurrentPage());
         $limit = $this->getRequest()->getParam('limit') ? $this->getRequest()->getParam('limit') : $this->getToolbarBlock()->getLimit();
    

@@ -47,6 +47,16 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
     protected $removedAttributes = array();
 
     /**
+     * @var null
+     */
+    protected $giftFinderFields = null;
+
+    /**
+     * @var bool
+     */
+    protected $productFinder = false;
+
+    /**
      * @param $countryCode
      * @return mixed
      */
@@ -219,9 +229,7 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
 
     /**
      * @param $widgetName
-     * @return array Widget Configuration
-     *
-     * @throws Exception
+     * @return array
      */
     public function getWidgetConfig($widgetName)
     {
@@ -239,111 +247,11 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
                 'max' => $widgetMax[$index]
             );
         } else {
-            throw new \Exception("There is no configuration for this widget name: " . $widgetName);
+            Mage::log("There is no configuration for this widget name: " . $widgetName);
         }
         return $widgetConfig;
     }
-
-    /**
-     * @return array
-     */
-    public function getAllFacetFieldNames() {
-
-        $allFacets = array_keys($this->getFilterProductAttributes());
-        if($this->getTopFacetFieldName() != null) {
-            $allFacets[] = $this->getTopFacetFieldName();
-        }
-        return $allFacets;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getTopFacetFieldName()
-    {
-        list($topField, $topOrder) = $this->getTopFacetValues();
-        return $topField;
-    }
-
-    /**
-     * @return array|null
-     */
-    public function getTopFacetValues()
-    {
-        if ($this->isTopFilterEnabled()) {
-            $field = Mage::getStoreConfig('bxSearch/top_facet/field');
-            if(strpos($field, 'products_') !== 0){
-                $this->bx_filter[$field] = [];
-            }
-            $order = Mage::getStoreConfig('bxSearch/top_facet/order');
-            return array($field, $order);
-        }
-        return null;
-    }
-
-    /**
-     * @param $fieldName
-     * @return bool
-     */
-    public function isBxAttribute($fieldName){
-
-        return isset($this->bx_filter[$fieldName]);
-    }
-
-    /**
-     * @return array
-     */
-    public function getLeftFacetFieldNames(){
-        return array_keys($this->getFilterProductAttributes());
-    }
-
-    /**
-     * @return array
-     * @throws Exception
-     */
-    public function getLeftFacets() {
-        try{
-            $fields = explode(',', Mage::getStoreConfig('bxSearch/left_facets/fields'));
-            $labels = explode(',', Mage::getStoreConfig('bxSearch/left_facets/labels'));
-            $types = explode(',', Mage::getStoreConfig('bxSearch/left_facets/types'));
-            $orders = explode(',', Mage::getStoreConfig('bxSearch/left_facets/orders'));
-            $position = explode(',', Mage::getStoreConfig('bxSearch/left_facets/position'));
-
-        }catch (\Exception $e){
-            Mage::logException($e);
-            return array();
-        }
-
-        if($fields[0] == "" || !$this->isLeftFilterEnabled()) {
-            return array();
-        }
-        if(sizeof($fields) != sizeof($labels)) {
-            throw new \Exception("number of defined left facets fields doesn't match the number of defined left facet labels: " . implode(',', $fields) . " versus " . implode(',', $labels));
-        }
-        if(sizeof($fields) != sizeof($types)) {
-            throw new \Exception("number of defined left facets fields doesn't match the number of defined left facet types: " . implode(',', $fields) . " versus " . implode(',', $types));
-        }
-        if(sizeof($fields) != sizeof($orders)) {
-            throw new \Exception("number of defined left facets fields doesn't match the number of defined left facet orders: " . implode(',', $fields) . " versus " . implode(',', $orders));
-        }
-        if(sizeof($fields) != sizeof($position)) {
-            throw new \Exception("number of defined left facets fields doesn't match the number of defined left facet position: " . implode(',', $fields) . " versus " . implode(',', $position));
-        }
-
-        $facets = array();
-        foreach($fields as $k => $field){
-            if(strpos($field, 'products_') !== 0){
-                $this->bx_filter[$field] = [];
-            }
-            $facets[$field] = array(
-                'label' => $labels[$k],
-                'type' =>$types[$k],
-                'order' => $orders[$k],
-                'position' => $position[$k]);
-        }
-        return $facets;
-    }
-
+    
     /**
      * @return Mage_Catalog_Model_Resource_Product_Attribute_Collection
      */
@@ -365,7 +273,6 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
 
         $attributes = array();
         $attributeCollection = $this->_getFilterableAttributes();
-        $leftFacets = $this->getLeftFacets();
 
         $allowedTypes = array('multiselect', 'price', 'select');
         foreach ($attributeCollection as $attribute) {
@@ -386,63 +293,17 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
                     'label' => $attribute->getStoreLabel(Mage::app()->getStore()->getId()),
                     'type' => $type,
                     'order' => 0,
-                    'position' => $position
+                    'position' => $position,
+                    'minPopulation' => 1
                 );
             }catch(\Exception $e){
                 Mage::logException($e);
                 continue;
             }
         }
-        $attributes = array_merge($attributes, $leftFacets);
-        if(count($this->removedAttributes)){
-            foreach($this->removedAttributes as $attribute){
-                unset($attributes[$attribute]);
-            }
-        }
-        uasort($attributes, function($a, $b){
-            if($a['position'] == $b['position']){
-                return strcmp($a['label'],$b['label']);
-            }
-            if($b['position'] == -1){
-                return true;
-            }
-            return $a['position'] - $b['position'];
-        });
         return $attributes;
     }
 
-    /**
-     * @param $fieldName
-     * @return bool
-     */
-    public function isHierarchical($fieldName)
-    {
-        $fields = explode(",", Mage::getStoreConfig('bxSearch/left_facets/fields'));
-        $type = explode(",", Mage::getStoreConfig('bxSearch/left_facets/types'));
-
-        if (in_array($fieldName, $fields)) {
-            if ($type[array_search($fieldName, $fields)] == 'hierarchical') {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * @return int
-     */
-    public function getFieldSortOrder($fieldName)
-    {
-        $fields = explode(',', Mage::getStoreConfig('bxSearch/left_facets/fields'));
-        $orders = explode(',', Mage::getStoreConfig('bxSearch/left_facets/orders'));
-
-        foreach($fields as $index => $field){
-            if($field == $fieldName){
-                return (int)$orders[$index];
-            }
-        }
-        return 0;
-    }
 
     /**
      * @return string
@@ -500,6 +361,11 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
         return 'products_';
     }
 
+    /**
+     * @param $layer
+     * @param $class
+     * @return bool
+     */
     public function layerCheck($layer, $class){
         if (Mage::getEdition() == Mage::EDITION_ENTERPRISE) {
             return $layer instanceof $class;
@@ -586,39 +452,6 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
     }
 
     /**
-     * @return bool
-     */
-    public function isLeftFilterEnabled()
-    {
-        return Mage::getStoreConfigFlag('bxSearch/left_facets/enabled');
-    }
-
-    /**
-     * @return bool
-     */
-    public function isTopFilterEnabled()
-    {
-        return Mage::getStoreConfigFlag('bxSearch/top_facet/enabled');
-    }
-
-    /**
-     * @return bool
-     */
-    public function isFilterLayoutEnabled($layer)
-    {
-        $type = null;
-        if ($this->layerCheck($layer, 'Mage_CatalogSearch_Model_Layer')) {
-            $type = 'search';
-        } elseif ($this->layerCheck($layer, 'Mage_Catalog_Model_Layer')) {
-            $type = 'navigation';
-        }
-        if (null === $type) {
-            return false;
-        }
-        return $this->isEnabledOnLayer($layer) && Mage::getStoreConfig("bxSearch/{$type}/filter");
-    }
-
-    /**
      * @param $fallback
      */
     public function setFallback($fallback){
@@ -633,19 +466,33 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
     }
 
     /**
-     * @param $attribute
-     */
-    public function setRemovedAttributes($attribute){
-
-        $this->removedAttributes[] = $attribute;
-    }
-
-    /**
      * @param $array
      * @return array
      */
     public function useValuesAsKeys($array){
 
         return array_combine(array_keys(array_flip($array)),$array);
+    }
+
+    /**
+     * @param $fieldName
+     */
+    public function setGiftFinderFields($fieldName) {
+        $this->giftFinderFields = $fieldName;
+    }
+
+    /**
+     * @return null
+     */
+    public function getGiftFinderFields() {
+        return $this->giftFinderFields;
+    }
+
+    public function setIsProductFinderActive($active){
+        $this->productFinder = $active;
+    }
+
+    public function isProductFinderActive(){
+        return $this->productFinder;
     }
 }

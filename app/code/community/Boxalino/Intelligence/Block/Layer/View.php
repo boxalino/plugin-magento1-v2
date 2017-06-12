@@ -8,7 +8,12 @@ class Boxalino_Intelligence_Block_Layer_View extends Mage_Catalog_Block_Layer_Vi
     /**
      * @var array Collection of Boxalino_Intelligence_Block_Layer_Filter_Attribute
      */
-    protected $bxFilters = array();
+    protected $bxFilters = null;
+
+    /**
+     * @var null
+     */
+    protected $bxFacets = null;
 
     /**
      * @param string $template
@@ -28,11 +33,10 @@ class Boxalino_Intelligence_Block_Layer_View extends Mage_Catalog_Block_Layer_Vi
      */
     protected function _prepareFilters(){
 
-        $bxHelperData = Mage::helper('boxalino_intelligence');
+        $facets = $this->getBxFacets();
         $filters = array();
-        $facets = $bxHelperData->getAdapter()->getFacets();
         if ($facets) {
-            foreach ($bxHelperData->getLeftFacetFieldNames() as $fieldName) {
+            foreach ($facets->getLeftFacets() as $fieldName) {
                 $filter = $this->getLayout()->createBlock('boxalino_intelligence/layer_filter_attribute')
                     ->setLayer($this->getLayer())
                     ->setFacets($facets)
@@ -52,12 +56,23 @@ class Boxalino_Intelligence_Block_Layer_View extends Mage_Catalog_Block_Layer_Vi
     public function getFilters(){
 
         $bxHelperData = Mage::helper('boxalino_intelligence');
-        if($bxHelperData->isFilterLayoutEnabled($this->getLayer()) && $bxHelperData->isLeftFilterEnabled() && !$bxHelperData->getAdapter()->areThereSubPhrases()){
-            if(empty($this->bxFilters)){
+        if($bxHelperData->isEnabledOnLayer($this->getLayer()) && !$bxHelperData->getAdapter()->areThereSubPhrases()){
+            if(is_null($this->bxFilters)){
                 $this->_prepareFilters();
             }
             return $this->bxFilters;
         }
         return parent::getFilters();
+    }
+
+    /**
+     * @return com\boxalino\bxclient\v1\BxFacets
+     */
+    public function getBxFacets(){
+        if(is_null($this->bxFacets)) {
+            $bxHelperData = Mage::helper('boxalino_intelligence');
+            $this->bxFacets = $bxHelperData->getAdapter()->getFacets();
+        }
+        return $this->bxFacets;
     }
 }

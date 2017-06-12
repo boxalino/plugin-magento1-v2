@@ -11,7 +11,7 @@ class Boxalino_Intelligence_Block_Facets extends Mage_Core_Block_Template{
      */
     public function setTemplate($template)
     {
-        if(Mage::helper('boxalino_intelligence')->isPluginEnabled()){
+        if(!Mage::helper('boxalino_intelligence')->isPluginEnabled()){
             return $this;
         }
         return parent::setTemplate($template);
@@ -25,12 +25,11 @@ class Boxalino_Intelligence_Block_Facets extends Mage_Core_Block_Template{
         $layer = Mage::getSingleton('catalog/layer');
         $bxHelperData = Mage::helper('boxalino_intelligence');
 
-        if($bxHelperData->isFilterLayoutEnabled($layer) && $bxHelperData->isTopFilterEnabled()) {
-
+        if($bxHelperData->isEnabledOnLayer($layer)) {
             try {
                 $facets = $bxHelperData->getAdapter()->getFacets();
                 if ($facets) {
-                    $fieldName = $bxHelperData->getTopFacetFieldName();
+                    $fieldName = reset($facets->getTopFacets());
                     $filter = $this->getLayout()->createBlock('boxalino_intelligence/layer_filter_attribute')
                         ->setLayer($this->getLayer())
                         ->setAttributeModel(Mage::getResourceModel('catalog/eav_attribute'))
