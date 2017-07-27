@@ -284,7 +284,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
      */
     public function simpleSearch(){
         $request = Mage::app()->getRequest();
-        $queryText = Mage::helper('catalogsearch')->getEscapedQueryText();
+        $queryText = Mage::helper('catalogsearch')->getQueryText();
 
         if (self::$bxClient->getChoiceIdRecommendationRequest($this->getSearchChoice($queryText)) != null) {
             return;
