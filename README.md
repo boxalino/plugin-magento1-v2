@@ -4,7 +4,7 @@
 
 Welcome to the Boxalino Magento 1.x plugin.
 
-Ths plugin is fully compatible with both Magento Community and Magento Enterprise.
+This plugin is fully compatible with both Magento Community and Magento Enterprise.
 
 The Boxalino plugin for Magento enables you to easily and quickly benefit from all the functionalities of Boxalino Intelligence:
 
