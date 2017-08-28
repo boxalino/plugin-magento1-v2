@@ -51,7 +51,7 @@ N.B.: This project is for Magento 1, in case you need our plugin for Magento 2, 
 
 ## Documentation
 
-http://documentation.boxalino.com/boxalino-magento-1-x-and-2-x-plugin/
+Latest document available up request.
 
 ## Contact us!
 
