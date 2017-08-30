@@ -4,6 +4,8 @@
 
 Welcome to the Boxalino Magento 1.x plugin.
 
+This plugin is fully compatible with both Magento Community and Magento Enterprise.
+
 The Boxalino plugin for Magento enables you to easily and quickly benefit from all the functionalities of Boxalino Intelligence:
 
 1. Boxalino Intelligent Search with auto-correction and sub-phrases relaxation
@@ -49,7 +51,7 @@ N.B.: This project is for Magento 1, in case you need our plugin for Magento 2, 
 
 ## Documentation
 
-http://documentation.boxalino.com/boxalino-magento-1-x-and-2-x-plugin/
+The latest documentation is available upon request.
 
 ## Contact us!
 
