@@ -133,7 +133,7 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                     try{
                         $this->bxData->pushData();
                     }catch(\Exception $e){
-                        throw $e;
+                        Mage::log('bxLog: pushData failed with exception: ' . $e->getMessage(), Zend_Log::INFO, self::BOXALINO_LOG_FILE);
                     }
                     Mage::log('bxLog: Finished account: ' . $account, Zend_Log::INFO, self::BOXALINO_LOG_FILE);
                 }
