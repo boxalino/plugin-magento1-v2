@@ -187,7 +187,8 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
                         'value' => $id,
                         'count' => $bxFacets->getFacetValueCount($fieldName, $facetValue),
                         'selected' => false,
-                        'type' => $value ? 'children' : 'home'
+                        'type' => $value ? 'children' : 'home',
+                        'hidden' => $bxFacets->isFacetValueHidden($this->fieldName, $facetValue)
                     );
                 }
             }
@@ -209,7 +210,8 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
                             'value' => $selected ? 0 : $paramValue,
                             'count' => $bxFacets->getFacetValueCount($fieldName, $facetValue),
                             'selected' => $selected,
-                            'type' => 'flat'
+                            'type' => 'flat',
+                            'hidden' => $bxFacets->isFacetValueHidden($this->fieldName, $facetValue)
                         );
                     }
                 }
@@ -226,7 +228,8 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
                         'value' => $selected ? 0 : $paramValue,
                         'count' => $bxFacets->getFacetValueCount($fieldName, $facetValue),
                         'selected' => $selected,
-                        'type' => 'flat'
+                        'type' => 'flat',
+                        'hidden' => $bxFacets->isFacetValueHidden($this->fieldName, $facetValue)
                     );
                 }
             }
