@@ -487,7 +487,7 @@ class BxFacets
             }
             $facetValues = $finalFacetValues;
         }
-
+        $facetValues = $this->applyDependencies($fieldName, $facetValues);
         $enumDisplaySize = intval($this->getFacetExtraInfo($fieldName, "enumDisplayMaxSize"));
         if($enumDisplaySize > 0 && sizeof($facetValues) > $enumDisplaySize) {
             $enumDisplaySizeMin = intval($this->getFacetExtraInfo($fieldName, "enumDisplaySize"));
@@ -503,8 +503,36 @@ class BxFacets
             }
             $facetValues = $finalFacetValues;
         }
-
         return $facetValues;
+    }
+
+    protected function applyDependencies($fieldName, $values){
+        $dependencies = json_decode($this->getFacetExtraInfo($fieldName, "jsonDependencies"), true);
+        if(!is_null($dependencies) && !empty($dependencies)) {
+            foreach ($dependencies as $dependency) {
+                if(empty($dependency['values'])) continue;
+                if(empty($dependency['conditions'])) {
+                    $effect = $dependency['effect'];
+                    if($effect['hide'] == 'true'){
+                        foreach ($dependency['values'] as $value) {
+                            if(isset($values[$value])){
+                                unset($values[$value]);
+                            }
+                        }
+                    } else if($effect['hide'] == '') {
+                        $temp = array();
+                        foreach ($dependency['values'] as $key => $value) {
+                            if(isset($values[$value])){
+                                $temp[$key] = $values[$value];
+                                unset($values[$value]);
+                            }
+                        }
+                        array_splice($values, $effect['order'], 0, $temp);
+                    }
+                }
+            }
+        }
+        return $values;
     }
 
     public function getSelectedValues($fieldName) {
