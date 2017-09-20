@@ -24,7 +24,6 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
      * @param $bxFacets
      */
     public function setFacets($bxFacets) {
-
         $this->bxFacets = $bxFacets;
         return $this;
     }
@@ -40,7 +39,6 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
      * @param $fieldName
      */
     public function setFieldName($fieldName) {
-
         $this->fieldName = $fieldName;
         return $this;
     }
@@ -49,15 +47,14 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
      * @return mixed
      */
     public function getName(){
-
         return $this->bxFacets->getFacetLabel($this->fieldName, $this->getLocale());
     }
+
 
     /**
      * @return array
      */
     public function getFieldName(){
-
         return $this->fieldName;
     }
 
@@ -72,10 +69,9 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
     }
 
     /**
-     *
+     * @return $this
      */
     public function _initItems(){
-
         $bxHelperData =  Mage::helper('boxalino_intelligence');
         if(!$bxHelperData->getAdapter()->areThereSubPhrases()){
             $data = $this->_getItemsData();
@@ -100,7 +96,6 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
      * @return mixed
      */
     public function _createItem($label, $value, $count = 0, $selected = null, $type = null, $hidden = null){
-        
         return Mage::getModel('catalog/layer_filter_item')
             ->setFilter($this)
             ->setLabel($label)
@@ -112,21 +107,39 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
     }
 
     /**
+     * @return mixed
+     */
+    public function getAttributeModel() {
+        return Mage::getModel('eav/config')->getAttribute('catalog_product', substr($this->fieldName, 9))->getSource();
+    }
+
+    /**
+     * @return bool
+     */
+    public function isSystemFilter() {
+        $source = $this->getAttributeModel();
+        return sizeof($source->getAllOptions()) > 1;
+    }
+
+    /**
      * @return array
      */
     protected function _getItemsData(){
         $fieldName = $this->fieldName;
-
+        $bxFacets = $this->bxFacets;
         if ($fieldName == 'discountedPrice'){
+            $this->_requestVar = $bxFacets->getFacetParameterName($fieldName);
             return array('label' => null, 'value' => null, 'count' => null, 'selected' => null, 'type' => null);
-        } else if ($fieldName == 'category_id'){
-            return [];
         }
         $data = [];
         $bxDataHelper = Mage::helper('boxalino_intelligence');
-        $bxFacets = $this->bxFacets;
         $order = $bxFacets->getFacetExtraInfo($fieldName, 'valueorderEnums');
-        $this->_requestVar = str_replace('bx_products_', '', $bxFacets->getFacetParameterName($fieldName));
+        $isSystemFilter = $this->isSystemFilter();
+        if($isSystemFilter) {
+            $this->_requestVar = str_replace('bx_products_', '', $bxFacets->getFacetParameterName($fieldName));
+        } else {
+            $this->_requestVar = $bxFacets->getFacetParameterName($fieldName);
+        }
         if ($fieldName == $bxFacets->getCategoryfieldName()) {
             $count = 1;
             $parentCategories = $bxFacets->getParentCategories();
@@ -188,48 +201,45 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
                         'count' => $bxFacets->getFacetValueCount($fieldName, $facetValue),
                         'selected' => false,
                         'type' => $value ? 'children' : 'home',
-                        'hidden' => $bxFacets->isFacetValueHidden($this->fieldName, $facetValue)
+                        'hidden' => $bxFacets->isFacetValueHidden($fieldName, $facetValue)
                     );
                 }
             }
         } else {
-            $attributeModel = Mage::getModel('eav/config')->getAttribute('catalog_product', substr($fieldName, 9))->getSource();
+            $attributeModel = $this->getAttributeModel();
             if ($order == 2) {
                 $values = $attributeModel->getAllOptions();
                 $responseValues = $bxDataHelper->useValuesAsKeys($bxFacets->getFacetValues($fieldName));
                 $selectedValues = $bxDataHelper->useValuesAsKeys($bxFacets->getSelectedValues($fieldName));
                 foreach ($values as $value) {
-
                     $label = is_array($value) ? $value['label'] : $value;
                     if (isset($responseValues[$label])) {
                         $facetValue = $responseValues[$label];
                         $selected = isset($selectedValues[$facetValue]) ? true : false;
-                        $paramValue = $this->is_bx_attribute ? $bxFacets->getFacetValueParameterValue($fieldName, $facetValue) : $attributeModel->getOptionId($this->bxFacets->getFacetValueParameterValue($fieldName, $facetValue));
+                        $paramValue = !$isSystemFilter ? $bxFacets->getFacetValueParameterValue($fieldName, $facetValue) : $attributeModel->getOptionId($this->bxFacets->getFacetValueParameterValue($fieldName, $facetValue));
                         $data[] = array(
                             'label' => strip_tags($bxFacets->getFacetValueLabel($fieldName, $facetValue)),
                             'value' => $selected ? 0 : $paramValue,
                             'count' => $bxFacets->getFacetValueCount($fieldName, $facetValue),
                             'selected' => $selected,
                             'type' => 'flat',
-                            'hidden' => $bxFacets->isFacetValueHidden($this->fieldName, $facetValue)
+                            'hidden' => $bxFacets->isFacetValueHidden($fieldName, $facetValue)
                         );
                     }
                 }
             } else {
                 $selectedValues = $bxDataHelper->useValuesAsKeys($bxFacets->getSelectedValues($fieldName));
                 $responseValues = $bxFacets->getFacetValues($fieldName);
-
                 foreach ($responseValues as $facetValue) {
-
                     $selected = isset($selectedValues[$facetValue]) ? true : false;
-                    $paramValue = $this->is_bx_attribute ? $bxFacets->getFacetValueParameterValue($fieldName, $facetValue) : $attributeModel->getOptionId($this->bxFacets->getFacetValueParameterValue($fieldName, $facetValue));
+                    $paramValue = !$isSystemFilter ? $bxFacets->getFacetValueParameterValue($fieldName, $facetValue) : $attributeModel->getOptionId($this->bxFacets->getFacetValueParameterValue($fieldName, $facetValue));
                     $data[] = array(
                         'label' => strip_tags($bxFacets->getFacetValueLabel($fieldName, $facetValue)),
                         'value' => $selected ? 0 : $paramValue,
                         'count' => $bxFacets->getFacetValueCount($fieldName, $facetValue),
                         'selected' => $selected,
                         'type' => 'flat',
-                        'hidden' => $bxFacets->isFacetValueHidden($this->fieldName, $facetValue)
+                        'hidden' => $bxFacets->isFacetValueHidden($fieldName, $facetValue)
                     );
                 }
             }

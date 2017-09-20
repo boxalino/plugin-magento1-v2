@@ -1,9 +1,9 @@
 <?php
 
 /**
- * Class Boxalino_Intelligence_Block_Layer_View
+ * Class Boxalino_Intelligence_Block_EnterpriseLayer
  */
-class Boxalino_Intelligence_Block_Layer_View extends Mage_Catalog_Block_Layer_View {
+class Boxalino_Intelligence_Block_EnterpriseLayer extends Enterprise_Search_Block_Catalogsearch_Layer{
 
     /**
      * @var array Collection of Boxalino_Intelligence_Block_Layer_Filter_Attribute
@@ -82,7 +82,7 @@ class Boxalino_Intelligence_Block_Layer_View extends Mage_Catalog_Block_Layer_Vi
     public function canShowBlock(){
         $bxHelperData = Mage::helper('boxalino_intelligence');
         if($bxHelperData->isEnabledOnLayer($this->getLayer())){
-            if(sizeof($this->getFilters()) > 0) {
+            if(!$bxHelperData->getAdapter()->areThereSubPhrases() && sizeof($this->getFilters()) > 0) {
                 return true;
             }
             return false;

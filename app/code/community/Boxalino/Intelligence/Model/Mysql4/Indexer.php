@@ -95,8 +95,8 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                 }
                 Mage::log('bxLog: Export the customers, transactions and product files for account: ' . $account, Zend_Log::INFO, self::BOXALINO_LOG_FILE);
 
-                $exportProducts = $this->exportProducts($account, $files);
 
+                $exportProducts = $this->exportProducts($account, $files);
                 if($this->indexType == 'full'){
                     $this->exportCustomers($account, $files);
                     $this->exportTransactions($account, $files);
@@ -124,14 +124,15 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                         }
                         Mage::log('bxLog: Publish the configuration changes from the magento2 owner for account: ' . $account, Zend_Log::INFO, self::BOXALINO_LOG_FILE);
                         $publish = $this->config->publishConfigurationChanges($account);
-                        $changes = $this->bxData->publishChanges();
+                        $changes = $this->bxData->publishOwnerChanges($publish);
                         if(sizeof($changes['changes']) > 0 && !$publish) {
                             Mage::log("changes in configuration detected but not published as publish configuration automatically option has not been activated for account: " . $account, Zend_Log::WARN, self::BOXALINO_LOG_FILE);
                         }
                         Mage::log('bxLog: Push the Zip data file to the Data Indexing server for account: ' . $account, Zend_Log::INFO, self::BOXALINO_LOG_FILE);
                     }
                     try{
-                        $this->bxData->pushData();
+                        $timeout = $this->indexType == 'delta' ? 60 : 3600;
+                        $this->bxData->pushData(null, $timeout);
                     }catch(\Exception $e){
                         Mage::log('bxLog: pushData failed with exception: ' . $e->getMessage(), Zend_Log::INFO, self::BOXALINO_LOG_FILE);
                     }

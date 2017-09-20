@@ -153,6 +153,11 @@
                     <product_list_upsell>Boxalino_Intelligence_Block_Product_List_Upsell</product_list_upsell>
                 </rewrite>
             </catalog>
+            <enterprise_search>
+                <rewrite>
+                    <catalogsearch_layer>Boxalino_Intelligence_Block_EnterpriseLayer</catalogsearch_layer>
+                </rewrite>
+            </enterprise_search>
             <checkout>
                 <rewrite>
                     <cart_crosssell>Boxalino_Intelligence_Block_Cart_Crosssell</cart_crosssell>

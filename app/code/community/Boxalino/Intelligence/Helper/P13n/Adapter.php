@@ -66,7 +66,6 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
             $domain = Mage::getStoreConfig('bxGeneral/general/domain');
             self::$bxClient = new \com\boxalino\bxclient\v1\BxClient($account, $password, $domain, $isDev, $host, null, null, null, $p13n_username, $p13n_password);
             self::$bxClient->setTimeout(Mage::getStoreConfig('bxGeneral/advanced/thrift_timeout'));
-
         }
     }
 
@@ -350,14 +349,15 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
 
         $bxFacets = new \com\boxalino\bxclient\v1\BxFacets();
         $selectedValues = array();
+        $bxSelectedValues = array();
         $requestParams = Mage::app()->getRequest()->getParams();
         $bxHelperData = Mage::helper('boxalino_intelligence');
         $attributeCollection = $bxHelperData->getFilterProductAttributes();
 
         foreach ($requestParams as $key => $values) {
-            if (strpos($key, $this->getUrlParameterPrefix()) === 0) {
+            if (strpos($key, $this->getUrlParameterPrefix()) === 0 && $key != 'bx_category_id') {
                 $fieldName = substr($key, 3);
-                $selectedValues[$fieldName] = $values;
+                $bxSelectedValues[$fieldName] = $values;
             }
             if (isset($attributeCollection['products_' . $key])) {
                 $paramValues = !is_array($values) ? array($values) : $values;
@@ -369,7 +369,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
         }
 
         if (!$this->navigation) {
-            $catId = isset($selectedValues['category_id']) && sizeof($selectedValues['category_id']) > 0 ? $selectedValues['category_id'] : 2;
+            $catId = isset($requestParams['bx_category_id']) ? $requestParams['bx_category_id'] : 2;
             $bxFacets->addCategoryFacet($catId);
         }
 
@@ -377,12 +377,16 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
             $bound = $code == 'discountedPrice' ? true : false;
             list($label, $type, $order, $position, $minPopulation) = array_values($attribute);
             $selectedValue = isset($selectedValues[$code]) ? $selectedValues[$code][0] : null;
-            if ($code == 'discountedPrice' && isset($selectedValues[$code])) {
-                $bxFacets->addPriceRangeFacet($selectedValues[$code]);
+            if ($code == 'discountedPrice' && isset($bxSelectedValues[$code])) {
+                $bxFacets->addPriceRangeFacet($bxSelectedValues[$code]);
             } else {
                 $minPopulation = is_null($minPopulation) ? 1 : $minPopulation;
                 $bxFacets->addFacet($code, $selectedValue, $type, $label, $order, $bound, -1, $minPopulation);
             }
+        }
+        foreach($bxSelectedValues as $field => $values) {
+            if($field == 'discountedPrice') continue;
+            $bxFacets->addFacet($field, $values);
         }
         return $bxFacets;
     }

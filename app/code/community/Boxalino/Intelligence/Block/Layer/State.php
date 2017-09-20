@@ -11,7 +11,7 @@ class Boxalino_Intelligence_Block_Layer_State extends Mage_Catalog_Block_Layer_S
      */
     public function setTemplate($template)
     {
-        if(!Mage::helper('boxalino_intelligence')->isPluginEnabled()){
+        if(!Mage::helper('boxalino_intelligence')->isEnabledOnLayer($this->getLayer())){
             return parent::setTemplate($template);
         }
         $this->_template = 'boxalino/catalog/layer/state.phtml';
@@ -22,24 +22,21 @@ class Boxalino_Intelligence_Block_Layer_State extends Mage_Catalog_Block_Layer_S
      * @return array
      */
     public function getActiveFilters(){
-
+        $facetModel = Mage::getSingleton('boxalino_intelligence/facet');
         $bxHelperData = Mage::helper('boxalino_intelligence');
         if ($bxHelperData->isEnabledOnLayer($this->getLayer()) && !$bxHelperData->getAdapter()->areThereSubPhrases()) {
             $filters = array();
             try{
                 $facets = $bxHelperData->getAdapter()->getFacets();
-                foreach ($facets->getLeftFacets() as $fieldName){
+                foreach ($facetModel->getFacets() as $block){
+                    $filter = $block->getFacet();
                     // Even if facets are empty we like to display filters.
-
-                    if($facets && $facets->isSelected($fieldName)){
+                    $fieldName = $filter->getFieldName();
+                    if($facets->isSelected($fieldName)){
                         $value = $facets->getSelectedValueLabel($fieldName);
                         if($fieldName == 'discountedPrice'){
                             $value = substr_replace($value, '0', strlen($value)-1);
                         }
-                        $filter = Mage::getModel('boxalino_intelligence/layer_filter_attribute')
-                            ->setFacets($facets)
-                            ->setFieldName($fieldName)
-                            ->setRequestVar(str_replace('bx_products_', '', $facets->getFacetParameterName($fieldName)));
                         $filters[] = Mage::getModel('catalog/layer_filter_item')
                             ->setFilter($filter)
                             ->setLabel($value)
@@ -50,6 +47,7 @@ class Boxalino_Intelligence_Block_Layer_State extends Mage_Catalog_Block_Layer_S
                 return $filters;
             }catch(\Exception $e){
                 Mage::logException($e);
+                $bxHelperData->setFallback(true);
             }
         }
         return parent::getActiveFilters();

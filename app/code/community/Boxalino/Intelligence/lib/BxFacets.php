@@ -45,7 +45,7 @@ class BxFacets
 
     public function addFacet($fieldName, $selectedValue=null, $type='string', $label=null, $order=2, $boundsOnly=false, $maxCount=-1) {
         $selectedValues = array();
-        if($selectedValue) {
+        if(!is_null($selectedValue)) {
             $selectedValues = is_array($selectedValue) ? $selectedValue : [$selectedValue];
         }
         $this->facets[$fieldName] = array('label'=>$label, 'type'=>$type, 'order'=>$order, 'selectedValues'=>$selectedValues, 'boundsOnly'=>$boundsOnly, 'maxCount'=>$maxCount);
@@ -795,7 +795,7 @@ class BxFacets
             $order = $facet['order'];
             $maxCount = $facet['maxCount'];
 
-            if($fieldName == 'discountedPrice'){
+            if($fieldName == $this->priceFieldName){
                 $this->selectedPriceValues = $this->facetSelectedValue($fieldName, $type);
             }
 
@@ -809,7 +809,6 @@ class BxFacets
             $facetRequest->maxCount = isset($maxCount) && $maxCount > 0 ? $maxCount : -1;
             $thriftFacets[] = $facetRequest;
         }
-
         return $thriftFacets;
     }
 
@@ -822,7 +821,7 @@ class BxFacets
                 if ($option == 'ranged') {
                     $rangedValue = explode('-', $value);
                     if ($rangedValue[0] != '*') {
-                        $selectedFacet->rangeFromInclusive = $rangedValue[0];
+                        $selectedFacet->rangeFromInclusive = (float)$rangedValue[0];
                     }
                     if ($rangedValue[1] != '*') {
                         $selectedFacet->rangeToExclusive = $rangedValue[1] + 0.01;

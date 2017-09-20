@@ -9,15 +9,19 @@ class Boxalino_Intelligence_Block_Layer extends Mage_CatalogSearch_Block_Layer
     /**
      * @var array Collection of Boxalino_Intelligence_Block_Layer_Filter_Attribute
      */
-    protected $bxFilters = array();
+    protected $bxFilters = null;
+
+    /**
+     * @var null
+     */
+    protected $bxFacets = null;
 
     /**
      * @param string $template
      * @return $this
      */
     public function setTemplate($template){
-
-        if(!Mage::helper('boxalino_intelligence')->isPluginEnabled()){
+        if(!Mage::helper('boxalino_intelligence')->isEnabledOnLayer($this->getLayer())){
             return parent::setTemplate($template);
         }
         $this->_template = 'boxalino/catalog/layer/view.phtml';
@@ -28,12 +32,12 @@ class Boxalino_Intelligence_Block_Layer extends Mage_CatalogSearch_Block_Layer
      * @return $this
      */
     protected function _prepareFilters(){
-
-        $bxHelperData = Mage::helper('boxalino_intelligence');
+        $facetModel = Mage::getSingleton('boxalino_intelligence/facet');
+        $facets = $this->getBxFacets();
         $filters = array();
-        $facets = $bxHelperData->getAdapter()->getFacets();
         if ($facets) {
             foreach ($facets->getLeftFacets() as $fieldName) {
+                if($fieldName == 'category_id') continue;
                 $filter = $this->getLayout()->createBlock('boxalino_intelligence/layer_filter_attribute')
                     ->setLayer($this->getLayer())
                     ->setFacets($facets)
@@ -43,6 +47,7 @@ class Boxalino_Intelligence_Block_Layer extends Mage_CatalogSearch_Block_Layer
                 $filters[] = $filter;
             }
         }
+        $facetModel->setFacets($filters);
         $this->bxFilters = $filters;
         return $this;
     }
@@ -51,14 +56,38 @@ class Boxalino_Intelligence_Block_Layer extends Mage_CatalogSearch_Block_Layer
      * @return array
      */
     public function getFilters(){
-        
         $bxHelperData = Mage::helper('boxalino_intelligence');
         if($bxHelperData->isEnabledOnLayer($this->getLayer())){
-            if(empty($this->bxFilters)){
+            if(is_null($this->bxFilters)){
                 $this->_prepareFilters();
             }
             return $this->bxFilters;
         }
         return parent::getFilters();
+    }
+
+    /**
+     * @return com\boxalino\bxclient\v1\BxFacets
+     */
+    public function getBxFacets(){
+        if(is_null($this->bxFacets)) {
+            $bxHelperData = Mage::helper('boxalino_intelligence');
+            $this->bxFacets = $bxHelperData->getAdapter()->getFacets();
+        }
+        return $this->bxFacets;
+    }
+
+    /**
+     * @return bool
+     */
+    public function canShowBlock(){
+        $bxHelperData = Mage::helper('boxalino_intelligence');
+        if($bxHelperData->isEnabledOnLayer($this->getLayer())){
+            if(!$bxHelperData->getAdapter()->areThereSubPhrases() && sizeof($this->getFilters()) > 0) {
+                return true;
+            }
+            return false;
+        }
+        return parent::canShowBlock();
     }
 }
