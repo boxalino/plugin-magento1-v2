@@ -155,7 +155,8 @@
             </catalog>
             <enterprise_search>
                 <rewrite>
-                    <catalogsearch_layer>Boxalino_Intelligence_Block_EnterpriseLayer</catalogsearch_layer>
+                    <catalogsearch_layer>Boxalino_Intelligence_Block_EnterpriseSearchLayer</catalogsearch_layer>
+                    <catalog_layer_view>Boxalino_Intelligence_Block_EnterpriseCatalogLayer</catalog_layer_view>
                 </rewrite>
             </enterprise_search>
             <checkout>
