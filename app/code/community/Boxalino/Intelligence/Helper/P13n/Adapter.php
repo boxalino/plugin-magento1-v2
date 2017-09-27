@@ -357,7 +357,8 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
         foreach ($requestParams as $key => $values) {
             if (strpos($key, $this->getUrlParameterPrefix()) === 0 && $key != 'bx_category_id') {
                 $fieldName = substr($key, 3);
-                $bxSelectedValues[$fieldName] = $values;
+                $separator =  Mage::getStoreConfig('bxSearch/advanced/parameter_separator');
+                $bxSelectedValues[$fieldName] = explode($separator, $values);
             }
             if (isset($attributeCollection['products_' . $key])) {
                 $paramValues = !is_array($values) ? array($values) : $values;

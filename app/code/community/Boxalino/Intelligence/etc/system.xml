@@ -660,6 +660,17 @@
                                 Optional: default value is 3 and should normally not be changed.
                             </comment>
                         </search_sub_phrases_limit>
+                        <parameter_separator tranlate="label">
+                            <label>Separator for URL Parameter</label>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>5</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <comment>
+                                Optional: default separator is ',' and should normally not be changed.
+                            </comment>
+                        </parameter_separator>
                     </fields>
                 </advanced>
             </groups>

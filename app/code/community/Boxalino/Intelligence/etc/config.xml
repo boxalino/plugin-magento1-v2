@@ -213,6 +213,7 @@
             </noresults>
             <advanced>
                 <search_sub_phrases_limit>3</search_sub_phrases_limit>
+                <parameter_separator>,</parameter_separator>
             </advanced>
         </bxSearch>
         <bxRecommendations>
