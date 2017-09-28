@@ -370,8 +370,10 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
         }
 
         if (!$this->navigation) {
-            $catId = isset($requestParams['bx_category_id']) ? $requestParams['bx_category_id'] : 2;
-            $bxFacets->addCategoryFacet($catId);
+            $separator =  Mage::getStoreConfig('bxSearch/advanced/parameter_separator');
+            $values = isset($requestParams['bx_category_id']) ? $requestParams['bx_category_id'] : 2;
+            $values = explode($separator, $values);
+            $bxFacets->addCategoryFacet($values);
         }
 
         foreach ($attributeCollection as $code => $attribute) {
