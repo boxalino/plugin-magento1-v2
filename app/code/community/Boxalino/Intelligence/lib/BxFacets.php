@@ -27,9 +27,9 @@ class BxFacets
         return $this->filters;
     }
 
-    public function addCategoryFacet($selectedValue=null, $order=2, $maxCount=-1) {
+    public function addCategoryFacet($selectedValue=null, $order=2, $maxCount=-1, $andSelectedValues = false) {
         if($selectedValue) {
-            $this->addFacet('category_id', $selectedValue, 'hierarchical', '1', $maxCount);
+            $this->addFacet('category_id', $selectedValue, 'hierarchical', null, '1', false, $maxCount, $andSelectedValues);
         }
         $this->addFacet($this->getCategoryFieldName(), null, 'hierarchical', null, $order, false, $maxCount);
     }
@@ -43,13 +43,12 @@ class BxFacets
         $this->addFacet($fieldName, $selectedValue, 'ranged', $label, $order, $boundsOnly, $maxCount);
     }
 
-    public function addFacet($fieldName, $selectedValue=null, $type='string', $label=null, $order=2, $boundsOnly=false, $maxCount=-1) {
+    public function addFacet($fieldName, $selectedValue=null, $type='string', $label=null, $order=2, $boundsOnly=false, $maxCount=-1, $andSelectedValues = false) {
         $selectedValues = array();
         if(!is_null($selectedValue)) {
             $selectedValues = is_array($selectedValue) ? $selectedValue : [$selectedValue];
         }
-        $this->facets[$fieldName] = array('label'=>$label, 'type'=>$type, 'order'=>$order, 'selectedValues'=>$selectedValues, 'boundsOnly'=>$boundsOnly, 'maxCount'=>$maxCount);
-
+        $this->facets[$fieldName] = array('label'=>$label, 'type'=>$type, 'order'=>$order, 'selectedValues'=>$selectedValues, 'boundsOnly'=>$boundsOnly, 'maxCount'=>$maxCount, 'andSelectedValues' => $andSelectedValues);
     }
 
     public function setParameterPrefix($parameterPrefix) {
@@ -817,12 +816,11 @@ class BxFacets
     public function getThriftFacets() {
 
         $thriftFacets = array();
-
         foreach($this->facets as $fieldName => $facet) {
             $type = $facet['type'];
             $order = $facet['order'];
             $maxCount = $facet['maxCount'];
-
+            $andSelectedValues =  $facet['andSelectedValues'];
             if($fieldName == $this->priceFieldName){
                 $this->selectedPriceValues = $this->facetSelectedValue($fieldName, $type);
             }
@@ -833,6 +831,7 @@ class BxFacets
             $facetRequest->range = $type == 'ranged' ? true : false;
             $facetRequest->boundsOnly = $facet['boundsOnly'];
             $facetRequest->selectedValues = $this->facetSelectedValue($fieldName, $type);
+            $facetRequest->andSelectedValues = $andSelectedValues;
             $facetRequest->sortOrder = isset($order) && $order == 1 ? 1 : 2;
             $facetRequest->maxCount = isset($maxCount) && $maxCount > 0 ? $maxCount : -1;
             $thriftFacets[] = $facetRequest;

@@ -11,9 +11,9 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
     protected $bxFacets = null;
 
     /**
-     * @var array
+     * @var string
      */
-    protected $fieldName = array();
+    protected $fieldName = '';
 
     /**
      * @var null
@@ -52,7 +52,7 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
 
 
     /**
-     * @return array
+     * @return string
      */
     public function getFieldName(){
         return $this->fieldName;
@@ -135,6 +135,8 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
         $bxDataHelper = Mage::helper('boxalino_intelligence');
         $order = $bxFacets->getFacetExtraInfo($fieldName, 'valueorderEnums');
         $isSystemFilter = $this->isSystemFilter();
+        $facetOptions = $bxDataHelper->getFacetOptions();
+        $isMultiValued = isset($facetOptions[$fieldName]) ? true : false;
         if($isSystemFilter) {
             $this->_requestVar = str_replace('bx_products_', '', $bxFacets->getFacetParameterName($fieldName));
         } else {
@@ -216,7 +218,7 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
                     if (isset($responseValues[$label])) {
                         $facetValue = $responseValues[$label];
                         $selected = isset($selectedValues[$facetValue]) ? true : false;
-                        $paramValue = !$isSystemFilter ? $bxFacets->getFacetValueParameterValue($fieldName, $facetValue) : $attributeModel->getOptionId($this->bxFacets->getFacetValueParameterValue($fieldName, $facetValue));
+                        $paramValue = $this->getParamValue($isSystemFilter, $bxFacets, $fieldName, $facetValue, $attributeModel, $isMultiValued);
                         $data[] = array(
                             'label' => strip_tags($bxFacets->getFacetValueLabel($fieldName, $facetValue)),
                             'value' => $selected ? 0 : $paramValue,
@@ -231,8 +233,8 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
                 $selectedValues = $bxDataHelper->useValuesAsKeys($bxFacets->getSelectedValues($fieldName));
                 $responseValues = $bxFacets->getFacetValues($fieldName);
                 foreach ($responseValues as $facetValue) {
-                    $selected = isset($selectedValues[$facetValue]) ? true : false;
-                    $paramValue = !$isSystemFilter ? $bxFacets->getFacetValueParameterValue($fieldName, $facetValue) : $attributeModel->getOptionId($this->bxFacets->getFacetValueParameterValue($fieldName, $facetValue));
+                    $selected = isset($selectedValues[$facetValue]) ? true : false;;
+                    $paramValue = $this->getParamValue($isSystemFilter, $bxFacets, $fieldName, $facetValue, $attributeModel, $isMultiValued);
                     $data[] = array(
                         'label' => strip_tags($bxFacets->getFacetValueLabel($fieldName, $facetValue)),
                         'value' => $selected ? 0 : $paramValue,
@@ -245,5 +247,26 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
             }
         }
         return $data;
+    }
+
+    public function getParamValue($isSystemFilter, $bxFacets, $fieldName, $facetValue, $attributeModel, $setCurrentSelection=false) {
+        $paramValue = $bxFacets->getFacetValueParameterValue($fieldName, $facetValue);
+        $currentSelection = $setCurrentSelection ? $bxFacets->getFacetSelectedValues($fieldName) : array();
+        $separator = Mage::getStoreConfig('bxSearch/advanced/parameter_separator');
+        if(!$isSystemFilter) {
+            if(sizeof($currentSelection)>0) {
+                $paramValue .= $separator . implode($separator, $currentSelection);
+            }
+            return $paramValue;
+        }
+        $paramValue = $attributeModel->getOptionId($paramValue);
+        if(sizeof($currentSelection)>0) {
+            $changedSelection = array();
+            foreach($currentSelection as $selected) {
+                $changedSelection[] = $attributeModel->getOptionId($selected);
+            }
+            $paramValue .= $separator . implode($separator, $changedSelection);
+        }
+        return $paramValue;
     }
 }

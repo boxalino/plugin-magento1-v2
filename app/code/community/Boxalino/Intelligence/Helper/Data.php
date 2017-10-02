@@ -293,8 +293,7 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
                     'label' => $attribute->getStoreLabel(Mage::app()->getStore()->getId()),
                     'type' => $type,
                     'order' => 0,
-                    'position' => $position,
-                    'minPopulation' => 1
+                    'position' => $position
                 );
             }catch(\Exception $e){
                 Mage::logException($e);
@@ -304,6 +303,17 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
         return $attributes;
     }
 
+    public function getFacetOptions() {
+        $fields = explode(',',Mage::getStoreConfig('bxSearch/advanced/multiselect_fields'));
+        $facetOptions = array();
+        foreach ($fields as $field) {
+            $values = explode(';', $field);
+            $fieldName = $values[0];
+            $andSelectedValues = sizeof($values) > 1 ? (bool)$values[1] : false;
+            $facetOptions[$fieldName] = array('andSelectedValues' => $andSelectedValues);
+        }
+        return $facetOptions;
+    }
 
     /**
      * @return string

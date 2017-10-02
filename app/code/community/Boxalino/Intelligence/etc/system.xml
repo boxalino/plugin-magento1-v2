@@ -660,10 +660,25 @@
                                 Optional: default value is 3 and should normally not be changed.
                             </comment>
                         </search_sub_phrases_limit>
+                        <multiselect_fields>
+                            <label>Multi-select Fields</label>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>5</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <comment>
+                                <![CDATA[Optional: If you have fields which should behave as multi-select, you should define it
+                                here (separated by coma). As an option, you can also set if the field should
+                                use the AND condition (default OR condition), by appending a semicolon
+                                followed by a 1.
+                                E.g.: category_id,products_color;1,products_manufacturer]]>
+                            </comment>
+                        </multiselect_fields>
                         <parameter_separator tranlate="label">
                             <label>Separator for URL Parameter</label>
                             <frontend_type>text</frontend_type>
-                            <sort_order>5</sort_order>
+                            <sort_order>6</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
