@@ -813,6 +813,20 @@ class BxFacets
         return $selected;
     }
 
+    public function getFacetValueIcon($fieldName, $facetValue, $language = null, $defaultValue = '') {
+        $facetValue = strtolower($facetValue);
+        $iconMap = json_decode($this->getFacetExtraInfo($fieldName, 'iconMap'));
+        foreach ($iconMap as $icon) {
+            if($language && $icon->language != $language) {
+                continue;
+            }
+            if($facetValue == strtolower($icon->value)) {
+                return $icon->icon;
+            }
+        }
+        return $defaultValue;
+    }
+
     public function getThriftFacets() {
 
         $thriftFacets = array();
