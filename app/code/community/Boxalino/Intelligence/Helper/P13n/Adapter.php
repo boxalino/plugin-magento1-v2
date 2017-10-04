@@ -146,10 +146,8 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
      */
     public function autocomplete($queryText, $autocomplete) {
 
-        $order = array();
         $data = array();
         $hash = null;
-
         $autocompleteConfig = Mage::getStoreConfig('bxSearch/autocomplete');
         $autocomplete_limit = $autocompleteConfig['limit'];
         $products_limit = $autocompleteConfig['products_limit'];
@@ -158,7 +156,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
             $bxRequest = new \com\boxalino\bxclient\v1\BxAutocompleteRequest($this->bxHelperData->getLanguage(), $queryText, $autocomplete_limit, $products_limit, $this->getAutocompleteChoice(), $this->getSearchChoice($queryText));
             $searchRequest = $bxRequest->getBxSearchRequest();
 
-            if($autocompleteConfig['category']){
+            if ($autocompleteConfig['category']){
                 $facets = new \com\boxalino\bxclient\v1\BxFacets();
                 $facets->addCategoryFacet(null, 1, 20);
                 $searchRequest->setFacets($facets);
@@ -172,8 +170,8 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
             $bxAutocompleteResponse = self::$bxClient->getAutocompleteResponse();
 
             $entityIds = $bxAutocompleteResponse->getBxSearchResponse()->getHitIds($this->currentSearchChoice);
-			$data['global_products'] = $autocomplete->getListValues($entityIds);
-
+            if(empty($entityIds))return $data;
+            $data['global_products'] = $autocomplete->getListValues($entityIds);
             foreach ($bxAutocompleteResponse->getTextualSuggestions() as $i => $suggestion) {
 
                 $entity_ids = array();
