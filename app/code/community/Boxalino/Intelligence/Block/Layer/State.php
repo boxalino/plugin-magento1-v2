@@ -11,11 +11,24 @@ class Boxalino_Intelligence_Block_Layer_State extends Mage_Catalog_Block_Layer_S
      */
     public function setTemplate($template)
     {
+        $bxHelperData = Mage::helper('boxalino_intelligence');
+        try{
+            $this->getBxFacets();
+        } catch(\Exception $e) {
+            Mage::logException($e);
+            $bxHelperData->setFallback(true);
+        }
         if(!Mage::helper('boxalino_intelligence')->isEnabledOnLayer($this->getLayer())){
             return parent::setTemplate($template);
         }
         $this->_template = 'boxalino/catalog/layer/state.phtml';
         return $this;
+    }
+
+
+    public function getBxFacets(){
+        $bxHelperData = Mage::helper('boxalino_intelligence');
+        return $bxHelperData->getAdapter()->getFacets();
     }
 
     /**
@@ -30,18 +43,29 @@ class Boxalino_Intelligence_Block_Layer_State extends Mage_Catalog_Block_Layer_S
                 $facets = $bxHelperData->getAdapter()->getFacets();
                 foreach ($facetModel->getFacets() as $block){
                     $filter = $block->getFacet();
-                    // Even if facets are empty we like to display filters.
                     $fieldName = $filter->getFieldName();
                     if($facets->isSelected($fieldName)){
-                        $value = $facets->getSelectedValueLabel($fieldName);
-                        if($fieldName == 'discountedPrice'){
-                            $value = substr_replace($value, '0', strlen($value)-1);
+                        $items = $filter->getItems();
+                        $selectedValues = $facets->getSelectedValues($fieldName);
+                        if(!empty($selectedValues)) {
+                            foreach ($selectedValues as $i => $v){
+                                $value = $facets->getSelectedValueLabel($fieldName, $i);
+                                if(isset($items[$value])){
+                                    $item =  $items[$value];
+                                    if($fieldName == 'discountedPrice'){
+                                        $value = substr_replace($value, '0', strlen($value)-1);
+                                        $item->setValue($value);
+                                    }
+                                    $filters[] = $item;
+                                }
+
+                            }
+                        } else {
+                            $selectedValue = $facets->getSelectedValueLabel($fieldName);
+                            if($selectedValue != '' && isset($items[$selectedValue])) {
+                                $filters[] = $items[$selectedValue];
+                            }
                         }
-                        $filters[] = Mage::getModel('catalog/layer_filter_item')
-                            ->setFilter($filter)
-                            ->setLabel($value)
-                            ->setValue($value)
-                            ->setFieldName($fieldName);
                     }
                 }
                 return $filters;

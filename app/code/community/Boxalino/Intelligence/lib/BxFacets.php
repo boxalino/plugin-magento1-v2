@@ -69,7 +69,8 @@ class BxFacets
 
     public function getFieldNames() {
         $fieldNames = array();
-        if(sizeof($this->facets) !== sizeof($this->searchResult->facetResponses)) {
+
+        if($this->searchResult && (sizeof($this->facets) !== sizeof($this->searchResult->facetResponses))) {
             foreach($this->searchResult->facetResponses as $facetResponse) {
                 if(!isset($this->facets[$facetResponse->fieldName])) {
                     $this->facets[$facetResponse->fieldName] = ['label' => $facetResponse->fieldName];
@@ -439,8 +440,20 @@ class BxFacets
                 }
                 break;
             default:
+
                 foreach($facetResponse->values as $facetValue) {
                     $facetValues[$facetValue->stringValue] = $facetValue;
+                }
+                if(sizeof($facetValues) > 0) {
+                    foreach ($this->facets[$fieldName]['selectedValues'] as $value) {
+                        if(!isset($facetValues[$value])) {
+                            $newValue = clone reset($facetValues);
+                            $newValue->selected = true;
+                            $newValue->stringValue = $value;
+                            $newValue->hitCount = 0;
+                            $facetValues[$value] = $newValue;
+                        }
+                    }
                 }
                 break;
         }
@@ -522,11 +535,16 @@ class BxFacets
                         $temp = array();
                         foreach ($dependency['values'] as $key => $value) {
                             if(isset($values[$value])){
-                                $temp[$key] = $values[$value];
+                                $temp[$value] = $values[$value];
                                 unset($values[$value]);
                             }
                         }
                         array_splice($values, $effect['order'], 0, $temp);
+                        $temp = $values;
+                        $values = array();
+                        foreach ($temp as $value) {
+                            $values[$value->stringValue] = $value;
+                        }
                     }
                 }
             }

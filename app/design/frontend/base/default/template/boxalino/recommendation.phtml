@@ -1,47 +1,22 @@
-<?php $widget = $this->getData('widget'); ?>
-<h1>Recommendation for <?php echo $this->getData('title');?></h1>
-<?php $_productCollection = $this->_getLoadedProductCollection(); ?>
-<?php
-/**
- * Magento
- *
- * NOTICE OF LICENSE
- *
- * This source file is subject to the Academic Free License (AFL 3.0)
- * that is bundled with this package in the file LICENSE_AFL.txt.
- * It is also available through the world-wide-web at this URL:
- * http://opensource.org/licenses/afl-3.0.php
- * If you did not receive a copy of the license and are unable to
- * obtain it through the world-wide-web, please send an email
- * to license@magento.com so we can send you a copy immediately.
- *
- * DISCLAIMER
- *
- * Do not edit or add to this file if you wish to upgrade Magento to newer
- * versions in the future. If you wish to customize Magento for your
- * needs please refer to http://www.magento.com for more information.
- *
- * @category    design
- * @package     base_default
- * @copyright   Copyright (c) 2006-2014 X.commerce, Inc. (http://www.magento.com)
- * @license     http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
- */
-?>
-<?php if($_productCollection->count()): ?>
-    <div class="box-collateral box-up-sell">
-        <table class="products-grid" id="upsell-product-table">
-            <tr>
-                <?php foreach($_productCollection as $product): ?>
+<?php if($this->isPluginEnabled()) :?>
+    <?php $widget = $this->getData('widget'); ?>
+    <h1>Recommendation for <?php echo $this->getData('title');?></h1>
+    <?php $_productCollection = $this->_getLoadedProductCollection(); ?>
+    <?php if($_productCollection->count()): ?>
+        <div class="box-collateral box-up-sell">
+            <table class="products-grid" id="upsell-product-table">
+                <tr>
+                    <?php foreach($_productCollection as $product): ?>
                         <td>
                             <a href="<?php echo $product->getProductUrl() ?>" title="<?php echo $this->escapeHtml($product->getName()) ?>" class="product-image"><img src="<?php echo $this->helper('catalog/image')->init($product, 'small_image')->resize(125) ?>" width="125" height="125" alt="<?php echo $this->escapeHtml($product->getName()) ?>" /></a>
                             <h3 class="product-name"><a href="<?php echo $product->getProductUrl() ?>" title="<?php echo $this->escapeHtml($product->getName()) ?>"><?php echo $this->escapeHtml($product->getName()) ?></a></h3>
                             <?php echo $this->getPriceHtml($product, true, '-upsell') ?>
                             <?php echo $this->getReviewsSummaryHtml($product) ?>
                         </td>
-                <?php endforeach; ?>
-            </tr>
-        </table>
-        <script type="text/javascript">decorateTable('upsell-product-table')</script>
-    </div>
+                    <?php endforeach; ?>
+                </tr>
+            </table>
+            <script type="text/javascript">decorateTable('upsell-product-table')</script>
+        </div>
+    <?php endif ?>
 <?php endif ?>
-

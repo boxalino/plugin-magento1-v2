@@ -428,12 +428,9 @@ class BxClient
 	public function getResponse() {
 		if(!$this->chooseResponses) {
 			$this->choose();
-		} else {
-			if($size = sizeof($this->chooseRequests) - sizeof($this->chooseResponses)) {
-				$this->choose($size);
-			}
-		}
-
+		} elseif ($size = sizeof($this->chooseRequests) - sizeof($this->chooseResponses->variants)) {
+            $this->choose($size);
+        }
 		return new \com\boxalino\bxclient\v1\BxChooseResponse($this->chooseResponses, $this->chooseRequests);
 	}
 	

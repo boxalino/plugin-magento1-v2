@@ -26,13 +26,14 @@ class Boxalino_Intelligence_Block_Facets extends Mage_Core_Block_Template{
                 $facets = $this->getBxFacets();
                 if ($facets) {
                     $fieldName = reset($facets->getTopFacets());
-                    $filter = $this->getLayout()->createBlock('boxalino_intelligence/layer_filter_attribute')
-                        ->setLayer($this->getLayer())
-                        ->setAttributeModel(Mage::getResourceModel('catalog/eav_attribute'))
-                        ->setFieldName($fieldName)
-                        ->setFacets($facets)
-                        ->init();
-                    return $filter;
+                    if($fieldName) {
+                        $filter = $this->getLayout()->createBlock('boxalino_intelligence/layer_filter_attribute')
+                            ->setLayer($this->getLayer())
+                            ->setAttributeModel(Mage::getResourceModel('catalog/eav_attribute'))
+                            ->setFieldName($fieldName)
+                            ->setFacets($facets)
+                            ->init();
+                    }
                 }
             } catch (\Exception $e) {
                 Mage::logException($e);
@@ -57,7 +58,8 @@ class Boxalino_Intelligence_Block_Facets extends Mage_Core_Block_Template{
      */
     protected function getLayer(){
         if(is_null($this->_layer)){
-            $this->_layer = Mage::registry('current_layer');
+            $this->_layer = is_null(Mage::registry('current_layer')) ?
+                Mage::getSingleton('catalog/layer') : Mage::registry('current_layer');
         }
         return $this->_layer;
     }

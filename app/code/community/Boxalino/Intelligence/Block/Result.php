@@ -46,6 +46,7 @@ class Boxalino_Intelligence_Block_Result extends Mage_CatalogSearch_Block_Result
                 $this->fallback = true;
             }
         } catch (\Exception $e){
+            $this->bxHelperData->setFallback(true);
             $this->fallback = true;
             Mage::logException($e);
         }

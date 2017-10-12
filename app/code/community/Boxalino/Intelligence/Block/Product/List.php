@@ -58,6 +58,8 @@ class Boxalino_Intelligence_Block_Product_List extends Mage_Catalog_Block_Produc
                 }
             } catch (\Exception $e) {
                 Mage::logException($e);
+                $bxHelperData->setFallback(true);
+                $this->_productCollection = parent::_getProductCollection();
             }
         }
         return (isset($this->_subPhraseCollections[self::$number]))

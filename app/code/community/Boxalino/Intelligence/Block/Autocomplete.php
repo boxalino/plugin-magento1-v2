@@ -52,7 +52,7 @@ class Boxalino_Intelligence_Block_Autocomplete extends Mage_CatalogSearch_Block_
                 foreach($suggestData as $index => $item){
                     $suggestionHtml .= '<li data-word="'.$item['hash'].'" title="'.$this->escapeHtml($item['title']).'"';
                     $suggestionHtml .= ' class="acsuggestion">';
-                    $suggestionHtml .= '<span class"query-title">'.$item['highlighted'].'</span>';
+                    $suggestionHtml .= '<span class="query-title">'.$item['highlighted'].'</span>';
                     $suggestionHtml .= '<span class="amount">('.$item['num_results'].')</span></li>';
                     if (isset($item['categories']) && count($item['categories'])) {
                         $catalogSearchHelper = Mage::helper('catalogsearch');

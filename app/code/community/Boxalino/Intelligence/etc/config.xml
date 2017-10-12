@@ -131,6 +131,11 @@
                     <template_filter>Boxalino_Intelligence_Model_Template_Filter</template_filter>
                 </rewrite>
             </widget>
+            <catalog>
+                <rewrite>
+                    <layer_filter_item>Boxalino_Intelligence_Model_Layer_Filter_Item</layer_filter_item>
+                </rewrite>
+            </catalog>
         </models>
 
         <helpers>

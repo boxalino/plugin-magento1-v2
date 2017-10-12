@@ -194,18 +194,27 @@ class Boxalino_Intelligence_Block_Recommendation extends Mage_Catalog_Block_Prod
     }
 
     /**
+     * @return mixed
+     */
+    public function isPluginEnabled() {
+        return $this->bxHelperData->isPluginEnabled();
+    }
+
+    /**
      * @return Mage_Core_Block_Abstract
      */
     protected function _beforeToHtml(){
 
-        if($this->bxHelperData->isSetup()){
-            $recommendations = $this->getLayoutRecommendationBlocks($this->getLayout()->getXmlString());
-            if($recommendations){
-                $this->prepareRecommendations($recommendations);
+        if($this->isPluginEnabled()) {
+            if ($this->bxHelperData->isSetup()) {
+                $recommendations = $this->getLayoutRecommendationBlocks($this->getLayout()->getXmlString());
+                if ($recommendations) {
+                    $this->prepareRecommendations($recommendations);
+                }
+                $this->bxHelperData->setSetup(false);
             }
-            $this->bxHelperData->setSetup(false);
+            $this->_prepareData();
         }
-        $this->_prepareData();
         return parent::_beforeToHtml();
     }
 }
