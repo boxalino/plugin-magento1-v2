@@ -20,23 +20,28 @@ class Boxalino_Intelligence_Block_Facets extends Mage_Core_Block_Template{
      */
     public function getTopFilter(){
         $filter = [];
-        $bxHelperData = Mage::helper('boxalino_intelligence');
-        if($bxHelperData->isEnabledOnLayer($this->getLayer())) {
-            try {
-                $facets = $this->getBxFacets();
-                if ($facets) {
-                    $fieldName = reset($facets->getTopFacets());
-                    if($fieldName) {
-                        $filter = $this->getLayout()->createBlock('boxalino_intelligence/layer_filter_attribute')
-                            ->setLayer($this->getLayer())
-                            ->setAttributeModel(Mage::getResourceModel('catalog/eav_attribute'))
-                            ->setFieldName($fieldName)
-                            ->setFacets($facets)
-                            ->init();
+        if(Mage::registry('current_category')
+            && Mage::getBlockSingleton('catalog/category_view')->getCurrentCategory()
+            && Mage::getBlockSingleton('catalog/category_view')->isContentMode()) {
+        } else {
+            $bxHelperData = Mage::helper('boxalino_intelligence');
+            if($bxHelperData->isEnabledOnLayer($this->getLayer())) {
+                try {
+                    $facets = $this->getBxFacets();
+                    if ($facets) {
+                        $fieldName = reset($facets->getTopFacets());
+                        if($fieldName) {
+                            $filter = $this->getLayout()->createBlock('boxalino_intelligence/layer_filter_attribute')
+                                ->setLayer($this->getLayer())
+                                ->setAttributeModel(Mage::getResourceModel('catalog/eav_attribute'))
+                                ->setFieldName($fieldName)
+                                ->setFacets($facets)
+                                ->init();
+                        }
                     }
+                } catch (\Exception $e) {
+                    Mage::logException($e);
                 }
-            } catch (\Exception $e) {
-                Mage::logException($e);
             }
         }
         return $filter;
