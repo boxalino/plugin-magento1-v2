@@ -13,15 +13,16 @@ class Boxalino_Intelligence_Block_Layer_State extends Mage_Catalog_Block_Layer_S
     {
         $bxHelperData = Mage::helper('boxalino_intelligence');
         try{
-            $this->getBxFacets();
+            if($bxHelperData->isEnabledOnLayer($this->getLayer())) {
+                $this->getBxFacets();
+                $this->_template = 'boxalino/catalog/layer/state.phtml';
+                return $this;
+            }
         } catch(\Exception $e) {
             Mage::logException($e);
             $bxHelperData->setFallback(true);
         }
-        if(!Mage::helper('boxalino_intelligence')->isEnabledOnLayer($this->getLayer())){
-            return parent::setTemplate($template);
-        }
-        $this->_template = 'boxalino/catalog/layer/state.phtml';
+        $this->_template = $template;
         return $this;
     }
 

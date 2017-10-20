@@ -79,7 +79,7 @@ class BxFacets
         }
         foreach($this->facets as $fieldName => $facet) {
             $facetResponse = $this->getFacetResponse($fieldName);
-            if(sizeof($facetResponse->values)>0) {
+            if(sizeof($facetResponse->values)>0 || sizeof($facet['selectedValues'])>0) {
                 $fieldNames[$fieldName] = array('fieldName'=>$fieldName, 'returnedOrder'=> sizeof($fieldNames));
             }
         }
@@ -444,15 +444,18 @@ class BxFacets
                 foreach($facetResponse->values as $facetValue) {
                     $facetValues[$facetValue->stringValue] = $facetValue;
                 }
-                if(sizeof($facetValues) > 0) {
-                    foreach ($this->facets[$fieldName]['selectedValues'] as $value) {
-                        if(!isset($facetValues[$value])) {
-                            $newValue = clone reset($facetValues);
-                            $newValue->selected = true;
-                            $newValue->stringValue = $value;
-                            $newValue->hitCount = 0;
-                            $facetValues[$value] = $newValue;
-                        }
+
+                foreach ($this->facets[$fieldName]['selectedValues'] as $value) {
+                    if(!isset($facetValues[$value])) {
+                        $newValue = new \com\boxalino\p13n\api\thrift\FacetValue();
+                        $newValue->rangeFromInclusive = null;
+                        $newValue->rangeToExclusive = null;
+                        $newValue->hierarchyId = null;
+                        $newValue->hierarchy = null;
+                        $newValue->stringValue = $value;
+                        $newValue->hitCount = 0;
+                        $newValue->selected = true;
+                        $facetValues[$value] = $newValue;
                     }
                 }
                 break;

@@ -98,12 +98,12 @@ class Boxalino_Intelligence_Block_Product_List extends Mage_Catalog_Block_Produc
             Mage::logException($e);
             throw $e;
         }
-
+        $count = $totalHitCount == 0 ? $totalHitCount : count($entity_ids);
         $lastPage = ceil($totalHitCount / $limit);
         $this->_productCollection
             ->setLastBxPage($lastPage)
             ->setBxTotal($totalHitCount)
-            ->setBxCount(count($entity_ids))
+            ->setBxCount($count)
             ->load();
     }
 }

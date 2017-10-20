@@ -362,7 +362,8 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
                 $paramValues = !is_array($values) ? array($values) : $values;
                 $attributeModel = Mage::getModel('eav/config')->getAttribute('catalog_product', $key)->getSource();
                 foreach ($paramValues as $paramValue){
-                    $selectedValues['products_' . $key][] = $attributeModel->getOptionText($paramValue);
+                    $value = $attributeModel->getOptionText($paramValue);
+                    $selectedValues['products_' . $key][] = $value == false ? null : $value;
                 }
             }
         }

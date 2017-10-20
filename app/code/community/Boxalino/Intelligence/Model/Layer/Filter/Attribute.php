@@ -81,7 +81,7 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
                 $type = isset($itemData['type']) ? $itemData['type'] : null;
                 $hidden = isset($itemData['hidden']) ? $itemData['hidden'] : null;
                 $items[$itemData['label']] = $this->_createItem($itemData['label'], $itemData['value'],
-                    $itemData['paramValue'], $itemData['count'], $selected, $type, $hidden);
+                    $itemData['count'], $itemData['paramValue'], $selected, $type, $hidden);
             }
             $this->_items = $items;
         }
@@ -92,11 +92,13 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
      * @param string $label
      * @param mixed $value
      * @param int $count
+     * @param null $paramValue
      * @param null $selected
      * @param null $type
+     * @param null $hidden
      * @return mixed
      */
-    public function _createItem($label, $value, $paramValue, $count = 0, $selected = null, $type = null, $hidden = null){
+    public function _createItem($label, $value, $count = 0, $paramValue = null, $selected = null, $type = null, $hidden = null){
         return Mage::getModel('catalog/layer_filter_item')
             ->setFilter($this)
             ->setLabel($label)
