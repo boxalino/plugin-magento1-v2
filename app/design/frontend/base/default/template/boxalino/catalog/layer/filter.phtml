@@ -16,12 +16,21 @@
                         <?php endif; ?>
                     </a>
                 <?php else: ?>
-                    <span>
-                    <?php echo $_item->getLabel(); ?>
-                        <?php if ($this->shouldDisplayProductCount()): ?>
-                            <span class="count">(<?php echo $_item->getCount() ?>)</span>
-                        <?php endif; ?>
-                </span>
+                    <?php if(!$selected) : ?>
+                        <span>
+                        <?php echo $_item->getLabel(); ?>
+                            <?php if ($this->shouldDisplayProductCount()): ?>
+                                <span class="count">(<?php echo $_item->getCount() ?>)</span>
+                            <?php endif; ?>
+                        </span>
+                    <?php else : ?>
+                        <a href="<?php echo $this->escapeHtml($_item->getRemoveUrl()) ?>">
+                            <?php echo $_item->getLabel() ?>
+                            <?php if ($this->shouldDisplayProductCount()): ?>
+                                <span class="count">(<?php echo $_item->getCount() ?>)</span>
+                            <?php endif; ?>
+                        </a>
+                    <?php endif; ?>
                 <?php endif; ?>
             </li>
         <?php endforeach ?>

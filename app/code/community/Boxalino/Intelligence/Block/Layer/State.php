@@ -55,7 +55,7 @@ class Boxalino_Intelligence_Block_Layer_State extends Mage_Catalog_Block_Layer_S
                                     $item =  $items[$value];
                                     if($fieldName == 'discountedPrice'){
                                         $value = substr_replace($value, '0', strlen($value)-1);
-                                        $item->setValue($value);
+                                        $item->setLabel($value);
                                     }
                                     $filters[] = $item;
                                 }

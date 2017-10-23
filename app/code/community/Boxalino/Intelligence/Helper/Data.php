@@ -258,18 +258,17 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
     protected function _getFilterableAttributes(){
 
         $collection = Mage::getResourceModel('catalog/product_attribute_collection');
-        $collection
-            ->setItemObjectClass('catalog/resource_eav_attribute')
+        $collection->setItemObjectClass('catalog/resource_eav_attribute')
             ->addStoreLabel(Mage::app()->getStore()->getId())
             ->setOrder('position', 'ASC')
-            ->addIsFilterableFilter()->load();
+            ->load();
         return $collection;
     }
 
     /**
      * @return array
      */
-    public function getFilterProductAttributes(){
+    public function getFilterProductAttributes($context = 'search'){
 
         $attributes = array();
         $attributeCollection = $this->_getFilterableAttributes();
@@ -288,12 +287,18 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
                 if ($code == 'price') {
                     $type = 'ranged';
                 }
+                if($context == 'search') {
+                    $addToRequest = (boolean) $data['is_filterable_in_search'];
+                } else {
+                    $addToRequest = (boolean) $data['is_filterable'];
+                }
                 $code = $code == 'price' ? 'discountedPrice' : $this->getProductAttributePrefix() . $code;
                 $attributes[$code] = array(
                     'label' => $attribute->getStoreLabel(Mage::app()->getStore()->getId()),
                     'type' => $type,
                     'order' => 0,
-                    'position' => $position
+                    'position' => $position,
+                    'addToRequest' => $addToRequest
                 );
             }catch(\Exception $e){
                 Mage::logException($e);
@@ -504,5 +509,13 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
 
     public function isProductFinderActive(){
         return $this->productFinder;
+    }
+
+    public function getSeparator() {
+        $separator = Mage::getStoreConfig('bxSearch/advanced/parameter_separator');
+        if($separator == '') {
+            $separator = ',';
+        }
+        return $separator;
     }
 }

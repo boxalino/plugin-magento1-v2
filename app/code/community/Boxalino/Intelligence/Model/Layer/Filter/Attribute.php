@@ -80,8 +80,7 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
                 $selected = isset($itemData['selected']) ? $itemData['selected'] : null;
                 $type = isset($itemData['type']) ? $itemData['type'] : null;
                 $hidden = isset($itemData['hidden']) ? $itemData['hidden'] : null;
-                $items[$itemData['label']] = $this->_createItem($itemData['label'], $itemData['value'],
-                    $itemData['count'], $itemData['paramValue'], $selected, $type, $hidden);
+                $items[$itemData['label']] = $this->_createItem($itemData['label'], $itemData['value'], $itemData['count'], $selected, $type, $hidden);
             }
             $this->_items = $items;
         }
@@ -92,18 +91,16 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
      * @param string $label
      * @param mixed $value
      * @param int $count
-     * @param null $paramValue
      * @param null $selected
      * @param null $type
      * @param null $hidden
      * @return mixed
      */
-    public function _createItem($label, $value, $count = 0, $paramValue = null, $selected = null, $type = null, $hidden = null){
+    public function _createItem($label, $value, $count = 0, $selected = null, $type = null, $hidden = null){
         return Mage::getModel('catalog/layer_filter_item')
             ->setFilter($this)
             ->setLabel($label)
             ->setValue($value)
-            ->setParamValue($paramValue)
             ->setCount($count)
             ->setSelected($selected)
             ->setType($type)
@@ -153,8 +150,7 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
                     $homeLabel = Mage::helper('boxalino_intelligence')->__("All Categories");
                     $data[] = array(
                         'label' => strip_tags($homeLabel),
-                        'value' => strip_tags($homeLabel),
-                        'paramValue' => 2,
+                        'value' => 2,
                         'count' => $bxFacets->getParentCategoriesHitCount($key),
                         'selected' => $value,
                         'type' => 'home parent',
@@ -167,8 +163,7 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
                 }
                 $data[] = array(
                     'label' => strip_tags($parentCategory),
-                    'value' => strip_tags($parentCategory),
-                    'paramValue' => $value ? null : $key,
+                    'value' => $value ? null : $key,
                     'count' => $bxFacets->getParentCategoriesHitCount($key),
                     'selected' => $value,
                     'type' => 'parent',
@@ -201,8 +196,7 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
                 if (Mage::helper('catalog/category')->canShow((int)$id)) {
                     $data[] = array(
                         'label' => strip_tags($bxFacets->getFacetValueLabel($fieldName, $facetValue)),
-                        'value' => strip_tags($bxFacets->getFacetValueLabel($fieldName, $facetValue)),
-                        'paramValue' => $id,
+                        'value' => $id,
                         'count' => $bxFacets->getFacetValueCount($fieldName, $facetValue),
                         'selected' => false,
                         'type' => $value ? 'children' : 'home',
@@ -224,8 +218,7 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
                         $paramValue = $this->getParamValue($isSystemFilter, $bxFacets, $fieldName, $facetValue, $attributeModel, $selectedValues, $selected, $isMultiValued);
                         $data[] = array(
                             'label' => strip_tags($bxFacets->getFacetValueLabel($fieldName, $facetValue)),
-                            'value' => strip_tags($bxFacets->getFacetValueLabel($fieldName, $facetValue)),
-                            'paramValue' => $paramValue,
+                            'value' => $paramValue,
                             'count' => $bxFacets->getFacetValueCount($fieldName, $facetValue),
                             'selected' => $selected,
                             'type' => 'flat',
@@ -236,16 +229,12 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
             } else {
                 $selectedValues = $bxDataHelper->useValuesAsKeys($bxFacets->getSelectedValues($fieldName));
                 $responseValues = $bxFacets->getFacetValues($fieldName);
-
                 foreach ($responseValues as $facetValue) {
-
-                    $selected = isset($selectedValues[$facetValue]) ? true : false;
+                    $selected = isset($selectedValues[$facetValue]) ? true : false;;
                     $paramValue = $this->getParamValue($isSystemFilter, $bxFacets, $fieldName, $facetValue, $attributeModel, $selectedValues, $selected, $isMultiValued);
-
                     $data[] = array(
                         'label' => strip_tags($bxFacets->getFacetValueLabel($fieldName, $facetValue)),
-                        'value' => strip_tags($bxFacets->getFacetValueLabel($fieldName, $facetValue)),
-                        'paramValue' => $paramValue,
+                        'value' => $paramValue,
                         'count' => $bxFacets->getFacetValueCount($fieldName, $facetValue),
                         'selected' => $selected,
                         'type' => 'flat',
@@ -272,7 +261,7 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
         $paramValue = ($selected ? null : ($isSystemFilter ? $attributeModel->getOptionId($facetValue) : $bxFacets->getFacetValueParameterValue($fieldName, $facetValue)));
         if($selected && isset($selectedValues[$facetValue]))unset($selectedValues[$facetValue]);
         if($setCurrentSelection && sizeof($selectedValues)>0) {
-            $separator = Mage::getStoreConfig('bxSearch/advanced/parameter_separator');
+            $separator = Mage::helper('boxalino_intelligence')->getSeparator();
             if(!is_null($paramValue)) $paramValue .= $separator;
             if(!$isSystemFilter) {
                 $paramValue .= implode($separator, $selectedValues);

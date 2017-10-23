@@ -38,7 +38,7 @@
         <ol>
             <?php foreach ($_filters as $_filter): ?>
                 <li>
-                    <span class="label"><?php echo $this->__($_filter->getName()) ?>:</span> <span class="value"><?php echo $this->stripTags($_filter->getValue()) ?></span>
+                    <span class="label"><?php echo $this->__($_filter->getName()) ?>:</span> <span class="value"><?php echo $this->stripTags($_filter->getLabel()) ?></span>
                     <?php
                     $clearLinkUrl = $_filter->getClearLinkUrl();
                     if ($clearLinkUrl):

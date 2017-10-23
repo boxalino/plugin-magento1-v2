@@ -5,7 +5,7 @@
         </div>
         <div class="block-content">
             <?php echo $this->getStateHtml() ?>
-            <?php if ($this->getLayer()->getState()->getFilters()): ?>
+            <?php if ($this->getChild('layer_state')->getActiveFilters()): ?>
                 <div class="actions"><a href="<?php echo $this->getClearUrl() ?>"><?php echo $this->__('Clear All') ?></a></div>
             <?php endif; ?>
             <?php if($this->canShowOptions()): ?>
