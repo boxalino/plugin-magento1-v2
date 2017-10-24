@@ -50,16 +50,18 @@ class Boxalino_Intelligence_Block_Layer_State extends Mage_Catalog_Block_Layer_S
                         $selectedValues = $facets->getSelectedValues($fieldName);
                         if(!empty($selectedValues)) {
                             foreach ($selectedValues as $i => $v){
+
                                 $value = $facets->getSelectedValueLabel($fieldName, $i);
+
+                                if($fieldName == 'discountedPrice' && substr($value, -3) == '- 0') {
+                                    $values = explode(' - ', $value);
+                                    $values[1] = '*';
+                                    $value = implode(' - ', $values);
+                                }
                                 if(isset($items[$value])){
                                     $item =  $items[$value];
-                                    if($fieldName == 'discountedPrice'){
-                                        $value = substr_replace($value, '0', strlen($value)-1);
-                                        $item->setLabel($value);
-                                    }
                                     $filters[] = $item;
                                 }
-
                             }
                         } else {
                             $selectedValue = $facets->getSelectedValueLabel($fieldName);

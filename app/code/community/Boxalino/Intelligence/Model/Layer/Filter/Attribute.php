@@ -77,6 +77,11 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
             $data = $this->_getItemsData();
             $items = [];
             foreach ($data as $itemData) {
+                if($this->fieldName == 'discountedPrice' && substr($itemData['label'], -3) == '- 0') {
+                    $values = explode(' - ', $itemData['label']);
+                    $values[1] = '*';
+                    $itemData['label'] = implode(' - ', $values);
+                }
                 $selected = isset($itemData['selected']) ? $itemData['selected'] : null;
                 $type = isset($itemData['type']) ? $itemData['type'] : null;
                 $hidden = isset($itemData['hidden']) ? $itemData['hidden'] : null;

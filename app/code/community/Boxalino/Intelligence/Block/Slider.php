@@ -31,6 +31,13 @@ class Boxalino_Intelligence_Block_Slider extends Mage_Core_Block_Template{
         if($priceRange[0] == $priceRange[1]){
             $priceRange[1]++;
         }
+        if($selectedPrice[0] == 0) {
+            $selectedPrice[0] = $priceRange[0];
+        }
+        if($selectedPrice[1] == 0) {
+            $selectedPrice[1] = $priceRange[1];
+        }
+
         return array_merge($selectedPrice, $priceRange);
     }
 }

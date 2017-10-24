@@ -13,6 +13,8 @@ class BxFacets
 
     protected $priceFieldName = 'discountedPrice';
 
+    protected $priceRangeMargin = false;
+
     public function setSearchResults($searchResult) {
         $this->searchResult = $searchResult;
     }
@@ -435,7 +437,12 @@ class BxFacets
                 }
                 break;
             case 'ranged':
+                $displayRange = json_decode($this->getFacetExtraInfo($fieldName, 'bx_displayPriceRange'), true);
                 foreach($facetResponse->values as $facetValue) {
+                    if($displayRange) {
+                        $facetValue->rangeFromInclusive = isset($displayRange[0]) ? $displayRange[0] : $facetValue->rangeFromInclusive;
+                        $facetValue->rangeToExclusive = isset($displayRange[1]) ?  $displayRange[1] : $facetValue->rangeToExclusive;
+                    }
                     $facetValues[$facetValue->rangeFromInclusive . '-' . $facetValue->rangeToExclusive] = $facetValue;
                 }
                 break;
@@ -725,16 +732,19 @@ class BxFacets
 
     protected function getFacetValueArray($fieldName, $facetValue) {
 
+        $keyValues = $this->getFacetKeysValues($fieldName, 'alphabetical', $this->lastSetMinCategoryLevel);
         if(($fieldName == $this->priceFieldName) && ($this->selectedPriceValues != null)){
+            $fv = reset($keyValues);
             $from = round($this->selectedPriceValues[0]->rangeFromInclusive, 2);
-            $to = round($this->selectedPriceValues[0]->rangeToExclusive, 2);
+            $to = $this->selectedPriceValues[0]->rangeToExclusive;
+            if($this->priceRangeMargin) {
+                $to -= 0.01;
+            }
+            $to = round($to, 2);
             $valueLabel = $from . ' - ' . $to;
             $paramValue = "$from-$to";
-            return array($valueLabel, $paramValue, null, true, false);
+            return array($valueLabel, $paramValue, $fv->hitCount, true, false);
         }
-
-        $keyValues = $this->getFacetKeysValues($fieldName, 'alphabetical', $this->lastSetMinCategoryLevel);
-
         if(is_array($facetValue)){
             $facetValue = reset($facetValue);
         }
@@ -779,7 +789,11 @@ class BxFacets
         $valueLabel = null;
         if($this->selectedPriceValues !== null && ($this->selectedPriceValues != null)){
             $from = round($this->selectedPriceValues[0]->rangeFromInclusive, 2);
-            $to = round($this->selectedPriceValues[0]->rangeToExclusive, 2);
+            $to = $this->selectedPriceValues[0]->rangeToExclusive;
+            if($this->priceRangeMargin) {
+                $to -= 0.01;
+            }
+            $to = round($to, 2);
             $valueLabel = $from . '-' . $to;
         }
         return $valueLabel;
@@ -886,7 +900,11 @@ class BxFacets
                         $selectedFacet->rangeFromInclusive = (float)$rangedValue[0];
                     }
                     if ($rangedValue[1] != '*') {
-                        $selectedFacet->rangeToExclusive = $rangedValue[1] + 0.01;
+                        $selectedFacet->rangeToExclusive = (float)$rangedValue[1];
+                        if($rangedValue[0] == $rangedValue[1]) {
+                            $this->priceRangeMargin = true;
+                            $selectedFacet->rangeToExclusive += 0.01;
+                        }
                     }
                 } else {
                     $selectedFacet->stringValue = $value;
