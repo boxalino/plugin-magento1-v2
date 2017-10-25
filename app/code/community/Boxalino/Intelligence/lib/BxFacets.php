@@ -452,17 +452,19 @@ class BxFacets
                     $facetValues[$facetValue->stringValue] = $facetValue;
                 }
 
-                foreach ($this->facets[$fieldName]['selectedValues'] as $value) {
-                    if(!isset($facetValues[$value])) {
-                        $newValue = new \com\boxalino\p13n\api\thrift\FacetValue();
-                        $newValue->rangeFromInclusive = null;
-                        $newValue->rangeToExclusive = null;
-                        $newValue->hierarchyId = null;
-                        $newValue->hierarchy = null;
-                        $newValue->stringValue = $value;
-                        $newValue->hitCount = 0;
-                        $newValue->selected = true;
-                        $facetValues[$value] = $newValue;
+                if(is_array($this->facets[$fieldName]['selectedValues'])) {
+                    foreach ($this->facets[$fieldName]['selectedValues'] as $value) {
+                        if(!isset($facetValues[$value])) {
+                            $newValue = new \com\boxalino\p13n\api\thrift\FacetValue();
+                            $newValue->rangeFromInclusive = null;
+                            $newValue->rangeToExclusive = null;
+                            $newValue->hierarchyId = null;
+                            $newValue->hierarchy = null;
+                            $newValue->stringValue = $value;
+                            $newValue->hitCount = 0;
+                            $newValue->selected = true;
+                            $facetValues[$value] = $newValue;
+                        }
                     }
                 }
                 break;
