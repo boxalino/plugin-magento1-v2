@@ -117,8 +117,11 @@ class BxFacets
             if(!$returnHidden && $this->isFacetHidden($fieldName)) {
                 continue;
             }
-
-            if($this->getFacetExtraInfo($fieldName, $extraInfoKey) == $extraInfoValue || ($this->getFacetExtraInfo($fieldName, $extraInfoKey) == null && $default)) {
+            $facetValues = $this->getFacetValues($fieldName);
+            if ($this->getFacetType($fieldName) != 'ranged' && ($this->getTotalHitCount() > 0 && sizeof($facetValues) == 1) && (floatval($this->getFacetExtraInfo($fieldName, "limitOneValueCoverage")) >= floatval($this->getFacetValueCount($fieldName, $facetValues[0]) / $this->getTotalHitCount()))) {
+                continue;
+            }
+            if ($this->getFacetExtraInfo($fieldName, $extraInfoKey) == $extraInfoValue || ($this->getFacetExtraInfo($fieldName, $extraInfoKey) == null && $default)) {
                 $selectedFacets[] = $fieldName;
             }
         }
@@ -257,12 +260,19 @@ class BxFacets
         if($defaultHideCoverageThreshold > 0 && sizeof($this->getSelectedValues($fieldName)) == 0) {
             $ratio = $this->getFacetCoverage($fieldName) / $this->getTotalHitCount();
             return $ratio < $defaultHideCoverageThreshold;
+            return floatval($ratio) < floatval($defaultHideCoverageThreshold);
         }
         return false;
     }
 
     public function getFacetDisplay($fieldName, $defaultDisplay = 'expanded') {
+        if($fieldName == $this->getCategoryFieldName()) {
+            $fieldName = 'category_id';
+        }
         try {
+            if(sizeof($this->getFacetSelectedValues($fieldName)) > 0) {
+                return 'expanded';
+            }
             return $this->getFacetResponseDisplay($this->getFacetResponse($fieldName), $defaultDisplay);
         } catch(\Exception $e) {
             return $defaultDisplay;

@@ -15,6 +15,7 @@ class Boxalino_Intelligence_Helper_Autocomplete{
         $collection = Mage::getResourceModel('catalog/product_collection');
         $products = $collection->addFieldToFilter('entity_id', $entityIds)
             ->addAttributeToSelect('name')
+            ->addAttributeToSelect('thumbnail')
             ->addUrlRewrite();
         if($show_price) {
             $products->addAttributeToSelect('price');
