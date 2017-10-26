@@ -97,10 +97,10 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
 
 
                 $exportProducts = $this->exportProducts($account, $files);
+                $this->prepareData($account, $files, $categories);
                 if($this->indexType == 'full'){
                     $this->exportCustomers($account, $files);
                     $this->exportTransactions($account, $files);
-                    $this->prepareData($account, $files, $categories);
                 }
 
                 if(!$exportProducts){
@@ -834,8 +834,8 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                 'c_p_e.entity_id = c_p_r.child_id',
                 array()
             );
-        if($this->indexType == 'delta')$select->where('c_p_e.entity_id IN(?)', $this->deltaIds);
 
+        if($this->indexType == 'delta')$select1->where('c_p_e.entity_id IN(?)', $this->deltaIds);
         $select2 = clone $select1;
         $select2->join(array('c_c_p' => $db->getTableName($this->_prefix . 'catalog_category_product')),
             'c_c_p.product_id = c_p_r.parent_id',
