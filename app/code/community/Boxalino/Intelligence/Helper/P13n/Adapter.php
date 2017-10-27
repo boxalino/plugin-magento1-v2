@@ -370,7 +370,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
         }
 
         if (!$this->navigation) {
-            $separator =  Mage::getStoreConfig('bxSearch/advanced/parameter_separator');
+            $separator = $bxHelperData->getSeparator();
             $values = isset($requestParams['bx_category_id']) ? $requestParams['bx_category_id'] : 2;
             $values = explode($separator, $values);
             $andSelectedValues = isset($facetOptions['category_id']) ? $facetOptions['category_id']['andSelectedValues']: false;

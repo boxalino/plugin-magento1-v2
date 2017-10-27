@@ -91,9 +91,15 @@ class Boxalino_Intelligence_Block_Product_List extends Mage_Catalog_Block_Produc
             ->order(new Zend_Db_Expr('FIELD(e.entity_id,' . implode(',', $entity_ids).')'));
         $this->_productCollection->setCurBxPage($this->getToolbarBlock()->getCurrentPage());
         $limit = $this->getRequest()->getParam('limit') ? $this->getRequest()->getParam('limit') : $this->getToolbarBlock()->getLimit();
-   
+
         try{
-            $totalHitCount = Mage::helper('boxalino_intelligence')->getAdapter()->getTotalHitCount();
+            $p13nHelper = Mage::helper('boxalino_intelligence')->getAdapter();
+            if ($p13nHelper->areThereSubPhrases()) {
+                $queries = $p13nHelper->getSubPhrasesQueries();
+                $totalHitCount = $p13nHelper->getSubPhraseTotalHitCount($queries[self::$number]);
+            } else {
+                $totalHitCount = $p13nHelper->getTotalHitCount();
+            }
         }catch(\Exception $e){
             Mage::logException($e);
             throw $e;
