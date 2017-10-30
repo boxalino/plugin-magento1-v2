@@ -101,6 +101,15 @@ class Boxalino_Intelligence_Helper_BxIndexConfig
     /**
      * @param $account
      * @return mixed
+     */
+    public function getWebsite($account) {
+        $array = $this->getAccountArray($account);
+        return reset($array)['website'];
+    }
+
+    /**
+     * @param $account
+     * @return mixed
      * @throws \Exception
      */
     private function getAccountArray($account) {
