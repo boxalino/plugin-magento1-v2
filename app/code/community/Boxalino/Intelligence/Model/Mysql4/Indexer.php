@@ -1609,6 +1609,8 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
      */
     protected function exportCategories($store, $language, $transformedCategories)
     {
+
+        $rootid = $store->getRootCategoryId();
         $categoryTypeId = $this->getEntityTypeId('catalog_category');
         $db = $this->_getReadAdapter();
         $select = $db->select()
@@ -1621,10 +1623,9 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                 'c_v.entity_id = c_t.entity_id',
                 array('c_v.value', 'c_v.store_id')
             )
-            ->where('c_v.attribute_id = ?', $this->getAttributeId('name', $categoryTypeId))
-            ->where('c_v.store_id = ? OR c_v.store_id = 0', $store->getId());
-
-
+            ->where('c_v.attribute_id = ? ', $this->getAttributeId('name', $categoryTypeId))
+            ->where('c_v.store_id = ? OR c_v.store_id = 0', $store->getId())
+            ->where('c_t.path like \'1/'.$rootid.'%\'');
         $result = $db->query($select);
         if($result->rowCount()){
             while($row = $result->fetch()){
@@ -1632,6 +1633,9 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                     continue;
                 }
                 if(isset($transformedCategories[$row['entity_id']])) {
+                    if(isset($transformedCategories[$row['entity_id']]['value_' .$language]) && $row['store_id'] == 0){
+                        continue;
+                    }
                     $transformedCategories[$row['entity_id']]['value_' .$language] = $row['value'];
                     continue;
                 }

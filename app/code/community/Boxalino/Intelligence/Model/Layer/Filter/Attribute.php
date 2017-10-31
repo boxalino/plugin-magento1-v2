@@ -155,7 +155,7 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
                     $homeLabel = Mage::helper('boxalino_intelligence')->__("All Categories");
                     $data[] = array(
                         'label' => strip_tags($homeLabel),
-                        'value' => 2,
+                        'value' => Mage::app()->getStore()->getRootCategoryId(),
                         'count' => $bxFacets->getParentCategoriesHitCount($key),
                         'selected' => $value,
                         'type' => 'home parent',
@@ -183,7 +183,7 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
                 $childParentId = $category_model->load($childId)->getParentId();
                 end($parentCategories);
                 $parentId = key($parentCategories);
-                $id = (($parentId == null) ? 2 : (($parentId == $childParentId) ? $parentId : $childParentId));
+                $id = (($parentId == null) ? Mage::app()->getStore()->getRootCategoryId() : (($parentId == $childParentId) ? $parentId : $childParentId));
 
                 $cat = $category_model->load($id);
                 foreach($cat->getChildrenCategories() as $category){
