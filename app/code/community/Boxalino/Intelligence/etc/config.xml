@@ -248,5 +248,10 @@
                 <widget>complementary</widget>
             </upsell>
         </bxRecommendations>
+        <bxBanner>
+            <banner>
+                <status>1</status>
+            </banner>
+        </bxBanner>
     </default>
 </config>

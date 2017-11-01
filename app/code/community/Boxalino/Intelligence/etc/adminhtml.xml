@@ -20,6 +20,9 @@
                                     <bxRecommendations>
                                         <title>Boxalino Recommendation</title>
                                     </bxRecommendations>
+                                    <bxBanner>
+                                        <title>Boxalino Banner</title>
+                                    </bxBanner>
                                 </children>
                             </config>
                         </children>

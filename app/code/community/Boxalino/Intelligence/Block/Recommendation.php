@@ -85,19 +85,19 @@ class Boxalino_Intelligence_Block_Recommendation extends Mage_Catalog_Block_Prod
      * @param array $recommendations
      * @return null
      */
-    protected function prepareRecommendations($recommendations = array()){
+    protected function prepareRecommendations($recommendations = array(), $returnFields = array()){
         if($recommendations && is_array($recommendations)){
             foreach($recommendations as $index => $widget){
 
                 try{
                     $recommendation = array();
                     $widgetConfig = $this->bxHelperData->getWidgetConfig($widget['widget']);
-                    
+
                 }catch(\Exception $e){
                     Mage::logException($e);
                     $widgetConfig = array();
                 }
-                
+
                 try{
                     $recommendation['scenario'] = isset($widget['scenario']) ? $widget['scenario'] :
                         $widgetConfig['scenario'];
@@ -116,7 +116,8 @@ class Boxalino_Intelligence_Block_Recommendation extends Mage_Catalog_Block_Prod
                         $recommendation['scenario'],
                         $recommendation['min'] ,
                         $recommendation['max'],
-                        false
+                        false,
+                        $returnFields
                     );
                 }catch(\Exception $e){
                     Mage::logException($e);

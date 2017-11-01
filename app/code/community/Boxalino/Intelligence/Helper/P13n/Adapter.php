@@ -114,6 +114,12 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
             return $choice;
         }
 
+        if(empty($queryText) && empty(Mage::registry('current_category'))){
+          $this->currentSearchChoice = 'landingpage';
+          $choice = $this->currentSearchChoice;
+          return 'landingpage';
+        }
+
         if($this->bxHelperData->isProductFinderActive()){
             $this->currentSearchChoice = 'productfinder';
             return 'productfinder';
@@ -237,6 +243,18 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
         $additionalFields = explode(',', Mage::getStoreConfig('bxGeneral/advanced/additional_fields'));
         $returnFields = array_merge($returnFields, $additionalFields);
         $hitCount = $overwriteHitCount;
+
+        if (empty($queryText) && is_null($categoryId)) {
+
+           $bxRequest = new \com\boxalino\bxclient\v1\BxSearchRequest($this->bxHelperData->getLanguage(), $queryText, $hitCount, 'landingpage');
+           $this->currentSearchChoice = 'landingpage';
+           self::$bxClient->forwardRequestMapAsContextParameters();
+
+         } else {
+
+           $bxRequest = new \com\boxalino\bxclient\v1\BxSearchRequest($this->bxHelperData->getLanguage(), $queryText, $hitCount, $this->getSearchChoice($queryText));
+
+         }
 
         //create search request
         if($this->bxHelperData->isProductFinderActive()) {
@@ -510,7 +528,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
      * @param bool $execute
      * @return array|void
      */
-    public function getRecommendation($widgetName, $context = array(), $widgetType = '', $minAmount = 3, $amount = 3, $execute=true){
+    public function getRecommendation($widgetName, $context = array(), $widgetType = '', $minAmount = 3, $amount = 3, $execute=true, $returnFields = array()){
 
         if(!$execute || !isset(self::$choiceContexts[$widgetName])){
             if (!isset(self::$choiceContexts[$widgetName])) {
@@ -529,14 +547,13 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
                     $product = $context[0];
                     $bxRequest->setProductContext($this->getEntityIdFieldName(), $product->getId());
                 }
-
                 self::$bxClient->addRequest($bxRequest);
             } else {
                 if (($minAmount >= 0) && ($amount >= 0) && ($minAmount <= $amount)) {
                     $bxRequest = new \com\boxalino\bxclient\v1\BxRecommendationRequest($this->bxHelperData->getLanguage(), $widgetName, $amount, $minAmount);
                     $bxRequest->setGroupBy($this->getEntityIdFieldName());
                     $bxRequest->setFilters($this->getSystemFilters());
-                    $bxRequest->setReturnFields(array($this->getEntityIdFieldName()));
+                    $bxRequest->setReturnFields(array_merge(array($this->getEntityIdFieldName()), $returnFields));
                     if ($widgetType === 'basket' && is_array($context)) {
                         $basketProducts = array();
                         foreach($context as $product) {
@@ -551,6 +568,11 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
                         $filterValues = is_array($context) ? $context : array($context);
                         $filterNegative = false;
                         $bxRequest->addFilter(new \com\boxalino\bxclient\v1\BxFilter($filterField, $filterValues, $filterNegative));
+                    } elseif ($widgetType === 'banner') {
+                        $bxRequest->setGroupBy('id');
+                        $bxRequest->setFilters(array());
+                        $contextValues = is_array($context) ? $context : array($context);
+                        self::$bxClient->addRequestContextParameter('banner_context', $contextValues);
                     }
                     self::$bxClient->addRequest($bxRequest);
                 }
@@ -573,5 +595,11 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
             $this->bxHelperData->setIsProductFinderActive(true);
         }
         return $fieldNames;
+    }
+
+    public function getResponse(){
+
+      return self::$bxClient->getResponse();
+
     }
 }

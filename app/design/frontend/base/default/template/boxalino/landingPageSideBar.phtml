@@ -1,0 +1,10 @@
+<?php
+if($this->isPluginActive()) {
+  $state = $this->getLayout()->createBlock('Boxalino_Intelligence_Block_Layer_State')->setBlockId('catalog.navigation.state')->setTemplate("boxalino/catalog/layer/state.phtml");
+
+  $filter = $this->getLayout()->createBlock('Boxalino_Intelligence_Block_Layer_Filter_Attribute')->setBlockId('catalog.navigation.renderer')->setTemplate("boxalino/catalog/layer/filter.phtml");
+
+  echo $this->getLayout()->createBlock('Boxalino_Intelligence_Block_Layer')->setBlockId('catalog.leftnav')->setTemplate("boxalino/catalog/layer/view.phtml")->setChild('state', $state)->setChild('renderer', $filter)->toHtml();
+}
+
+?>

@@ -20,11 +20,21 @@
                 <type>skin_js</type>
                 <name>js/jquery-noConflict.js</name>
             </action>
+            <action method="addItem">
+                <type>skin_js</type>
+                <name>js/jssor-26.1.5.min.js</name>
+            </action>
         </reference>
         <reference name="before_body_end">
             <block type="boxalino_intelligence/script" name="intelligence_script" template="boxalino/script.phtml"/>
         </reference>
     </default>
+    <!-- Home -->
+    <cms_index_index>
+        <reference name="content">
+            <block type="boxalino_intelligence/Banner" name="intelligence_banner" after="-" before="default_home_page" template="boxalino/banner.phtml"/>
+        </reference>
+    </cms_index_index>
     <!--Search-->
     <catalogsearch_result_index>
         <reference name="head">
@@ -38,6 +48,8 @@
             </action>
         </reference>
         <reference name="content">
+            <block type="boxalino_intelligence/searchMessage" name="searchMessage" before="top_filter"
+                   template="boxalino/catalogsearch/searchMessage.phtml" />
             <block type="boxalino_intelligence/facets" name="top_filter" as="search_top_filter" before="-"
                    template="boxalino/top_filter.phtml" />
         </reference>

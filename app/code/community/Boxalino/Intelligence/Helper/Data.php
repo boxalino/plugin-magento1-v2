@@ -461,6 +461,14 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
     /**
      * @return bool
      */
+    public function isBannerEnabled()
+    {
+        return $this->isPluginEnabled() && Mage::getStoreConfigFlag('bxBanner/banner/status');
+    }
+
+    /**
+     * @return bool
+     */
     public function isNavigationEnabled()
     {
         return $this->isPluginEnabled() && Mage::getStoreConfigFlag('bxSearch/navigation/enabled');

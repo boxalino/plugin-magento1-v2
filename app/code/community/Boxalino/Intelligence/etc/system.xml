@@ -432,7 +432,7 @@
                     <show_in_website>1</show_in_website>
                     <show_in_store>1</show_in_store>
                     <fields>
-                        <enabled tranlate="label">
+                        <enabled translate="label">
                             <label>Enable search</label>
                             <frontend_type>select</frontend_type>
                             <source_model>adminhtml/system_config_source_enabledisable</source_model>
@@ -452,7 +452,7 @@
                     <show_in_website>1</show_in_website>
                     <show_in_store>1</show_in_store>
                     <fields>
-                        <enabled tranlate="label">
+                        <enabled translate="label">
                             <label>Enable navigation</label>
                             <frontend_type>select</frontend_type>
                             <source_model>adminhtml/system_config_source_enabledisable</source_model>
@@ -472,7 +472,7 @@
                     <show_in_website>1</show_in_website>
                     <show_in_store>1</show_in_store>
                     <fields>
-                        <enabled tranlate="label">
+                        <enabled translate="label">
                             <label>Enable autocomplete</label>
                             <frontend_type>select</frontend_type>
                             <source_model>adminhtml/system_config_source_enabledisable</source_model>
@@ -482,7 +482,7 @@
                             <show_in_store>1</show_in_store>
                             <comment>Is Boxalino search as you type (autocomplete) active?</comment>
                         </enabled>
-                        <category tranlate="label">
+                        <category translate="label">
                             <label>Enable autocomplete category suggestion</label>
                             <frontend_type>select</frontend_type>
                             <source_model>adminhtml/system_config_source_enabledisable</source_model>
@@ -492,7 +492,7 @@
                             <show_in_store>1</show_in_store>
                             <comment>Enable if the autocomplete should also provide category suggestions.</comment>
                         </category>
-                        <count tranlate="label">
+                        <count translate="label">
                             <label>Category suggestion max count</label>
                             <frontend_type>text</frontend_type>
                             <sort_order>3</sort_order>
@@ -501,7 +501,7 @@
                             <show_in_store>1</show_in_store>
                             <comment>Maximum number of category suggestion</comment>
                         </count>
-                        <ranking tranlate="label">
+                        <ranking translate="label">
                             <label>Category suggestion ranking</label>
                             <frontend_type>text</frontend_type>
                             <sort_order>4</sort_order>
@@ -510,7 +510,7 @@
                             <show_in_store>1</show_in_store>
                             <comment>Ranking of suggested categories. Possible values are: 'counter' (ordering by hit count), 'alphabetical'</comment>
                         </ranking>
-                        <level tranlate="label">
+                        <level translate="label">
                             <label>Category suggestion min level</label>
                             <frontend_type>text</frontend_type>
                             <sort_order>5</sort_order>
@@ -519,7 +519,7 @@
                             <show_in_store>1</show_in_store>
                             <comment>Minimum level of suggested categories (e.g.: 0 = top categories, 1 = sub-categories, ...)</comment>
                         </level>
-                        <show_price tranlate="label">
+                        <show_price translate="label">
                             <label>Show product price in autocomplete</label>
                             <frontend_type>select</frontend_type>
                             <source_model>adminhtml/system_config_source_enabledisable</source_model>
@@ -529,7 +529,7 @@
                             <show_in_store>1</show_in_store>
                             <comment>Option to display the product price in the autocomplete</comment>
                         </show_price>
-                        <limit tranlate="label">
+                        <limit translate="label">
                             <label>Limit of textual suggestions</label>
                             <frontend_type>text</frontend_type>
                             <sort_order>7</sort_order>
@@ -541,7 +541,7 @@
                                 while the user is typing
                             </comment>
                         </limit>
-                        <products_limit tranlate="label">
+                        <products_limit translate="label">
                             <label>Limit of product suggestions</label>
                             <frontend_type>text</frontend_type>
                             <sort_order>8</sort_order>
@@ -564,7 +564,7 @@
                     <show_in_store>1</show_in_store>
                     <comment><![CDATA[ Widget configuration for recommendation on search page when no result is returned. ]]></comment>
                     <fields>
-                        <status tranlate="label">
+                        <status translate="label">
                             <label>Widgets enabled</label>
                             <frontend_type>select</frontend_type>
                             <source_model>adminhtml/system_config_source_enabledisable</source_model>
@@ -573,7 +573,7 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
                         </status>
-                        <min tranlate="label">
+                        <min translate="label">
                             <label>Minimum recommended items</label>
                             <frontend_type>text</frontend_type>
                             <sort_order>2</sort_order>
@@ -585,7 +585,7 @@
                                 minimum and maximum recommended items
                             </comment>
                         </min>
-                        <max tranlate="label">
+                        <max translate="label">
                             <label>Maximum recommended items</label>
                             <frontend_type>text</frontend_type>
                             <sort_order>3</sort_order>
@@ -597,7 +597,7 @@
                                 minimum and maximum recommended items
                             </comment>
                         </max>
-                        <widget tranlate="label">
+                        <widget translate="label">
                             <label>Widget name</label>
                             <frontend_type>text</frontend_type>
                             <sort_order>4</sort_order>
@@ -618,7 +618,7 @@
                     <show_in_website>1</show_in_website>
                     <show_in_store>1</show_in_store>
                     <fields>
-                        <search_choice_id tranlate="label">
+                        <search_choice_id translate="label">
                             <label>Search choice ID</label>
                             <frontend_type>text</frontend_type>
                             <sort_order>1</sort_order>
@@ -627,7 +627,7 @@
                             <show_in_store>1</show_in_store>
                             <comment>Optional: default value is "search" and should normally not be changed</comment>
                         </search_choice_id>
-                        <autocomplete_choice_id tranlate="label">
+                        <autocomplete_choice_id translate="label">
                             <label>Autocomplete choice ID</label>
                             <frontend_type>text</frontend_type>
                             <sort_order>2</sort_order>
@@ -638,7 +638,7 @@
                                 Optional: default value is "autocomplete" and should normally not be changed
                             </comment>
                         </autocomplete_choice_id>
-                        <navigation_choice_id tranlate="label">
+                        <navigation_choice_id translate="label">
                             <label>Navigation choice ID</label>
                             <frontend_type>text</frontend_type>
                             <sort_order>3</sort_order>
@@ -649,7 +649,7 @@
                                 Optional: default value is "navigation" and should normally not be changed
                             </comment>
                         </navigation_choice_id>
-                        <search_sub_phrases_limit tranlate="label">
+                        <search_sub_phrases_limit translate="label">
                             <label>Search limit for sub-phrases</label>
                             <frontend_type>text</frontend_type>
                             <sort_order>4</sort_order>
@@ -675,7 +675,7 @@
                                 E.g.: category_id,products_color;1,products_manufacturer]]>
                             </comment>
                         </multiselect_fields>
-                        <parameter_separator tranlate="label">
+                        <parameter_separator translate="label">
                             <label>Separator for URL Parameter</label>
                             <frontend_type>text</frontend_type>
                             <sort_order>6</sort_order>
@@ -708,7 +708,7 @@
                     <show_in_store>1</show_in_store>
                     <comment><![CDATA[ Widget configuration for recommendation on basket page. ]]></comment>
                     <fields>
-                        <status tranlate="label">
+                        <status translate="label">
                             <label>Widgets enabled</label>
                             <frontend_type>select</frontend_type>
                             <source_model>adminhtml/system_config_source_enabledisable</source_model>
@@ -717,7 +717,7 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
                         </status>
-                        <min tranlate="label">
+                        <min translate="label">
                             <label>Minimum recommended items</label>
                             <frontend_type>text</frontend_type>
                             <sort_order>2</sort_order>
@@ -729,7 +729,7 @@
                                 minimum and maximum recommended items
                             </comment>
                         </min>
-                        <max tranlate="label">
+                        <max translate="label">
                             <label>Maximum recommended items</label>
                             <frontend_type>text</frontend_type>
                             <sort_order>3</sort_order>
@@ -741,7 +741,7 @@
                                 minimum and maximum recommended items
                             </comment>
                         </max>
-                        <widget tranlate="label">
+                        <widget translate="label">
                             <label>Widget name</label>
                             <frontend_type>text</frontend_type>
                             <sort_order>4</sort_order>
@@ -763,7 +763,7 @@
                     <show_in_store>1</show_in_store>
                     <comment><![CDATA[ Widget configuration for related recommendation on product page. ]]></comment>
                     <fields>
-                        <status tranlate="label">
+                        <status translate="label">
                             <label>Widgets enabled</label>
                             <frontend_type>select</frontend_type>
                             <source_model>adminhtml/system_config_source_enabledisable</source_model>
@@ -772,7 +772,7 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
                         </status>
-                        <min tranlate="label">
+                        <min translate="label">
                             <label>Minimum recommended items</label>
                             <frontend_type>text</frontend_type>
                             <sort_order>2</sort_order>
@@ -784,7 +784,7 @@
                                 minimum and maximum recommended items
                             </comment>
                         </min>
-                        <max tranlate="label">
+                        <max translate="label">
                             <label>Maximum recommended items</label>
                             <frontend_type>text</frontend_type>
                             <sort_order>3</sort_order>
@@ -796,7 +796,7 @@
                                 minimum and maximum recommended items
                             </comment>
                         </max>
-                        <widget tranlate="label">
+                        <widget translate="label">
                             <label>Widget name</label>
                             <frontend_type>text</frontend_type>
                             <sort_order>4</sort_order>
@@ -818,7 +818,7 @@
                     <show_in_store>1</show_in_store>
                     <comment><![CDATA[ Widget configuration for upsell recommendation on product page. ]]></comment>
                     <fields>
-                        <status tranlate="label">
+                        <status translate="label">
                             <label>Widgets enabled</label>
                             <frontend_type>select</frontend_type>
                             <source_model>adminhtml/system_config_source_enabledisable</source_model>
@@ -827,7 +827,7 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
                         </status>
-                        <min tranlate="label">
+                        <min translate="label">
                             <label>Minimum recommended items</label>
                             <frontend_type>text</frontend_type>
                             <sort_order>2</sort_order>
@@ -839,7 +839,7 @@
                                 minimum and maximum recommended items
                             </comment>
                         </min>
-                        <max tranlate="label">
+                        <max translate="label">
                             <label>Maximum recommended items</label>
                             <frontend_type>text</frontend_type>
                             <sort_order>3</sort_order>
@@ -851,7 +851,7 @@
                                 minimum and maximum recommended items
                             </comment>
                         </max>
-                        <widget tranlate="label">
+                        <widget translate="label">
                             <label>Widget name</label>
                             <frontend_type>text</frontend_type>
                             <sort_order>4</sort_order>
@@ -873,7 +873,7 @@
                     <show_in_store>1</show_in_store>
                     <comment><![CDATA[ Widget configuration for upsell recommendation on product page. ]]></comment>
                     <fields>
-                        <widget tranlate="label">
+                        <widget translate="label">
                             <label>Widget names</label>
                             <frontend_type>text</frontend_type>
                             <sort_order>1</sort_order>
@@ -885,7 +885,7 @@
                                 list them by names here (separated by comma)
                             </comment>
                         </widget>
-                        <min tranlate="label">
+                        <min translate="label">
                             <label>Minimum recommended items</label>
                             <frontend_type>text</frontend_type>
                             <sort_order>2</sort_order>
@@ -897,7 +897,7 @@
                                 items you want for each (separated by coma, same order)
                             </comment>
                         </min>
-                        <max tranlate="label">
+                        <max translate="label">
                             <label>Maximum recommended items</label>
                             <frontend_type>text</frontend_type>
                             <sort_order>3</sort_order>
@@ -909,7 +909,7 @@
                                 items you want for each (separated by coma, same order)
                             </comment>
                         </max>
-                        <scenario tranlate="label">
+                        <scenario translate="label">
                             <label>Types</label>
                             <frontend_type>text</frontend_type>
                             <sort_order>4</sort_order>
@@ -927,5 +927,36 @@
                 </others>
             </groups>
         </bxRecommendations>
+        <bxBanner translate="label" module="boxalino_intelligence">
+            <label>Banner</label>
+            <tab>boxalino</tab>
+            <frontend_type>text</frontend_type>
+            <sort_order>4000</sort_order>
+            <show_in_default>1</show_in_default>
+            <show_in_website>1</show_in_website>
+            <show_in_store>1</show_in_store>
+            <groups>
+                <banner>
+                    <label>Boxalino Banner</label>
+                    <frontend_type>text</frontend_type>
+                    <sort_order>10</sort_order>
+                    <show_in_default>1</show_in_default>
+                    <show_in_website>1</show_in_website>
+                    <show_in_store>1</show_in_store>
+                    <comment><![CDATA[ Widget configuration for banner. ]]></comment>
+                    <fields>
+                        <status translate="label">
+                            <label>Widgets enabled</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_enabledisable</source_model>
+                            <sort_order>1</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                        </status>
+                    </fields>
+                </banner>
+            </groups>
+        </bxBanner>
     </sections>
 </config>
