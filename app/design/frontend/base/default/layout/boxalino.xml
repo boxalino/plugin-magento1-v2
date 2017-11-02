@@ -29,12 +29,7 @@
             <block type="boxalino_intelligence/script" name="intelligence_script" template="boxalino/script.phtml"/>
         </reference>
     </default>
-    <!-- Home -->
-    <cms_index_index>
-        <reference name="content">
-            <block type="boxalino_intelligence/Banner" name="intelligence_banner" after="-" before="default_home_page" template="boxalino/banner.phtml"/>
-        </reference>
-    </cms_index_index>
+	
     <!--Search-->
     <catalogsearch_result_index>
         <reference name="head">
