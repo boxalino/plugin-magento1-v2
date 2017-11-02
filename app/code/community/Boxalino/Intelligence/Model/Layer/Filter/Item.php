@@ -14,14 +14,13 @@ class Boxalino_Intelligence_Model_Layer_Filter_Item extends Mage_Catalog_Model_L
             $addParams = $bxHelperData->getSystemParams();
             $requestVar = $this->getFilter()->getRequestVar();
             $query = array($requestVar =>$this->getValue());
-            foreach ($addParams as $add) {
-
-                if($requestVar == 'bx_products_' . key($add)){
-                    $query = array_merge($query, $add);
-                }
-            }
             foreach ($removeParams as $remove) {
                 $query[$remove] = null;
+            }
+            foreach ($addParams as $param => $add) {
+                    if($requestVar != $param){
+                        $query = array_merge($query, [$param => implode($bxHelperData->getSeparator(), $add)]);
+                    }
             }
             $params['_current']     = true;
             $params['_use_rewrite'] = true;
