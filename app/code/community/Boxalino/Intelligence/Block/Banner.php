@@ -19,16 +19,49 @@ Class Boxalino_Intelligence_Block_Banner extends Mage_Core_Block_Template{
   protected function _prepareData(){
 
         return $this;
-    }
+  }
 
-  protected function isBannerEnabled(){
+  protected function prepareRecommendations(){
+    $this->p13nHelper->getRecommendation('banner', array(), 'banner', 15, 15, true, array('title', 'products_bxi_bxi_jssor_slide', 'products_bxi_bxi_jssor_transition', 'products_bxi_bxi_name', 'products_bxi_bxi_jssor_control', 'products_bxi_bxi_jssor_break'));
+  }
+
+  protected function isActive(){
 
     return $this->bxHelperData->isBannerEnabled();
 
   }
 
-  protected function prepareRecommendations(){
-    $this->p13nHelper->getRecommendation('banner', array(), 'banner', 15, 15, true, array('title', 'products_bxi_bxi_jssor_slide', 'products_bxi_bxi_jssor_transition', 'products_bxi_bxi_name', 'products_bxi_bxi_jssor_control', 'products_bxi_bxi_jssor_break'));
+  public function check(){
+
+        $values = array(
+
+        0 => $this->getBannerSlides(),
+        1 => $this->getBannerJssorId(),
+        2 => $this->getBannerJssorSlideTransitions(),
+        3 => $this->getBannerJssorSlideBreaks(),
+        4 => $this->getBannerJssorSlideControls(),
+        5 => $this->getBannerJssorOptions(),
+        6 => $this->getBannerJssorMaxWidth(),
+        7 => $this->getBannerJssorCSS(),
+        8 => $this->getBannerJssorStyle(),
+        9 => $this->getBannerJssorLoadingScreen(),
+        10 => $this->getBannerJssorSlidesStyle(),
+        11 => $this->getBannerJssorBulletNavigator(),
+        12 => $this->getBannerJssorArrowNavigator(),
+        13 => $this->getBannerFunction()
+
+        );
+
+        if (!in_array('', $values)) {
+
+            return true;
+
+        }else{
+
+            return false;
+
+        }
+
     }
 
     public function getBannerSlides() {
