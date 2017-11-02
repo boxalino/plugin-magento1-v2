@@ -354,24 +354,59 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
         $context = $this->navigation ? 'navigation' : 'search';
         $attributeCollection = $bxHelperData->getFilterProductAttributes($context);
         $facetOptions = $bxHelperData->getFacetOptions();
+        $systemParamValues = array();
+        $separator = $bxHelperData->getSeparator();
         foreach ($requestParams as $key => $values) {
+            $additionalChecks = false;
             if (strpos($key, $this->getUrlParameterPrefix()) === 0 && $key != 'bx_category_id') {
                 $fieldName = substr($key, 3);
-                $separator =  $bxHelperData->getSeparator();
-                $bxSelectedValues[$fieldName] = explode($separator, $values);
+                if(!isset($attributeCollection[$fieldName]) || $key == 'bx_discountedPrice'){
+                    $bxSelectedValues[$fieldName] = explode($separator, $values);
+                } else {
+                    $key = substr($fieldName, strlen('products_'), strlen($fieldName));
+                    $additionalChecks = true;
+                }
             }
             if (isset($attributeCollection['products_' . $key])) {
                 $paramValues = !is_array($values) ? array($values) : $values;
                 $attributeModel = Mage::getModel('eav/config')->getAttribute('catalog_product', $key)->getSource();
+
                 foreach ($paramValues as $paramValue){
                     $value = $attributeModel->getOptionText($paramValue);
-                    $selectedValues['products_' . $key][] = $value == false ? null : $value;
+                    if($additionalChecks && !$value) {
+                        $systemParamValues[$key]['additional'] = $additionalChecks;
+                        $paramValue = explode($bxHelperData->getSeparator(), $paramValue);
+                        $optionValues = $attributeModel->getAllOptions(false);
+                        foreach ($optionValues as $optionValue) {
+                            if(in_array($optionValue['label'], $paramValue)){
+                                $selectedValues['products_' . $key][] = $optionValue['label'];
+                                $bxHelperData->setRemoveParams('bx_products_' . $key, null);
+                                $systemParamValues[$key]['values'][] = $optionValue['value'];
+                            }
+                        }
+                    }
+                    if($value) {
+                        $optionParamsValues = explode($separator, $paramValue);
+                        foreach ($optionParamsValues as $optionParamsValue) {
+                            $systemParamValues[$key]['values'][] = $optionParamsValue;
+                        }
+                        $value = is_array($value) ? $value : [$value];
+                        foreach ($value as $v) {
+                            $selectedValues['products_' . $key][] = $v;
+                        }
+                    }
+                }
+            }
+        }
+        if(sizeof($systemParamValues) > 0) {
+            foreach ($systemParamValues as $key => $systemParam) {
+                if(isset($systemParam['additional'])){
+                    $bxHelperData->setSystemParams($key, $systemParam['values']);
                 }
             }
         }
 
         if (!$this->navigation) {
-            $separator = $bxHelperData->getSeparator();
             $values = isset($requestParams['bx_category_id']) ? $requestParams['bx_category_id'] : Mage::app()->getStore()->getRootCategoryId();
             $values = explode($separator, $values);
             $andSelectedValues = isset($facetOptions['category_id']) ? $facetOptions['category_id']['andSelectedValues']: false;
@@ -382,7 +417,9 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
             if($attribute['addToRequest'] || isset($selectedValues[$code])){
                 $bound = $code == 'discountedPrice' ? true : false;
                 list($label, $type, $order, $position) = array_values($attribute);
-                $selectedValue = isset($selectedValues[$code]) ? $selectedValues[$code][0] : null;
+
+                $selectedValue = isset($selectedValues[$code]) ? $selectedValues[$code] : null;
+
                 if ($code == 'discountedPrice' && isset($bxSelectedValues[$code])) {
                     $bxFacets->addPriceRangeFacet($bxSelectedValues[$code]);
                 } else {

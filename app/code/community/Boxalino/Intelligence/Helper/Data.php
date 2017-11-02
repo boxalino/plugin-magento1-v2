@@ -57,6 +57,16 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
     protected $productFinder = false;
 
     /**
+     * @var array
+     */
+    protected $removeParams = array();
+
+    /**
+     * @var array
+     */
+    protected $systemParams = array();
+
+    /**
      * @param $countryCode
      * @return mixed
      */
@@ -517,5 +527,21 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
             $separator = ',';
         }
         return $separator;
+    }
+
+    public function setRemoveParams($key) {
+        $this->removeParams[] = $key;
+    }
+
+    public function getRemoveParams() {
+        return $this->removeParams;
+    }
+
+    public function setSystemParams($key, $values) {
+        $this->systemParams[$key] = $values;
+    }
+
+    public function getSystemParams() {
+        return $this->systemParams;
     }
 }

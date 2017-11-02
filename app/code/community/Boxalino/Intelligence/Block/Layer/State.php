@@ -26,6 +26,26 @@ class Boxalino_Intelligence_Block_Layer_State extends Mage_Catalog_Block_Layer_S
         return $this;
     }
 
+    public function getClearUrl()
+    {
+        $bxHelperData = Mage::helper('boxalino_intelligence');
+        if($bxHelperData->isEnabledOnLayer($this->getLayer())) {
+            $filterState = array();
+            $removeParams = $bxHelperData->getRemoveParams();
+            foreach ($this->getActiveFilters() as $item) {
+                $filterState[$item->getFilter()->getRequestVar()] = $item->getFilter()->getCleanValue();
+            }
+            foreach ($removeParams as $remove) {
+                $filterState[$remove] = null;
+            }
+            $params['_current']     = true;
+            $params['_use_rewrite'] = true;
+            $params['_query']       = $filterState;
+            $params['_escape']      = true;
+            return Mage::getUrl('*/*/*', $params);
+        }
+        return parent::getClearUrl();
+    }
 
     public function getBxFacets(){
         $bxHelperData = Mage::helper('boxalino_intelligence');
