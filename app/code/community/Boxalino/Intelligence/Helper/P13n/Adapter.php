@@ -114,11 +114,11 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
             return $choice;
         }
 
-        if(empty($queryText) && empty(Mage::registry('current_category'))){
-          $this->currentSearchChoice = 'landingpage';
-          $choice = $this->currentSearchChoice;
-          return 'landingpage';
-        }
+//        if(empty($queryText) && empty(Mage::registry('current_category'))){
+//          $this->currentSearchChoice = 'landingpage';
+//          $choice = $this->currentSearchChoice;
+//          return 'landingpage';
+//        }
 
         if($this->bxHelperData->isProductFinderActive()){
             $this->currentSearchChoice = 'productfinder';
@@ -244,17 +244,17 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
         $returnFields = array_merge($returnFields, $additionalFields);
         $hitCount = $overwriteHitCount;
 
-        if (empty($queryText) && is_null($categoryId)) {
-
-           $bxRequest = new \com\boxalino\bxclient\v1\BxSearchRequest($this->bxHelperData->getLanguage(), $queryText, $hitCount, 'landingpage');
-           $this->currentSearchChoice = 'landingpage';
-           self::$bxClient->forwardRequestMapAsContextParameters();
-
-         } else {
-
-           $bxRequest = new \com\boxalino\bxclient\v1\BxSearchRequest($this->bxHelperData->getLanguage(), $queryText, $hitCount, $this->getSearchChoice($queryText));
-
-         }
+//        if (empty($queryText) && is_null($categoryId)) {
+//
+//           $bxRequest = new \com\boxalino\bxclient\v1\BxSearchRequest($this->bxHelperData->getLanguage(), $queryText, $hitCount, 'landingpage');
+//           $this->currentSearchChoice = 'landingpage';
+//           self::$bxClient->forwardRequestMapAsContextParameters();
+//
+//         } else {
+//
+//           $bxRequest = new \com\boxalino\bxclient\v1\BxSearchRequest($this->bxHelperData->getLanguage(), $queryText, $hitCount, $this->getSearchChoice($queryText));
+//
+//         }
 
         //create search request
         if($this->bxHelperData->isProductFinderActive()) {
