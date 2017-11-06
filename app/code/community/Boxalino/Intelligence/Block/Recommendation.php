@@ -171,14 +171,18 @@ class Boxalino_Intelligence_Block_Recommendation extends Mage_Catalog_Block_Prod
 
         $entity_ids = array();
         try{
+            $config = $this->bxHelperData->getWidgetConfig($widget);
             $entity_ids = $this->bxHelperData->getAdapter()->getRecommendation(
                 $widget,
-                $context
+                $context,
+                $scenario,
+                $config['min'],
+                $config['max']
             );
         }catch(\Exception $e){
             Mage::logException($e);
         }
-        
+
 
         if ((count($entity_ids) == 0)) {
             $entity_ids = array(0);

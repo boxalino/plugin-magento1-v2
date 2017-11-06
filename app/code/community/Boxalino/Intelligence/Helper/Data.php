@@ -243,6 +243,24 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
      */
     public function getWidgetConfig($widgetName)
     {
+        if($widgetName == Mage::getStoreConfig('bxRecommendations/upsell/widget')) {
+            return array(
+                'widget' => $widgetName,
+                'scenario' => 'product',
+                'min' => Mage::getStoreConfig('bxRecommendations/upsell/min'),
+                'max' => Mage::getStoreConfig('bxRecommendations/upsell/max')
+            );
+        }
+
+        if($widgetName == Mage::getStoreConfig('bxRecommendations/related/widget')) {
+            return array(
+                'widget' => $widgetName,
+                'scenario' => 'product',
+                'min' => Mage::getStoreConfig('bxRecommendations/related/min'),
+                'max' => Mage::getStoreConfig('bxRecommendations/related/max')
+            );
+        }
+
         $widgetNames = explode(',', Mage::getStoreConfig('bxRecommendations/others/widget'));
         $widgetScenarios = explode(',', Mage::getStoreConfig('bxRecommendations/others/scenario'));
         $widgetMin = explode(',', Mage::getStoreConfig('bxRecommendations/others/min'));
