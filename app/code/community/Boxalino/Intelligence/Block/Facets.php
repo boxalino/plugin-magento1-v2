@@ -29,7 +29,8 @@ class Boxalino_Intelligence_Block_Facets extends Mage_Core_Block_Template{
                 try {
                     $facets = $this->getBxFacets();
                     if ($facets) {
-                        $fieldName = reset($facets->getTopFacets());
+                        $names = $facets->getTopFacets();
+                        $fieldName = reset($names);
                         if($fieldName) {
                             $filter = $this->getLayout()->createBlock('boxalino_intelligence/layer_filter_attribute')
                                 ->setLayer($this->getLayer())

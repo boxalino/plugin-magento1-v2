@@ -503,6 +503,13 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
     }
 
     /**
+     * @return bool
+     */
+    public function isNoResultsEnabled() {
+        return $this->isPluginEnabled() && Mage::getStoreConfigFlag('bxSearch/noresults/status');
+    }
+
+    /**
      * @param $fallback
      */
     public function setFallback($fallback){

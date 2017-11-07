@@ -97,7 +97,7 @@ class Boxalino_Intelligence_Block_Result extends Mage_CatalogSearch_Block_Result
                 $this->_template = 'boxalino/catalogsearch/result.phtml';
                 return $this;
             }
-            if ($this->hasNoResult()) {
+            if ($this->hasNoResult() && $this->bxHelperData->isNoResultsEnabled()) {
                 $this->_template = 'boxalino/catalogsearch/noresults.phtml';
                 return $this;
             }
