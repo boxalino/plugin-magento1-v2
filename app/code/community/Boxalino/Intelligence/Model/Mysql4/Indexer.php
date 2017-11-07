@@ -207,6 +207,12 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
             'visibility',
             'status'
         );
+        if($this->config->exportProductImages($account)) {
+            $requiredProperties[] = 'image';
+        }
+        if($this->config->exportProductUrl($account)) {
+            $requiredProperties[] = 'url_key';
+        }
         Mage::log('bxLog: get configured product attributes.', Zend_Log::INFO, self::BOXALINO_LOG_FILE);
         $attributes = $this->config->getAccountProductsProperties($account, $attributes, $requiredProperties);
         Mage::log('bxLog: returning configured product attributes: ' . implode(',', array_values($attributes)), Zend_Log::INFO, self::BOXALINO_LOG_FILE);
@@ -417,16 +423,14 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                         if (Mage::getEdition() == Mage::EDITION_ENTERPRISE) {
                             $select = $db->select()
                                 ->joinLeft(
-                                    array('t_g' => $db->getTableName($this->_prefix . 'catalog_product_entity_url_key')),
+                                    array('t_d' => $db->getTableName($this->_prefix . 'catalog_product_entity_url_key')),
                                     array('entity_id', 'attribute_id')
                                 )
                                 ->joinLeft(
                                     array('t_s' => $db->getTableName($this->_prefix . 'catalog_product_entity_url_key')),
-                                    't_s.attribute_id = t_g.attribute_id AND t_s.entity_id = t_g.entity_id',
-                                    array('value' => 'IF(t_s.store_id IS NULL, t_g.value, t_s.value)')
-                                )
-                                ->where('t_g.attribute_id = ?', $attributeID)
-                                ->where('t_g.store_id = 0 OR t_g.store_id = ?', $storeId);
+                                    't_s.attribute_id = t_d.attribute_id AND t_s.entity_id = t_d.entity_id',
+                                    array('value' => 'IF(t_s.store_id IS NULL, t_d.value, t_s.value)')
+                                );
                         }
                     }
                     if($optionSelect){
@@ -564,6 +568,7 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                                     if ($this->config->exportProductImages($account)) {
                                         $url = $imageBaseUrl . $row['value'];
                                         $additionalData[$row['entity_id']] = array('entity_id' => $row['entity_id'],
+                                            'store_id' => $row['store_id'],
                                             'value_' . $lang => $url);
                                         if(isset($duplicateIds[$row['entity_id']])){
                                             $additionalData['duplicate'.$row['entity_id']] = array(
