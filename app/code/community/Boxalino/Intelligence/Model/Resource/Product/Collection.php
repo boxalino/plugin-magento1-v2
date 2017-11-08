@@ -4,53 +4,23 @@ class Boxalino_Intelligence_Model_Resource_Product_Collection extends Mage_Catal
     /**
      * @var int
      */
-    protected $bxCurPage = 0;
+    protected $bxCurPage = null;
 
     /**
      * @var int
      */
-    protected $bxLastPage = 0;
+    protected $bxLastPage = null;
 
     /**
      * @var int
      */
-    protected $bxTotal = 0;
+    protected $bxTotal = null;
 
     /**
      * @var int
      */
-    protected $bxCount = 0;
+    protected $bxCount = null;
 
-    /**
-     * @var bool
-     */
-    protected $fallback = false;
-
-    /**
-     * 
-     */
-    public function _construct(){
-
-        $bxHelperData = Mage::helper('boxalino_intelligence');
-        $this->fallback = $bxHelperData->getFallback();
-        $layer = $this->getLayer();
-        if(Mage::app()->getStore()->isAdmin() || !$bxHelperData->isEnabledOnLayer($layer)){
-            $this->fallback = true;
-        }
-        parent::_construct();
-    }
-
-    /**
-     * @return Mage_Core_Model_Abstract|mixed
-     */
-    private function getLayer()
-    {
-        $layer = Mage::registry('current_layer');
-        if ($layer) {
-            return $layer;
-        }
-        return Mage::getSingleton('catalog/layer');
-    }
 
     /**
      * @param $bxCurPage
@@ -83,8 +53,7 @@ class Boxalino_Intelligence_Model_Resource_Product_Collection extends Mage_Catal
      * @return int
      */
     public function getSize() {
-
-        if($this->fallback){
+        if(is_null($this->bxTotal)){
             return parent::getSize();
         }
         return $this->bxTotal;
@@ -95,7 +64,7 @@ class Boxalino_Intelligence_Model_Resource_Product_Collection extends Mage_Catal
      */
     public function count(){
 
-        if($this->fallback){
+        if(is_null($this->bxCount)){
             return parent::count();
         }
         return $this->bxCount;
@@ -117,7 +86,7 @@ class Boxalino_Intelligence_Model_Resource_Product_Collection extends Mage_Catal
      */
     public function getCurPage($displacement = 0) {
 
-        if($this->fallback){
+        if(is_null($this->bxCurPage)){
             return parent::getCurPage();
         }
         return $this->bxCurPage + $displacement;
@@ -128,7 +97,7 @@ class Boxalino_Intelligence_Model_Resource_Product_Collection extends Mage_Catal
      */
     public function getLastPageNumber() {
 
-        if($this->fallback){
+        if(is_null($this->bxLastPage)){
             return parent::getLastPageNumber();
         }
         return $this->bxLastPage;
