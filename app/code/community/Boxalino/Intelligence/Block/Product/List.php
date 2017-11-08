@@ -67,6 +67,21 @@ class Boxalino_Intelligence_Block_Product_List extends Mage_Catalog_Block_Produc
     }
 
     /**
+     * @param $id
+     * @param $field
+     * @return string
+     */
+    public function getHitValueForField($id, $field) {
+        $bxHelperData = Mage::helper('boxalino_intelligence');
+        $p13nHelper = $bxHelperData->getAdapter();
+        $value = '';
+        if($bxHelperData->isEnabledOnLayer($this->getLayer())){
+            $value = $p13nHelper->getHitVariable($id, $field);
+        }
+        return $value;
+    }
+
+    /**
      * @param $entity_ids
      * @throws Exception
      */

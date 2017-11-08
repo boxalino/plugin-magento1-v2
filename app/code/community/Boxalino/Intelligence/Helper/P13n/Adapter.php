@@ -237,31 +237,17 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
      * @param \com\boxalino\bxclient\v1\BxSortFields|null $bxSortFields
      * @param null $categoryId
      */
-    public function search($queryText, $pageOffset = 0, $overwriteHitCount = null, \com\boxalino\bxclient\v1\BxSortFields $bxSortFields=null, $categoryId=null){
+    public function search($queryText, $pageOffset = 0, $overwriteHitCount = null, \com\boxalino\bxclient\v1\BxSortFields $bxSortFields=null, $categoryId=null, $addFinder=false){
 
         $returnFields = array($this->getEntityIdFieldName(), 'categories', 'discountedPrice', 'products_bx_grouped_price', 'title', 'score');
         $additionalFields = explode(',', Mage::getStoreConfig('bxGeneral/advanced/additional_fields'));
         $returnFields = array_merge($returnFields, $additionalFields);
         $hitCount = $overwriteHitCount;
 
-//        if (empty($queryText) && is_null($categoryId)) {
-//
-//           $bxRequest = new \com\boxalino\bxclient\v1\BxSearchRequest($this->bxHelperData->getLanguage(), $queryText, $hitCount, 'landingpage');
-//           $this->currentSearchChoice = 'landingpage';
-//           self::$bxClient->forwardRequestMapAsContextParameters();
-//
-//         } else {
-//
-//           $bxRequest = new \com\boxalino\bxclient\v1\BxSearchRequest($this->bxHelperData->getLanguage(), $queryText, $hitCount, $this->getSearchChoice($queryText));
-//
-//         }
-
-        //create search request
-        if($this->bxHelperData->isProductFinderActive()) {
-            $bxRequest = new \com\boxalino\bxclient\v1\BxParametrizedRequest($this->bxHelperData->getLanguage(), $this->getSearchChoice($queryText));
-            $bxRequest->setQuerytext($queryText);
+        if($addFinder) {
+            $bxRequest = new \com\boxalino\bxclient\v1\BxParametrizedRequest($this->bxHelperData->getLanguage(), $this->getFinderChoice());
             $this->prefixContextParameter = $bxRequest->getRequestWeightedParametersPrefix();
-            $this->setPrefixContextParameter($this->getPrefixContextParameter());
+            $this->setPrefixContextParameter($this->prefixContextParameter);
         } else {
             $bxRequest = new \com\boxalino\bxclient\v1\BxSearchRequest($this->bxHelperData->getLanguage(), $queryText, $hitCount, $this->getSearchChoice($queryText));
         }
@@ -273,13 +259,22 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
         $bxRequest->setFacets($this->prepareFacets());
         $bxRequest->setFilters($this->getSystemFilters($queryText));
         $bxRequest->setMax($hitCount);
-        if($categoryId != null) {
+        if(!is_null($categoryId)) {
             $filterField = "category_id";
             $filterValues = array($categoryId);
             $filterNegative = false;
             $bxRequest->addFilter(new com\boxalino\bxclient\v1\BxFilter($filterField, $filterValues, $filterNegative));
         }
         self::$bxClient->addRequest($bxRequest);
+    }
+
+    public function getFinderChoice() {
+        $choice_id = Mage::getStoreConfig('bxSearch/advanced/finder_choice_id');
+        if(is_null($choice_id) || $choice_id == '') {
+            $choice_id = 'productfinder';
+        }
+        $this->currentSearchChoice = $choice_id;
+        return $choice_id;
     }
 
     /**
@@ -296,19 +291,24 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
     }
 
     /**
-     * 
+     * @param bool $addFinder
      */
-    public function simpleSearch(){
+    public function simpleSearch($addFinder=false){
+
         $request = Mage::app()->getRequest();
         $queryText = Mage::helper('catalogsearch')->getQueryText();
 
-        if (self::$bxClient->getChoiceIdRecommendationRequest($this->getSearchChoice($queryText)) != null) {
+        if (self::$bxClient->getChoiceIdRecommendationRequest($this->getSearchChoice($queryText)) != null && !$addFinder) {
+            $this->currentSearchChoice = $this->getSearchChoice($queryText);
             return;
         }
-        $this->checkForProductFinder();
+        if (self::$bxClient->getChoiceIdRecommendationRequest($this->getFinderChoice()) != null && $addFinder) {
+            $this->currentSearchChoice = $this->getFinderChoice();
+            return;
+        }
         $field = '';
         $order = $request->getParam('order') != null ? $request->getParam('order') : $this->getMagentoStoreConfigListOrder();
-       
+
         if ($order == 'name') {
             $field = 'products_bx_parent_title';
         } elseif ($order == 'price') {
@@ -324,7 +324,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
         $categoryId = Mage::registry('current_category') != null ? Mage::registry('current_category')->getId() : null;
         $overWriteLimit = $request->getParam('limit') != null ? $request->getParam('limit') : Mage::getBlockSingleton('catalog/product_list_toolbar')->getLimit();
         $pageOffset = isset($_REQUEST['p'])? ($_REQUEST['p']-1)*($overWriteLimit) : 0;
-        $this->search($queryText, $pageOffset, $overWriteLimit, new \com\boxalino\bxclient\v1\BxSortFields($field, $dir), $categoryId);
+        $this->search($queryText, $pageOffset, $overWriteLimit, new \com\boxalino\bxclient\v1\BxSortFields($field, $dir), $categoryId, $addFinder);
     }
 
     /**
@@ -354,8 +354,8 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
     /**
      * @return string
      */
-    private function getUrlParameterPrefix() {
-        
+    public function getUrlParameterPrefix() {
+
         return 'bx_';
     }
 
@@ -472,12 +472,16 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
         return self::$bxClient->getResponse()->getHitIds($this->currentSearchChoice, true, 0, 10, $this->getEntityIdFieldName());
     }
 
+    public function getHitVariable($id, $field) {
+        $this->simpleSearch();
+        return self::$bxClient->getResponse()->getHitVariable($this->currentSearchChoice, $id, $field, 0);
+    }
+
     /**
      * @return null
      */
-    public function getFacets() {
-        
-        $this->simpleSearch();
+    public function getFacets($getFinder = false) {
+        $this->simpleSearch($getFinder);
         $facets = self::$bxClient->getResponse()->getFacets($this->currentSearchChoice);
         if(empty($facets)){
             return null;
@@ -622,21 +626,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
         return self::$bxClient->getResponse()->getHitIds($widgetName, true, $count);
     }
 
-    /**
-     * @return array
-     */
-    protected function checkForProductFinder(){
-        $fieldNames = array();
-        $xml = Mage::app()->getLayout()->getXmlString();
-        if(strpos($xml, '"boxalino_intelligence/giftfinder') !== false){
-            $this->bxHelperData->setIsProductFinderActive(true);
-        }
-        return $fieldNames;
-    }
-
     public function getResponse(){
-
-      return self::$bxClient->getResponse();
-
+        return self::$bxClient->getResponse();
     }
 }

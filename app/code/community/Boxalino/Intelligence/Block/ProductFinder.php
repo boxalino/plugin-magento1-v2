@@ -5,12 +5,6 @@
  */
 class Boxalino_Intelligence_Block_ProductFinder extends Mage_Core_Block_Template {
 
-    protected function _construct()
-    {
-        parent::_construct();
-        Mage::helper('boxalino_intelligence')->setIsProductFinderActive(true);
-    }
-
     /**
      * @return array|mixed
      */
@@ -19,28 +13,33 @@ class Boxalino_Intelligence_Block_ProductFinder extends Mage_Core_Block_Template
     }
 
     /**
+     * @return mixed
+     */
+    public function getP13nAdapter(){
+        $dataHelper = Mage::helper('boxalino_intelligence');
+        $adapter = $dataHelper->getAdapter();
+        return $adapter;
+    }
+
+    /**
      * @return com\boxalino\bxclient\v1\BxFacets
      */
     public function getBxFacets() {
-        $dataHelper = Mage::helper('boxalino_intelligence');
-        $adapter = $dataHelper->getAdapter();
-        return $adapter->getFacets();
+        return $this->getP13nAdapter()->getFacets(true);
+    }
+
+    /**
+     *
+     */
+    public function getUrlParameterPrefix() {
+        $this->getP13nAdapter()->getUrlParameterPrefix();
     }
 
     /**
      * @return string
      */
     public function getParametersPrefix() {
-        $dataHelper = Mage::helper('boxalino_intelligence');
-        $adapter = $dataHelper->getAdapter();
-        return $adapter->getPrefixContextParameter();
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getChoiceId() {
-        return $this->getData('choice_id');
+        return $this->getP13nAdapter()->getPrefixContextParameter();
     }
 
     /**
@@ -49,19 +48,23 @@ class Boxalino_Intelligence_Block_ProductFinder extends Mage_Core_Block_Template
     public function getJSONData() {
         $json = [];
         $fieldNames = $this->getFieldNames();
-        Mage::log(json_encode($fieldNames));
         if(!empty($fieldNames)) {
             $bxFacets = $this->getBxFacets();
-            $facet_info = ['label', 'icon', 'iconMap', 'visualisation', 'jsonDependencies', 'position', 'isSoftFacet', 'isQuickSearch', 'order'];
             foreach ($fieldNames as $fieldName) {
                 if($fieldName == ''){
                     continue;
                 }
+                $facetExtraInfo = $bxFacets->getAllFacetExtraInfo($fieldName);
                 $extraInfo = [];
-                $json['facets'][$fieldName]['facetValues'] = $bxFacets->getFacetValues($fieldName);
-                $json['facets'][$fieldName]['label'] = $bxFacets->getFacetLabel($fieldName);
-                foreach ($facet_info as $info_key) {
-                    $info = $bxFacets->getFacetExtraInfo($fieldName, $info_key);
+                $facetValues = $bxFacets->getFacetValues($fieldName);
+                $json['facets'][$fieldName]['facetValues'] = $facetValues;
+                foreach ($facetValues as $value) {
+                    if($bxFacets->isFacetValueHidden($fieldName, $value)) {
+                        $json['facets'][$fieldName]['hidden_values'][] = $value;
+                    }
+                }
+                $json['facets'][$fieldName]['label'] = $bxFacets->getFacetLabel($fieldName, $this->getLocale());
+                foreach ($facetExtraInfo as $info_key => $info) {
                     if($info_key == 'isSoftFacet' && $info == null){
                         $facetMapping = [];
                         $attributeName = substr($fieldName, 9);
@@ -77,7 +80,7 @@ class Boxalino_Intelligence_Block_ProductFinder extends Mage_Core_Block_Template
                         }
                         $json['facets'][$fieldName]['facetMapping'] = $facetMapping;
                     }
-                    if($info_key == 'jsonDependencies' || $info_key == 'label' ||$info_key == 'iconMap') {
+                    if($info_key == 'jsonDependencies' || $info_key == 'label' || $info_key == 'iconMap' || $info_key == 'facetValueExtraInfo') {
                         $info = json_decode($info);
                         if($info_key == 'jsonDependencies') {
                             if(!is_null($info)) {
@@ -94,8 +97,23 @@ class Boxalino_Intelligence_Block_ProductFinder extends Mage_Core_Block_Template
                 }
                 $json['facets'][$fieldName]['facetExtraInfo'] = $extraInfo;
             }
-            $json['parametersPrefix'] = $this->getParametersPrefix();
+            $json['parametersPrefix'] = $this->getUrlParameterPrefix();
+            $json['contextParameterPrefix'] = $this->getParametersPrefix();
         }
         return json_encode($json);
+    }
+
+    /**
+     * @return bool|string
+     */
+    public function getLocale() {
+        return substr(Mage::getStoreConfig('general/locale/code'), 0, 2);
+    }
+
+    /**
+     * @return string
+     */
+    public function getFinderUrl() {
+        return Mage::getBaseUrl() . $this->getData('finder_url');
     }
 }
