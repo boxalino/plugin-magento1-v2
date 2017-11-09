@@ -768,7 +768,7 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
 
                             $this->bxData->addResourceFile($files->getPath($attribute['attribute_code'] . '.csv'), 'parent_id','value');
                             break;
-                        case ($attributeType == ('int' || 'decimal')) && $attribute['is_global'] == 1:
+                        case (($attributeType == 'int' || $attributeType == 'decimal')) && $attribute['is_global'] == 1:
                             $this->bxData->addSourceNumberField($attributeSourceKey, $fieldId, 'value');
                             break;
                         default:
