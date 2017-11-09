@@ -364,7 +364,6 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                 $optionSelect = in_array($attribute['frontend_input'], array('multiselect','select'));
                 $data = array();
                 $additionalData = array();
-                $exportAttribute = false;
                 $global = false;
                 $getValueForDuplicate = false;
                 $d = array();
@@ -437,13 +436,15 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                         $attributeSourceModel = Mage::getModel('eav/config')->getAttribute('catalog_product', $attribute['attribute_code'])
                             ->setStoreId($storeId)->getSource();
                         $fetchedOptionValues = null;
-                        if ($attributeSourceModel instanceof Mage_Eav_Model_Entity_Attribute_Source_Table) {
+
+                        if ($attributeSourceModel instanceof Mage_Eav_Model_Entity_Attribute_Source_Abstract) {
                             // Fetch attribute options through method to respect source model implementation.
-                            $fetchedOptionValues = $attributeSourceModel->getAllOptions();
+                            $fetchedOptionValues = $attributeSourceModel->getAllOptions(false);
                         }
+
                         if($fetchedOptionValues){
                             foreach($fetchedOptionValues as $v){
-                                if (!empty($v['value'])) {
+                                if (isset($v['value'])) {
                                     if (isset($optionValues[$v['value']])) {
                                         $optionValues[$v['value']]['value_' . $lang] = $v['label'];
                                     } else {
@@ -455,7 +456,6 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                                 }
                             }
                         }else{
-                            $exportAttribute = true;
                             $optionSelect = false;
                         }
                         $fetchedOptionValues = null;
@@ -649,7 +649,7 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                         }
                     }
                 }
-                if($optionSelect || $exportAttribute){
+                if($optionSelect){
                     $optionHeader = array_merge(array($attribute['attribute_code'] . '_id'),$labelColumns);
                     $a = array_merge(array($optionHeader), $optionValues);
                     $files->savepartToCsv($attribute['attribute_code'].'.csv', $a);
@@ -692,7 +692,7 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                             $d = array_merge(array(array('entity_id',$attribute['attribute_code'] . '_id')), $data);
                         }
                     }else {
-                        $d = array_merge(array(array_keys(end($data))), $data);
+                        $d = array_merge(array(array('entity_id', 'store_id', 'value')), $data);
                     }
 
 
@@ -819,8 +819,7 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                     $data[] = array('entity_id'=>'duplicate'.$row['entity_id'], 'qty'=>$row['qty']);
                 }
             }
-
-            $d = array_merge(array(array_keys(end($data))), $data);
+            $d = array_merge(array(array('entity_id', 'qty')), $data);
             $files->savePartToCsv('product_stock.csv', $d);
             $data = null;
             $d = null;
@@ -886,7 +885,7 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                 $data[] = $row;
             }
             $duplicateResult = null;
-            $d = array_merge(array(array_keys(end($data))), $data);
+            $d = array_merge(array(array('entity_id', 'category_id')), $data);
             $files->savePartToCsv('product_categories.csv', $d);
             $data = null;
             $d = null;
@@ -912,8 +911,7 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                     $data[] = $row;
                 }
             }
-
-            $d = array_merge(array(array_keys(end($data))), $data);
+            $d = array_merge(array(array('entity_id', 'parent_id', 'link_id')), $data);
             $files->savePartToCsv('product_parent.csv', $d);
             $data = null;
             $d = null;
@@ -951,7 +949,7 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                     $data[] = $row;
                 }
             }
-            $d = array_merge(array(array_keys(end($data))), $data);
+            $d = array_merge(array(array('entity_id', 'linked_product_id', 'code')), $data);
             $files->savePartToCsv('product_links.csv', $d);
             $data = null;
             $d = null;
@@ -1051,7 +1049,8 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
             }
             $result = null;
         }
-        $data = array_merge(array(array_keys(end($data))), $data);
+        $headerLangRow = array_merge(array('entity_id'), $lvh);
+        $data = array_merge(array($headerLangRow), $data);
         $files->savePartToCsv('product_bx_parent_title.csv', $data);
         $attributeSourceKey = $this->bxData->addCSVItemFile($files->getPath('product_bx_parent_title.csv'), 'entity_id');
         $this->bxData->addSourceLocalizedTextField($attributeSourceKey, 'bx_parent_title', $lvh);
