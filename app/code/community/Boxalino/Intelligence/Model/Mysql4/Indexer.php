@@ -131,7 +131,7 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                         Mage::log('bxLog: Push the Zip data file to the Data Indexing server for account: ' . $account, Zend_Log::INFO, self::BOXALINO_LOG_FILE);
                     }
                     try{
-                        $timeout = $this->indexType == 'delta' ? 60 : 3600;
+                        $timeout = $this->config->curlTimeout($account);
                         $this->bxData->pushData(null, $timeout);
                     }catch(\Exception $e){
                         Mage::log('bxLog: pushData failed with exception: ' . $e->getMessage(), Zend_Log::INFO, self::BOXALINO_LOG_FILE);
@@ -1087,6 +1087,7 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                 array('main_table' => $db->getTableName($this->_prefix . 'eav_attribute')),
                 array(
                     'aid' => 'attribute_id',
+                    'attribute_code',
                     'backend_type',
                 )
             )
@@ -1101,29 +1102,33 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
         $result = $db->query($select);
         if($result->rowCount()){
             while($row = $result->fetch()){
-                $attrsFromDb[$row['backend_type']][] = $row['aid'];
+                if (isset($attrsFromDb[$row['backend_type']])) {
+                    $attrsFromDb[$row['backend_type']][] = $row['backend_type'] == 'static' ? $row['attribute_code'] : $row['aid'];
+                }
             }
         }
-
         do{
             $customers_to_save = array();
-            $customers = array();
 
             $select = $db->select()
                 ->from(
-                    $db->getTableName($this->_prefix . 'customer_entity'),
-                    array('entity_id', 'created_at', 'updated_at')
+                    array('c_e' => $db->getTableName($this->_prefix . 'customer_entity')),
+                    array_merge(['entity_id'], $attrsFromDb['static'])
+                )->join(
+                    array('c_a' => $db->getTableName($this->_prefix . 'customer_address_entity')),
+                    'c_e.entity_id = c_a.parent_id',
+                    array('address_id' => 'c_a.entity_id')
                 )
+                ->group('c_e.entity_id')
                 ->limit($limit, ($page - 1) * $limit);
 
-            $result = $db->query($select);
-            if($result->rowCount()){
-                while($row = $result->fetch()){
-                    $customers[$row['entity_id']] = array('id' => $row['entity_id']);
-                }
+            $ids = array();
+            $customers = array();
+            foreach ($db->fetchAll($select) as $customer) {
+                $id =  $customer['entity_id'];
+                $ids[] = $id;
+                $customers[$id] = $customer;
             }
-
-            $ids = array_keys($customers);
 
             $columns = array(
                 'entity_id',
@@ -1164,20 +1169,6 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                     ->joinLeft(array('ea' => $db->getTableName($this->_prefix . 'eav_attribute')), 'ce.attribute_id = ea.attribute_id', 'ea.attribute_code')
                     ->where('ce.attribute_id IN(?)', $attrsFromDb['datetime']);
                 $selects[] = $select3;
-            }
-
-            // only supports email
-            if (count($attrsFromDb['static']) > 0) {
-                $attributeId = current($attrsFromDb['static']);
-                $select4 = $db->select()
-                    ->from(array('ce' => $db->getTableName($this->_prefix . 'customer_entity')), array(
-                        'entity_id' => 'entity_id',
-                        'attribute_id' =>  new \Zend_Db_Expr($attributeId),
-                        'value' => 'email',
-                    ))
-                    ->joinLeft(array('ea' => $db->getTableName($this->_prefix . 'eav_attribute')), 'ea.attribute_id = ' . $attributeId, 'ea.attribute_code')
-                    ->where('ce.entity_id IN (?)', $ids);
-                $selects[] = $select4;
             }
 
             $select = $db->select()
@@ -1224,23 +1215,15 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
             $addressIds = array_keys($addressAttr);
 
             foreach ($customers as $customer) {
-                $id = $customer['id'];
+                $id = $customer['entity_id'];
 
-                $select = $db->select()
-                    ->from($db->getTableName($this->_prefix . 'customer_address_entity'),
-                        array('entity_id')
-                    )
-                    ->where('entity_type_id = ?', $customer_entity_type_id)
-                    ->where('parent_id = ?', $id)
-                    ->order('entity_id DESC')
-                    ->limit(1);
 
                 $select = $db->select()
                     ->from($db->getTableName($this->_prefix . 'customer_address_entity_varchar'),
                         array('attribute_id', 'value')
                     )
                     ->where('entity_type_id = ?', $customer_entity_type_id)
-                    ->where('entity_id = ?', $select)
+                    ->where('entity_id = ?', $customer['address_id'])
                     ->where('attribute_id IN(?)', $addressIds);
 
                 $billingResult = array();

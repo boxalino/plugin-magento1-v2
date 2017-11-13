@@ -179,7 +179,7 @@ class Boxalino_Intelligence_Helper_BxIndexConfig
     public function getTransactionMode($account) {
         return (int) $this->getFirstAccountStore($account)->getConfig('bxExporter/transactions/export_mode');
     }
-    
+
     /**
      * @return string
      */
@@ -252,6 +252,15 @@ class Boxalino_Intelligence_Helper_BxIndexConfig
      */
     public function publishConfigurationChanges($account) {
         return $this->getFirstAccountStore($account)->getConfig('bxExporter/advanced/publish_configuration_changes') == 1;
+    }
+
+    /**
+     * @param $account
+     * @return int
+     */
+    public function curlTimeout($account) {
+        $timeout = $this->getFirstAccountStore($account)->getConfig('bxExporter/advanced/curl_timeout');
+        return $timeout == '' ? 3600 : (int) $timeout;
     }
 
     /**
