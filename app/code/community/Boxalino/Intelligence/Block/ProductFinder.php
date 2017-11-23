@@ -43,9 +43,23 @@ class Boxalino_Intelligence_Block_ProductFinder extends Mage_Core_Block_Template
     }
 
     /**
+     *
+     */
+    protected function checkMode() {
+        $currentUrl = Mage::helper('core/url')->getCurrentUrl();
+        $url = Mage::getSingleton('core/url')->parseUrl($currentUrl);
+        $path = $url->getPath();
+        $parts = explode('/', $path);
+        if(end($parts) == $this->getData('finder_url')){
+            Mage::helper('boxalino_intelligence')->setIsFinder(true);
+        }
+    }
+
+    /**
      * @return string
      */
     public function getJSONData() {
+        $this->checkMode();
         $json = [];
         $fieldNames = $this->getFieldNames();
         if(!empty($fieldNames)) {

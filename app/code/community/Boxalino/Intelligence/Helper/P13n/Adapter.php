@@ -259,7 +259,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
         $bxRequest->setFacets($this->prepareFacets());
         $bxRequest->setFilters($this->getSystemFilters($queryText));
         $bxRequest->setMax($hitCount);
-        if(!is_null($categoryId)) {
+        if(!is_null($categoryId) && !$addFinder) {
             $filterField = "category_id";
             $filterValues = array($categoryId);
             $filterNegative = false;
@@ -295,14 +295,15 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
      */
     public function simpleSearch($addFinder=false){
 
+        $isFinder = Mage::helper('boxalino_intelligence')->getIsFinder();
         $request = Mage::app()->getRequest();
         $queryText = Mage::helper('catalogsearch')->getQueryText();
 
-        if (self::$bxClient->getChoiceIdRecommendationRequest($this->getSearchChoice($queryText)) != null && !$addFinder) {
+        if (self::$bxClient->getChoiceIdRecommendationRequest($this->getSearchChoice($queryText)) != null && !$addFinder && !$isFinder) {
             $this->currentSearchChoice = $this->getSearchChoice($queryText);
             return;
         }
-        if (self::$bxClient->getChoiceIdRecommendationRequest($this->getFinderChoice()) != null && $addFinder) {
+        if (self::$bxClient->getChoiceIdRecommendationRequest($this->getFinderChoice()) != null && ($addFinder || $isFinder)) {
             $this->currentSearchChoice = $this->getFinderChoice();
             return;
         }

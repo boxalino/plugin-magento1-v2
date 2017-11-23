@@ -397,12 +397,12 @@
 
         function getDataOwnerFacet() {
             var dataOwnerField = null;
-            getFacets().forEach(function(fieldName) {
-                if(getFacetExtraInfo(fieldName, 'dataOwner') !== null) {
-                    dataOwnerField = fieldName;
-                }
-            });
-            return dataOwnerField;
+           getFacets().forEach(function(fieldName) {
+               if(getFacetExtraInfo(fieldName, 'data-owner') !== null) {
+                   dataOwnerField = fieldName;
+               }
+           });
+           return dataOwnerField;
         }
 
         function getCurrentQuestion() {

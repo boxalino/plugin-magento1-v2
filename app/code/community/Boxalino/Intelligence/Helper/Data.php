@@ -67,6 +67,11 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
     protected $systemParams = array();
 
     /**
+     * @var bool
+     */
+    protected $isFinder = false;
+
+    /**
      * @param $countryCode
      * @return mixed
      */
@@ -576,5 +581,13 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
 
     public function getSystemParams() {
         return $this->systemParams;
+    }
+
+    public function getIsFinder() {
+        return $this->isFinder;
+    }
+
+    public function setIsFinder($isFinder) {
+        $this->isFinder = $isFinder;
     }
 }
