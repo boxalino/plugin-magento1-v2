@@ -45,7 +45,7 @@
                 if(param.indexOf(contextPrefix) === 0) {
                     value = param.substring(param.lastIndexOf('_') + 1, param.indexOf('='));
                     facetName = param.substring(contextPrefix.length, param.lastIndexOf('_'));
-                    addSelect(facetName, value);
+                    addSelect(facetName, decodeURIComponent(value));
                 } else if(param.indexOf(prefix) === 0) {
                     value = decodeURIComponent(param.substring(param.lastIndexOf('=') + 1, param.length)).split(separator);
                     facetName = param.substring(prefix.length, param.lastIndexOf('='));
@@ -53,9 +53,9 @@
                 } else {
                     facetName = 'products_' + param.substring(0, param.indexOf('='));
                     if(bxFacets.hasOwnProperty(facetName)){
-                        value = getMappedFacetValue(facetName, param.substring(param.lastIndexOf('=') + 1, param.length));
+                        value = getMappedFacetValue(facetName, decodeURIComponent(param.substring(param.lastIndexOf('=') + 1, param.length)));
                         if(bxFacets.hasOwnProperty(facetName)) {
-                            addSelect(facetName, decodeURIComponent(value));
+                            addSelect(facetName, value);
                         }
                     }
                 }
