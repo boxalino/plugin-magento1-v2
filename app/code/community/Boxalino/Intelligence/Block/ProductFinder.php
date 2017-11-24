@@ -32,7 +32,7 @@ class Boxalino_Intelligence_Block_ProductFinder extends Mage_Core_Block_Template
      *
      */
     public function getUrlParameterPrefix() {
-        $this->getP13nAdapter()->getUrlParameterPrefix();
+        return $this->getP13nAdapter()->getUrlParameterPrefix();
     }
 
     /**
@@ -111,10 +111,35 @@ class Boxalino_Intelligence_Block_ProductFinder extends Mage_Core_Block_Template
                 }
                 $json['facets'][$fieldName]['facetExtraInfo'] = $extraInfo;
             }
+
+            $json['separator'] = Mage::helper('boxalino_intelligence')->getSeparator();
+            $json['level'] = $this->getFinderLevel();
             $json['parametersPrefix'] = $this->getUrlParameterPrefix();
             $json['contextParameterPrefix'] = $this->getParametersPrefix();
         }
         return json_encode($json);
+    }
+
+    public function getFinderLevel() {
+        $adapter = $this->getP13nAdapter();
+        $ids = $adapter->getEntitiesIds();
+        $level = 10;
+        $h = 0;
+        foreach ($ids as $id) {
+            if($adapter->getHitVariable($id, 'highlighted')){
+                if($h++ >= 2){
+                    $level = 5;
+                    break;
+                }
+            }
+            if($h == 0) {
+                $level = 1;
+                break;
+            } else {
+                break;
+            }
+        }
+        return $level;
     }
 
     /**

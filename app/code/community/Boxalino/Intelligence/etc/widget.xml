@@ -1,5 +1,5 @@
 <widgets>
-    <boxalino_product_finder type="boxalino_intelligence/widget_productfinder" module="boxalino_intelligence">
+    <boxalino_product_finder type="boxalino_intelligence/widget_productFinder" module="boxalino_intelligence">
         <name>Boxalino Product Finder</name>
         <description type="desc">Create a Boxalino Finder widget.</description>
         <parameters>

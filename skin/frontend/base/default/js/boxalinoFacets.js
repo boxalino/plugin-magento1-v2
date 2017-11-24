@@ -4,6 +4,8 @@
     function init() {
         var bxFacets = {},
             lastSelect = '',
+            separator = '',
+            level = 1,
             currentSelects = {},
             contextParameterPrefix = '',
             parameterPrefix = 'bx_',
@@ -25,6 +27,12 @@
             if(data.hasOwnProperty('parametersPrefix')) {
                 parameterPrefix = data['parametersPrefix'];
             }
+            if(data.hasOwnProperty('separator')){
+                separator = data['separator'];
+            }
+            if(data.hasOwnProperty('level')){
+                level = data['level'];
+            }
             checkParams();
         }
 
@@ -37,11 +45,11 @@
                 if(param.indexOf(contextPrefix) === 0) {
                     value = param.substring(param.lastIndexOf('_') + 1, param.indexOf('='));
                     facetName = param.substring(contextPrefix.length, param.lastIndexOf('_'));
-                    addSelect(facetName, decodeURIComponent(value));
+                    addSelect(facetName, value);
                 } else if(param.indexOf(prefix) === 0) {
-                    value = param.substring(param.lastIndexOf('=') + 1, param.length);
+                    value = decodeURIComponent(param.substring(param.lastIndexOf('=') + 1, param.length)).split(separator);
                     facetName = param.substring(prefix.length, param.lastIndexOf('='));
-                    addSelect(facetName, decodeURIComponent(value));
+                    addSelect(facetName, value);
                 } else {
                     facetName = 'products_' + param.substring(0, param.indexOf('='));
                     if(bxFacets.hasOwnProperty(facetName)){
@@ -292,8 +300,8 @@
             var info = null;
             if(info_key === 'hidden') {
                 if(bxFacets.hasOwnProperty(field)) {
-                    if(bxFacets.field.hidden_values !== undefined) {
-                        return bxFacets.field.hidden_values.includes(value);
+                    if(bxFacets[field]['hidden_values'] !== undefined) {
+                        return bxFacets[field]['hidden_values'].includes(value);
                     }
                 }
                 return false;
@@ -346,26 +354,31 @@
             var parameters = [];
             for(var fieldName in currentSelects) {
                 if(bxFacets.hasOwnProperty(fieldName)) {
-                    currentSelects[fieldName].forEach(function(facet_value) {
+                    if(currentSelects[fieldName].length > 0) {
+
                         var urlParameter = '',
                             paramName = '';
-                        if(bxFacets[fieldName].hasOwnProperty('facetMapping') && bxFacets[fieldName]['facetMapping'].hasOwnProperty(facet_value)) {
-                            if(bxFacets[fieldName].hasOwnProperty('parameterName')) {
-                                paramName = bxFacets[fieldName]['paramsName'];
-                            } else {
-                                paramName = fieldName.substring(9, fieldName.length);
-                            }
-                            urlParameter = paramName + "=" + bxFacets[fieldName]['facetMapping'][facet_value];
-                        } else {
-                            if(getFacetExtraInfo(fieldName, 'isSoftFacet')) {
+                        if(getFacetExtraInfo(fieldName, 'isSoftFacet')) {
+                            currentSelects[fieldName].forEach(function(facet_value) {
                                 paramName =  contextParameterPrefix + fieldName;
                                 urlParameter = paramName + '_' + encodeURIComponent(facet_value);
+                                parameters.push(urlParameter);
+                            });
+                        }else {
+                            var facet_value = currentSelects[fieldName].join(separator);
+                            if(bxFacets[fieldName].hasOwnProperty('facetMapping') && bxFacets[fieldName]['facetMapping'].hasOwnProperty(facet_value)) {
+                                if(bxFacets[fieldName].hasOwnProperty('parameterName')) {
+                                    paramName = bxFacets[fieldName]['paramsName'];
+                                } else {
+                                    paramName = fieldName.substring(9, fieldName.length);
+                                }
+                                urlParameter = paramName + "=" + bxFacets[fieldName]['facetMapping'][facet_value];
                             } else {
                                 urlParameter = parameterPrefix + fieldName + '=' + encodeURIComponent(facet_value);
                             }
+                            parameters.push(urlParameter);
                         }
-                        parameters.push(urlParameter);
-                    });
+                    }
                 }
             }
             return parameters;
@@ -397,12 +410,12 @@
 
         function getDataOwnerFacet() {
             var dataOwnerField = null;
-           getFacets().forEach(function(fieldName) {
-               if(getFacetExtraInfo(fieldName, 'data-owner') !== null) {
-                   dataOwnerField = fieldName;
-               }
-           });
-           return dataOwnerField;
+            getFacets().forEach(function(fieldName) {
+                if(getFacetExtraInfo(fieldName, 'data-owner') !== null) {
+                    dataOwnerField = fieldName;
+                }
+            });
+            return dataOwnerField;
         }
 
         function getCurrentQuestion() {
@@ -413,6 +426,10 @@
                 }
             });
             return currentQuestionField;
+        }
+
+        function getLevel() {
+            return level;
         }
 
         return {
@@ -435,7 +452,8 @@
             setParameterPrefix : setParameterPrefix,
             getCurrentSelects: getCurrentSelects,
             getDataOwnerFacet: getDataOwnerFacet,
-            getCurrentQuestion: getCurrentQuestion
+            getCurrentQuestion: getCurrentQuestion,
+            getLevel: getLevel
         };
     }
     return init();

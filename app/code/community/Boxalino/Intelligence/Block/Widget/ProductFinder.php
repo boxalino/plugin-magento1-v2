@@ -4,7 +4,7 @@ class Boxalino_Intelligence_Block_Widget_ProductFinder extends Mage_Core_Block_T
 {
     protected function _toHtml(){
         return $this->getLayout()
-            ->createBlock('boxalino_intelligence/productfinder', 'productfinder', ['finder_url' => $this->getData('finder_url')])
+            ->createBlock('boxalino_intelligence/productFinder', 'productfinder', ['finder_url' => $this->getData('finder_url')])
             ->setTemplate($this->getData('template'))->toHtml();
     }
 }
