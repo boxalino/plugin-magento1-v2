@@ -68,12 +68,15 @@ class BxChooseResponse
 		}
 		return $searchResult;
 	}
-	
+
 	public function getSearchResultHitIds($searchResult, $fieldId='id') {
 		$ids = array();
 		if($searchResult) {
 			if($searchResult->hits){
 				foreach ($searchResult->hits as $item) {
+					if(!isset($item->values[$fieldId][0])) {
+						$fieldId = 'id';
+					}
 					$ids[] = $item->values[$fieldId][0];
 				}
 			}elseif(isset($searchResult->hitsGroups)){
@@ -210,12 +213,21 @@ class BxChooseResponse
 		}
 		return null;
 	}
-	
+
+	public function getResultTitle($choice=null, $count=0, $default='- no title -') {
+
+			$variant = $this->getChoiceResponseVariant($choice, $count);
+			if(isset($variant->searchResultTitle)) {
+				return $variant->searchResultTitle;
+			}
+			return $default;
+	}
+
 	public function areThereSubPhrases($choice=null, $count=0, $maxBaseResults=0) {
 		$variant = $this->getChoiceResponseVariant($choice, $count);
 		return isset($variant->searchRelaxation->subphrasesResults) && sizeof($variant->searchRelaxation->subphrasesResults) > 0 && $this->getTotalHitCount($choice, false, $count) <= $maxBaseResults;
 	}
-	
+
 	public function getSubPhrasesQueries($choice=null, $count=0) {
 		if(!$this->areThereSubPhrases($choice, $count)) {
 			return array();

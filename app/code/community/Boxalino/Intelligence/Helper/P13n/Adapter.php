@@ -9,7 +9,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
      * @var \com\boxalino\bxclient\v1\BxClient
      */
     private static $bxClient = null;
-    
+
     /**
      * @var array
      */
@@ -37,10 +37,15 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
     protected $prefixContextParameter = '';
 
     /**
+     * @var String
+     */
+    protected $landingPageChoice;
+
+    /**
      * Boxalino_Intelligence_Helper_P13n_Adapter constructor.
      */
     public function __construct(){
-        
+
         $this->bxHelperData = Mage::helper('boxalino_intelligence');
         $libPath = Mage::getModuleDir('','Boxalino_Intelligence') . DIRECTORY_SEPARATOR . 'lib';
         require_once($libPath . DIRECTORY_SEPARATOR . 'BxClient.php');
@@ -52,10 +57,10 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
     }
 
     /**
-     * Initialize BxClient 
+     * Initialize BxClient
      */
     protected function initializeBXClient() {
-        
+
         if(self::$bxClient == null) {
             $account = Mage::getStoreConfig('bxGeneral/general/account_name');
             $password = Mage::getStoreConfig('bxGeneral/general/password');
@@ -99,11 +104,29 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
         return $choice;
     }
 
+    public function setLandingPageChoiceId($choice = ''){
+
+      if (!empty($choice)) {
+        return $this->landingPageChoice = $choice;
+      }
+
+      return $choice;
+
+    }
+
     /**
      * @param $queryText
      * @return mixed|string
      */
     public function getSearchChoice($queryText) {
+
+      $landingPageChoiceId = $this->landingPageChoice;
+
+        if (!empty($landingPageChoiceId)) {
+          $this->currentSearchChoice = $landingPageChoiceId;
+          return $landingPageChoiceId;
+        }
+
         if($queryText == null && !is_null(Mage::registry('current_category'))) {
             $choice = Mage::getStoreConfig('bxSearch/advanced/navigation_choice_id');
             if($choice == null) {
@@ -113,12 +136,6 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
             $this->navigation = true;
             return $choice;
         }
-
-//        if(empty($queryText) && empty(Mage::registry('current_category'))){
-//          $this->currentSearchChoice = 'landingpage';
-//          $choice = $this->currentSearchChoice;
-//          return 'landingpage';
-//        }
 
         if($this->bxHelperData->isProductFinderActive()){
             $this->currentSearchChoice = 'productfinder';
@@ -137,7 +154,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
      * @return mixed|string
      */
     public function getEntityIdFieldName() {
-        
+
         $entityIdFieldName = Mage::getStoreConfig('bxGeneral/advanced/entity_id');
         if (!isset($entityIdFieldName) || $entityIdFieldName === '') {
             $entityIdFieldName = 'products_group_id';
@@ -244,17 +261,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
         $returnFields = array_merge($returnFields, $additionalFields);
         $hitCount = $overwriteHitCount;
 
-//        if (empty($queryText) && is_null($categoryId)) {
-//
-//           $bxRequest = new \com\boxalino\bxclient\v1\BxSearchRequest($this->bxHelperData->getLanguage(), $queryText, $hitCount, 'landingpage');
-//           $this->currentSearchChoice = 'landingpage';
-//           self::$bxClient->forwardRequestMapAsContextParameters();
-//
-//         } else {
-//
-//           $bxRequest = new \com\boxalino\bxclient\v1\BxSearchRequest($this->bxHelperData->getLanguage(), $queryText, $hitCount, $this->getSearchChoice($queryText));
-//
-//         }
+        self::$bxClient->forwardRequestMapAsContextParameters();
 
         //create search request
         if($this->bxHelperData->isProductFinderActive()) {
@@ -296,7 +303,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
     }
 
     /**
-     * 
+     *
      */
     public function simpleSearch(){
         $request = Mage::app()->getRequest();
@@ -308,7 +315,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
         $this->checkForProductFinder();
         $field = '';
         $order = $request->getParam('order') != null ? $request->getParam('order') : $this->getMagentoStoreConfigListOrder();
-       
+
         if ($order == 'name') {
             $field = 'products_bx_parent_title';
         } elseif ($order == 'price') {
@@ -355,7 +362,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
      * @return string
      */
     private function getUrlParameterPrefix() {
-        
+
         return 'bx_';
     }
 
@@ -458,7 +465,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
      * @return int
      */
     public function getTotalHitCount(){
-        
+
         $this->simpleSearch();
         return self::$bxClient->getResponse()->getTotalHitCount($this->currentSearchChoice);
     }
@@ -476,7 +483,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
      * @return null
      */
     public function getFacets() {
-        
+
         $this->simpleSearch();
         $facets = self::$bxClient->getResponse()->getFacets($this->currentSearchChoice);
         if(empty($facets)){
@@ -498,7 +505,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
      * @return bool
      */
     public function areResultsCorrected() {
-        
+
         $this->simpleSearch();
         return self::$bxClient->getResponse()->areResultsCorrected($this->currentSearchChoice);
     }
@@ -507,7 +514,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
      * @return bool
      */
     public function areThereSubPhrases() {
-        
+
         $this->simpleSearch();
         return self::$bxClient->getResponse()->areThereSubPhrases($this->currentSearchChoice);
     }
@@ -519,12 +526,12 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
         $this->simpleSearch();
         return self::$bxClient->getResponse()->areResultsCorrectedAndAlsoProvideSubPhrases($this->currentSearchChoice);
     }
-    
+
     /**
      * @return array
      */
     public function getSubPhrasesQueries() {
-        
+
         $this->simpleSearch();
         return self::$bxClient->getResponse()->getSubPhrasesQueries($this->currentSearchChoice);
     }
@@ -534,7 +541,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
      * @return int|mixed
      */
     public function getSubPhraseTotalHitCount($queryText) {
-        
+
         $this->simpleSearch();
         return self::$bxClient->getResponse()->getSubPhraseTotalHitCount($queryText,$this->currentSearchChoice);
     }
@@ -588,8 +595,10 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
             } else {
                 if (($minAmount >= 0) && ($amount >= 0) && ($minAmount <= $amount)) {
                     $bxRequest = new \com\boxalino\bxclient\v1\BxRecommendationRequest($this->bxHelperData->getLanguage(), $widgetName, $amount, $minAmount);
-                    $bxRequest->setGroupBy($this->getEntityIdFieldName());
-                    $bxRequest->setFilters($this->getSystemFilters());
+                    if ($widgetType != 'blog') {
+                      $bxRequest->setGroupBy($this->getEntityIdFieldName());
+                      $bxRequest->setFilters($this->getSystemFilters());
+                    }
                     $bxRequest->setReturnFields(array_merge(array($this->getEntityIdFieldName()), $returnFields));
                     if ($widgetType === 'basket' && is_array($context)) {
                         $basketProducts = array();
@@ -597,7 +606,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
                             $basketProducts[] = array('id'=>$product->getId(), 'price'=>$product->getPrice());
                         }
                         $bxRequest->setBasketProductWithPrices('id', $basketProducts);
-                    } elseif ($widgetType === 'product' && !is_array($context)) {
+                    } elseif (($widgetType === 'product' || $widgetType === 'blog') && !is_array($context)) {
                         $product = $context;
                         $bxRequest->setProductContext($this->getEntityIdFieldName(), $product->getId());
                     } elseif ($widgetType === 'category' && $context != null){

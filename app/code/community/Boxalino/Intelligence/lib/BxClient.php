@@ -69,24 +69,32 @@ class BxClient
 		}
 		$this->domain = $domain;
 	}
-	
+
 	public function setTestMode($isTest) {
 		$this->isTest = $isTest;
 	}
-	
+
 	public function setSocket($socketHost, $socketPort=4040, $socketSendTimeout=1000, $socketRecvTimeout=1000) {
 		$this->socketHost = $socketHost;
 		$this->socketPort = $socketPort;
 		$this->socketSendTimeout = $socketSendTimeout;
 		$this->socketRecvTimeout = $socketRecvTimeout;
 	}
-	
+
 	public function setRequestMap($requestMap) {
 		$this->requestMap = $requestMap;
 	}
-	
+
+	private $choiceIdOverwrite = "owbx_choice_id";
+	public function getChoiceIdOverwrite() {
+		if(isset($this->requestMap[$this->choiceIdOverwrite])) {
+			return $this->requestMap[$this->choiceIdOverwrite];
+		}
+		return null;
+	}
+
 	public static function LOAD_CLASSES($libPath) {
-		
+
 		require_once($libPath . '/Thrift/ClassLoader/ThriftClassLoader.php');
 		$cl = new \Thrift\ClassLoader\ThriftClassLoader(false);
 		$cl->registerNamespace('Thrift', $libPath);
@@ -402,13 +410,16 @@ class BxClient
 			}, $this->autocompleteRequests);
 			return $p13nrequests;
 		}
-		
+
 		$choiceInquiries = array();
 		$requests = $size === 0 ? $this->chooseRequests : array_slice($this->chooseRequests, -$size);
 		foreach($requests as $request) {
-			
+
 			$choiceInquiry = new \com\boxalino\p13n\api\thrift\ChoiceInquiry();
 			$choiceInquiry->choiceId = $request->getChoiceId();
+			if(sizeof($choiceInquiries) == 0 && $this->getChoiceIdOverwrite()) {
+				$choiceInquiry->choiceId = $this->getChoiceIdOverwrite();
+			}
 			if($this->isTest === true || ($this->isDev && $this->isTest === null)) {
 				$choiceInquiry->choiceId .= "_debugtest";
 			}

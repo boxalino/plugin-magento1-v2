@@ -261,6 +261,15 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
             );
         }
 
+        if($widgetName == Mage::getStoreConfig('bxRecommendations/blog/widget')) {
+            return array(
+                'widget' => Mage::getStoreConfig('bxRecommendations/blog/widget'),
+                'scenario' => 'blog',
+                'min' => Mage::getStoreConfig('bxRecommendations/blog/min'),
+                'max' => Mage::getStoreConfig('bxRecommendations/blog/max')
+            );
+        }
+
         $widgetNames = explode(',', Mage::getStoreConfig('bxRecommendations/others/widget'));
         $widgetScenarios = explode(',', Mage::getStoreConfig('bxRecommendations/others/scenario'));
         $widgetMin = explode(',', Mage::getStoreConfig('bxRecommendations/others/min'));
@@ -279,7 +288,68 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
         }
         return $widgetConfig;
     }
-    
+
+    public function getCmsRecommendationBlocks($widgetName) {
+
+      $recs = array();
+      $recs[] = array(
+          'widget' => Mage::getStoreConfig('bxRecommendations/blog/widget'),
+          'scenario' => 'blog',
+          'min' => Mage::getStoreConfig('bxRecommendations/blog/min'),
+          'max' => Mage::getStoreConfig('bxRecommendations/blog/max')
+      );
+
+      return $recs;
+
+  }
+
+  public function isBlogRecommendationActive(){
+
+    return Mage::getStoreConfig('bxRecommendations/blog/status');
+
+  }
+
+  public function getBlogArticleWidget(){
+
+    return Mage::getStoreConfig('bxRecommendations/blog/widget');
+
+  }
+  public function getExcerptFieldName(){
+
+    return Mage::getStoreConfig('bxRecommendations/blog/excerptFieldName');
+
+  }
+  public function getLinkFieldName(){
+
+    return Mage::getStoreConfig('bxRecommendations/blog/linkFieldName');
+
+  }
+  public function getMediaUrlFieldName(){
+
+    return Mage::getStoreConfig('bxRecommendations/blog/mediaUrlFieldName');
+
+  }
+  public function getDateFieldName(){
+
+    return Mage::getStoreConfig('bxRecommendations/blog/dateFieldName');
+
+  }
+  public function getExtraFieldNames(){
+
+    return Mage::getStoreConfig('bxRecommendations/blog/extraFieldNames');
+
+  }
+  public function getBlogArticleImageWidth(){
+
+    return Mage::getStoreConfig('bxRecommendations/blog/blogArticleImageHeight');
+
+  }
+  public function getBlogArticleImageHeight(){
+
+    return Mage::getStoreConfig('bxRecommendations/blog/blogArticleImageWidth');
+
+  }
+
     /**
      * @return Mage_Catalog_Model_Resource_Product_Attribute_Collection
      */

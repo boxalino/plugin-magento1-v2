@@ -130,3 +130,67 @@ li.parent:not(.selected)>a>span.count{
 #bxslider{
     margin: 10px 10px 10px 10px !important;
 }
+
+@media screen and (min-width: 640px) {
+  .blogArticlePost{
+    width: 32% !important;
+    height: 450px !important;
+  }
+}
+
+@media screen and (min-width: 960px) {
+  .blogArticlePost{
+    width: 32% !important;
+    height: 500px !important;
+  }
+}
+
+@media screen and (max-width: 640px) {
+  .blogArticlePost{
+    width: 100% !important;
+    max-height: 450px !important;
+  }
+  .blogArticleImage{
+    width: 100% !important;
+    max-height: 455px !important;
+    height: unset !important;
+  }
+}
+
+.blogArticlePost{
+
+  border:1px solid #ddd;
+  border-radius: 4px;
+  box-shadow:0 0 8px 0 rgba(0,0,0,.1);
+  padding:0 !important;
+  padding-bottom:5px;
+  margin:2px !important;
+  overflow: hidden;
+  float:left;
+
+}
+
+.blogArticleTextArea{
+
+  padding:5px !important;
+
+}
+
+.blogArticleHeader{
+
+  margin-top:0 !important;
+
+}
+
+.blogArticleOrderedList{
+
+  margin-left: 0 !important;
+
+}
+
+.blogArticleImage{
+
+  width: 100%;
+  height: unset;
+
+}

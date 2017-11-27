@@ -29,7 +29,7 @@
             <block type="boxalino_intelligence/script" name="intelligence_script" template="boxalino/script.phtml"/>
         </reference>
     </default>
-	
+
     <!--Search-->
     <catalogsearch_result_index>
         <reference name="head">
@@ -66,4 +66,20 @@
                    template="boxalino/top_filter.phtml" />
         </reference>
     </catalog_category_layered>
+    <!--Product Detail Page-->
+    <catalog_product_view>
+        <reference name="head">
+            <action method="addItem">
+                <type>skin_css</type>
+                <name>css/nouislider.css</name>
+            </action>
+            <action method="addItem">
+                <type>skin_js</type>
+                <name>js/nouislider.js</name>
+            </action>
+        </reference>
+        <reference name="content">
+            <block type="boxalino_intelligence/product_list_blog" name="blog_recommendations" after="-" template="boxalino/blog_recommendations.phtml" />
+        </reference>
+    </catalog_product_view>
 </layout>

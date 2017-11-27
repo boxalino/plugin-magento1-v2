@@ -247,6 +247,19 @@
                 <max>3</max>
                 <widget>complementary</widget>
             </upsell>
+            <blog>
+                <status>0</status>
+                <min>3</min>
+                <max>3</max>
+                <widget>read</widget>
+                <excerptFieldName>products_blog_excerpt</excerptFieldName>
+                <linkFieldName>products_blog_link</linkFieldName>
+                <mediaUrlFieldName>products_blog_featured_media_url</mediaUrlFieldName>
+                <dateFieldName>products_blog_date</dateFieldName>
+                <extraFieldNames></extraFieldNames>
+                <blogArticleImageWidth></blogArticleImageWidth>
+                <blogArticleImageHeight></blogArticleImageHeight>
+            </blog>
         </bxRecommendations>
         <bxBanner>
             <banner>

@@ -16,20 +16,25 @@ class Boxalino_Intelligence_Block_Recommendation extends Mage_Catalog_Block_Prod
     protected $bxHelperData;
 
     /*
-     * 
+     *
      */
     public function _construct(){
 
         $this->bxHelperData = Mage::helper('boxalino_intelligence');
+        $this->_data = array();
         if($this->bxHelperData->isSetup() && $this->bxHelperData->isPluginEnabled()){
             $cmsBlock = $this->bxHelperData->getCmsBlock();
-            if($cmsBlock){
+            if($cmsBlock || sizeof($this->_data) == 0){
                 $recommendationBlocks = $this->getCmsRecommendationBlocks($cmsBlock);
-                $this->prepareRecommendations($recommendationBlocks);
+                $this->prepareRecommendations($recommendationBlocks, $this->getReturnFields());
                 $this->bxHelperData->setSetup(false);
             }
         }
         parent::_construct();
+    }
+
+    public function getReturnFields() {
+      return array();
     }
 
     /**
@@ -101,15 +106,16 @@ class Boxalino_Intelligence_Block_Recommendation extends Mage_Catalog_Block_Prod
                 try{
                     $recommendation['scenario'] = isset($widget['scenario']) ? $widget['scenario'] :
                         $widgetConfig['scenario'];
+
                     $recommendation['min'] = isset($widget['min']) ? $widget['min'] : $widgetConfig['min'];
                     $recommendation['max'] = isset($widget['max']) ? $widget['max'] : $widgetConfig['max'];
 
                     if (isset($widget['context'])) {
                         $recommendation['context'] = explode(',', str_replace(' ', '', $widget['context']));
                     } else {
-                        $recommendation['context']  = $this->getWidgetContext($widgetConfig['scenario']);
+                      $scenario = isset($widget['scenario']) ? $widget['scenario'] : $widgetConfig['scenario'];
+                      $recommendation['context']  = $this->getWidgetContext($scenario);
                     }
-
                     $this->bxHelperData->getAdapter()->getRecommendation(
                         $widget['widget'],
                         $recommendation['context'],
@@ -128,10 +134,51 @@ class Boxalino_Intelligence_Block_Recommendation extends Mage_Catalog_Block_Prod
     }
 
     /**
+     * @param $scenario
+     * @return array|mixed
+     */
+    protected function getWidgetContext($scenario){
+
+        $context = array();
+        switch($scenario){
+            case 'category':
+                if(Mage::registry('category') !== null){
+                    $context = Mage::registry('current_category');
+                }
+                break;
+            case 'blog':
+            case 'product':
+                if(Mage::registry('product') !== null){
+                    $context = Mage::registry('product');
+                }
+                break;
+                case 'basket':
+                $order = Mage::registry('last_order');
+                if($order == null){
+                    $orderId = Mage::getSingleton('checkout/session')->getLastOrderId();
+                    $order = Mage::getModel('sales/order')->load($orderId);
+                    Mage::register('last_order', $order);
+                }
+                foreach ($order->getAllItems() as $item) {
+                    if ($item->getPrice() > 0) {
+                      $product = $item->getProduct()
+                      if ($product) {
+                        $context[] = $product;
+                      }
+                    }
+                  }
+                  break;
+            default:
+                break;
+        }
+        return $context;
+    }
+
+    /**
      * @return mixed
      */
     public function _getLoadedProductCollection(){
-        
+
         return $this->_getProductCollection();
     }
 
