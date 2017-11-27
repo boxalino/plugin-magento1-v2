@@ -355,10 +355,10 @@
             for(var fieldName in currentSelects) {
                 if(bxFacets.hasOwnProperty(fieldName)) {
                     if(currentSelects[fieldName].length > 0) {
-
+                        var ignoreFacet = isFacetIgnored(fieldName);
                         var urlParameter = '',
                             paramName = '';
-                        if(getFacetExtraInfo(fieldName, 'isSoftFacet')) {
+                        if(ignoreFacet || getFacetExtraInfo(fieldName, 'isSoftFacet')) {
                             currentSelects[fieldName].forEach(function(facet_value) {
                                 paramName =  contextParameterPrefix + fieldName;
                                 urlParameter = paramName + '_' + encodeURIComponent(facet_value);
@@ -432,6 +432,16 @@
             return level;
         }
 
+        function isFacetIgnored(fieldName) {
+            var ignored = false;
+            if(typeof fieldName !== 'undefined' && typeof fieldName === 'string') {
+                if(currentSelects.hasOwnProperty(fieldName)){
+                    ignored = currentSelects[fieldName].indexOf('*') > -1;
+                }
+            }
+            return ignored;
+        }
+
         return {
             init: init,
             getFacets: getFacets,
@@ -453,7 +463,8 @@
             getCurrentSelects: getCurrentSelects,
             getDataOwnerFacet: getDataOwnerFacet,
             getCurrentQuestion: getCurrentQuestion,
-            getLevel: getLevel
+            getLevel: getLevel,
+            isFacetIgnored: isFacetIgnored
         };
     }
     return init();
