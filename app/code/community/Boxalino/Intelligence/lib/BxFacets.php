@@ -143,17 +143,6 @@ class BxFacets
     public function getRightFacets($returnHidden=false) {
         return $this->getFacetExtraInfoFacets('position', 'right', false, $returnHidden);
     }
-    public function getSoftFacets($returnHidden=false) {
-        return $this->getFacetExtraInfoFacets('isSoftFacet', 'true', false, $returnHidden);
-    }
-
-    public function getQuickSearchFacets($returnHidden=false) {
-        return $this->getFacetExtraInfoFacets('isQuickSearch', 'true', false, $returnHidden);
-    }
-
-    public function getGiftFinderFacets($returnHidden=false){
-        return array_unique(array_merge( $this->getQuickSearchFacets($returnHidden), $this->getSoftFacets($returnHidden)), SORT_REGULAR);
-    }
 
     public function getFacetResponseExtraInfo($facetResponse, $extraInfoKey, $defaultExtraInfoValue = null) {
         if($facetResponse) {
