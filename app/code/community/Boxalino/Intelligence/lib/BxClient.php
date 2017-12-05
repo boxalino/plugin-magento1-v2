@@ -351,6 +351,9 @@ class BxClient
 		try {
 			$choiceResponse = $this->getP13n($this->_timeout)->choose($choiceRequest);
 			if(isset($this->requestMap['dev_bx_disp']) && $this->requestMap['dev_bx_disp'] == 'true') {
+                ini_set('xdebug.var_display_max_children', -1);
+                ini_set('xdebug.var_display_max_data', -1);
+                ini_set('xdebug.var_display_max_depth', -1);
 				echo "<pre><h1>Choice Request</h1>";
 				var_dump($choiceRequest);
 				echo "<br><h1>Choice Response</h1>";
@@ -475,6 +478,9 @@ class BxClient
 		try {
 			$choiceResponse = $this->getP13n($this->_timeout)->autocomplete($autocompleteRequest);
 			if(isset($this->requestMap['dev_bx_disp']) && $this->requestMap['dev_bx_disp'] == 'true') {
+                ini_set('xdebug.var_display_max_children', -1);
+                ini_set('xdebug.var_display_max_data', -1);
+                ini_set('xdebug.var_display_max_depth', -1);
 				echo "<pre><h1>Autocomplete Request</h1>";
 				var_dump($autocompleteRequest);
 				echo "<br><h1>Choice Response</h1>";
@@ -517,6 +523,9 @@ class BxClient
 		try {
 			$choiceResponse = $this->getP13n($this->_timeout)->autocompleteAll($requestBundle)->responses;
 			if(isset($this->requestMap['dev_bx_disp']) && $this->requestMap['dev_bx_disp'] == 'true') {
+                ini_set('xdebug.var_display_max_children', -1);
+                ini_set('xdebug.var_display_max_data', -1);
+                ini_set('xdebug.var_display_max_depth', -1);
 				echo "<pre><h1>Request bundle</h1>";
 				var_dump($requestBundle);
 				echo "<br><h1>Choice Response</h1>";
