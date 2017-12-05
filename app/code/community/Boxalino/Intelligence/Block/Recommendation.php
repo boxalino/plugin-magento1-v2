@@ -161,7 +161,7 @@ class Boxalino_Intelligence_Block_Recommendation extends Mage_Catalog_Block_Prod
                 }
                 foreach ($order->getAllItems() as $item) {
                     if ($item->getPrice() > 0) {
-                      $product = $item->getProduct()
+                      $product = $item->getProduct();
                       if ($product) {
                         $context[] = $product;
                       }
