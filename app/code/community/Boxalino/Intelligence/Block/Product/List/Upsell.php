@@ -49,8 +49,7 @@ class Boxalino_Intelligence_Block_Product_List_Upsell extends Mage_Catalog_Block
                 $entity_ids = array(0);
             }
             
-            $this->_itemCollection = Mage::getResourceModel('catalog/product_collection')
-                ->addFieldToFilter('entity_id', $entity_ids)
+            $this->_itemCollection = $bxHelperData->prepareProductCollection($entity_ids)
                 ->addAttributeToSelect('*');
 
             if (Mage::helper('catalog')->isModuleEnabled('Mage_Checkout')) {

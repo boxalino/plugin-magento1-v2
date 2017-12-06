@@ -235,8 +235,8 @@ class Boxalino_Intelligence_Block_Recommendation extends Mage_Catalog_Block_Prod
             $entity_ids = array(0);
         }
 
-        $this->_itemCollection = $this->_productCollection = Mage::getResourceModel('catalog/product_collection');
-        $this->_itemCollection->addFieldToFilter('entity_id', $entity_ids)
+        $this->_itemCollection = $this->_productCollection = $this->bxHelperData->prepareProductCollection($entity_ids);
+        $this->_itemCollection
             ->addAttributeToSelect('*')
             ->addMinimalPrice()
             ->addFinalPrice();

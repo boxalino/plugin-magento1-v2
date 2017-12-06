@@ -303,14 +303,20 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
 
   }
 
+  public function prepareProductCollection($ids) {
+      $productCollection = Mage::getResourceModel('catalog/product_collection');
+      $productCollection->addFieldToFilter('entity_id', $ids)->getSelect()
+          ->order(new Zend_Db_Expr('FIELD(e.entity_id,' . implode(',', $ids).')'));
+      return $productCollection;
+  }
+
   public function isBlogRecommendationActive(){
 
-    return Mage::getStoreConfig('bxRecommendations/blog/status');
+    return $this->isPluginEnabled() && Mage::getStoreConfig('bxRecommendations/blog/status');
 
   }
 
   public function getBlogArticleWidget(){
-
     return Mage::getStoreConfig('bxRecommendations/blog/widget');
 
   }

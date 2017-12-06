@@ -72,10 +72,10 @@ class Boxalino_Intelligence_Block_Product_List extends Mage_Catalog_Block_Produc
      */
     protected function _setupCollection($entity_ids){
 
-        $this->_productCollection = Mage::getResourceModel('catalog/product_collection');
+        $helper = Mage::helper('boxalino_intelligence');
+        $this->_productCollection = $helper->prepareProductCollection($entity_ids);
         $this->_productCollection
             ->setStore($this->getLayer()->getCurrentStore())
-            ->addFieldToFilter('entity_id', $entity_ids)
             ->addAttributeToSelect(Mage::getSingleton('catalog/config')->getProductAttributes())
             ->addMinimalPrice()
             ->addFinalPrice()
@@ -86,9 +86,6 @@ class Boxalino_Intelligence_Block_Product_List extends Mage_Catalog_Block_Produc
         Mage::getSingleton('catalog/product_status')->addVisibleFilterToCollection($this->_productCollection);
         Mage::getSingleton('catalog/product_visibility')->addVisibleInSearchFilterToCollection($this->_productCollection);
 
-        $this->_productCollection
-            ->getSelect()
-            ->order(new Zend_Db_Expr('FIELD(e.entity_id,' . implode(',', $entity_ids).')'));
         $this->_productCollection->setCurBxPage($this->getToolbarBlock()->getCurrentPage());
         $limit = $this->getRequest()->getParam('limit') ? $this->getRequest()->getParam('limit') : $this->getToolbarBlock()->getLimit();
 

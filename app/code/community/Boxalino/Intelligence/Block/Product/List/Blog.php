@@ -18,10 +18,13 @@ class Boxalino_Intelligence_Block_Product_List_Blog extends Boxalino_Intelligenc
   }
 
   protected function _prepareData(){
-        return $this;
+    return $this;
   }
 
   public function getCmsRecommendationBlocks($content) {
+    if($this->isActive() == false) {
+      return array();
+    }
     return $this->bxHelperData->getCmsRecommendationBlocks($content);
   }
 

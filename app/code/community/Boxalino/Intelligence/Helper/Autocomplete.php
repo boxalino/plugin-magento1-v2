@@ -12,8 +12,8 @@ class Boxalino_Intelligence_Helper_Autocomplete{
     public function getListValues($entityIds){
         $values = array();
         $show_price = Mage::getStoreConfig('bxSearch/autocomplete/show_price');
-        $collection = Mage::getResourceModel('catalog/product_collection');
-        $products = $collection->addFieldToFilter('entity_id', $entityIds)
+        $collection = Mage::helper('boxalino_intelligence')->prepareProductCollection($entityIds);
+        $products = $collection
             ->addAttributeToSelect('name')
             ->addAttributeToSelect('thumbnail')
             ->addUrlRewrite();
