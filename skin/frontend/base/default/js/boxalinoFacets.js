@@ -7,12 +7,16 @@
             separator = '',
             level = 1,
             currentSelects = {},
+            boostParameter = false,
             contextParameterPrefix = '',
             parameterPrefix = 'bx_',
             fieldDependencies = {},
             activeDependencies = {};
 
-        function init(data) {
+        function init(data, useBoostParameter) {
+            if(useBoostParameter !== 'undefined' && useBoostParameter === true) {
+                boostParameter = true;
+            }
             if(data.hasOwnProperty('facets')) {
                 bxFacets = data['facets'];
                 initFieldDependencies(bxFacets);
@@ -43,8 +47,13 @@
                     facetName = '',
                     value = '';
                 if(param.indexOf(contextPrefix) === 0) {
-                    value = param.substring(param.lastIndexOf('_') + 1, param.indexOf('='));
-                    facetName = param.substring(contextPrefix.length, param.lastIndexOf('_'));
+                    if(boostParameter) {
+                        value = param.substring(param.lastIndexOf('_') + 1, param.indexOf('='));
+                        facetName = param.substring(contextPrefix.length, param.lastIndexOf('_'));
+                    } else {
+                        value = param.substring(param.lastIndexOf('=') + 1, param.length);
+                        facetName = param.substring(contextPrefix.length, param.lastIndexOf('='));
+                    }
                     addSelect(facetName, decodeURIComponent(value));
                 } else if(param.indexOf(prefix) === 0) {
                     value = decodeURIComponent(param.substring(param.lastIndexOf('=') + 1, param.length)).split(separator);
@@ -95,12 +104,25 @@
             return dependencyValues;
         }
 
-        function getFacetValues(fieldName) {
+        function getFacetValues(fieldName, exclusion) {
             var values = {},
-                fieldNames = (typeof fieldName !== 'undefined' && typeof fieldName === 'string') ? [fieldName] : getFacets();
+                fieldNames = (typeof fieldName !== 'undefined' && typeof fieldName === 'string') ? [fieldName] : getFacets(),
+                infoKey = typeof exclusion !== 'undefined' && typeof exclusion === 'string' && exclusion !== '' ? exclusion : null;
             fieldNames.forEach(function(fieldName) {
                 if(bxFacets.hasOwnProperty(fieldName)) {
-                    values[fieldName] = getCheckedValues(fieldName);
+                    var facetValues = getCheckedValues(fieldName);
+                    if(infoKey) {
+                        var t = [];
+                        facetValues.forEach(function (val) {
+                            if(getFacetValueExtraInfo(fieldName, val, infoKey)) {
+                                t.push(val);
+                            }
+                        });
+                        if(t.length) {
+                            facetValues = t;
+                        }
+                    }
+                    values[fieldName] = facetValues;
                 }
             });
             return values;
@@ -296,12 +318,27 @@
             return icon;
         }
 
-        function getFacetValueExtraInfo(field, value, info_key) {
+        function getFacetValueExtraInfo(field, value, info_key, filterParam) {
             var info = null;
             if(info_key === 'hidden') {
                 if(bxFacets.hasOwnProperty(field)) {
-                    if(bxFacets[field]['hidden_values'] !== undefined) {
-                        return bxFacets[field]['hidden_values'].includes(value);
+                    if(typeof filterParam !== 'undefined' && typeof filterParam === 'string' && filterParam !== '') {
+                        var displaySize = getFacetExtraInfo(field, 'enumDisplayMaxSize');
+                        if(displaySize) {
+                            displaySize = parseInt(displaySize);
+                            var filteredValues = getFacetValues(field ,filterParam)[field];
+                            var valuesSize = filteredValues.length;
+                            for(var i = 0; i < valuesSize; i++) {
+                                var val = filteredValues[i];
+                                if(val === value && displaySize < i+1) {
+                                    return true;
+                                }
+                            }
+                        }
+                    } else {
+                        if(bxFacets[field]['hidden_values'] !== undefined) {
+                            return bxFacets[field]['hidden_values'].indexOf(value) !== -1;
+                        }
                     }
                 }
                 return false;
@@ -361,7 +398,11 @@
                         if(ignoreFacet || getFacetExtraInfo(fieldName, 'isSoftFacet')) {
                             currentSelects[fieldName].forEach(function(facet_value) {
                                 paramName =  contextParameterPrefix + fieldName;
-                                urlParameter = paramName + '_' + encodeURIComponent(facet_value);
+                                if(boostParameter) {
+                                    urlParameter = paramName + '_' + encodeURIComponent(facet_value);
+                                } else {
+                                    urlParameter = paramName + '=' + encodeURIComponent(facet_value);
+                                }
                                 parameters.push(urlParameter);
                             });
                         }else {
