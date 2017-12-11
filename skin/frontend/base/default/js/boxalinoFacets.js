@@ -4,39 +4,65 @@
     function init() {
         var bxFacets = {},
             lastSelect = '',
+            separator = '',
+            level = 1,
             currentSelects = {},
-            parameterPrefix = '',
+            boostParameter = false,
+            contextParameterPrefix = '',
+            parameterPrefix = 'bx_',
             fieldDependencies = {},
             activeDependencies = {};
 
-        function init(data) {
+        function init(data, useBoostParameter) {
+            if(useBoostParameter !== 'undefined' && useBoostParameter === true) {
+                boostParameter = true;
+            }
             if(data.hasOwnProperty('facets')) {
                 bxFacets = data['facets'];
                 initFieldDependencies(bxFacets);
             } else {
                 throw "No facets provided for Product Finder. Please check the configuration in the intelligence."
             }
+            if(data.hasOwnProperty('contextParameterPrefix')) {
+                contextParameterPrefix = data['contextParameterPrefix'];
+            } else {
+                throw "No parameter prefix defined for Product Finder. Please contact us support@boxalino.com for help."
+            }
             if(data.hasOwnProperty('parametersPrefix')) {
                 parameterPrefix = data['parametersPrefix'];
-            } else {
-                throw "No parameters prefix defined for Product Finder. Please contact us support@boxalino.com for help."
+            }
+            if(data.hasOwnProperty('separator')){
+                separator = data['separator'];
+            }
+            if(data.hasOwnProperty('level')){
+                level = data['level'];
             }
             checkParams();
         }
 
         function checkParams(){
             window.location.search.substr(1).split("&").forEach(function(param) {
-                var prefix = getParameterPrefix(),
+                var contextPrefix = getContextParameterPrefix(),
+                    prefix = getParameterPrefix(),
                     facetName = '',
                     value = '';
-                if(param.indexOf(prefix) === 0) {
-                    value = param.substring(param.lastIndexOf('_') + 1, param.indexOf('='));
-                    facetName = param.substring(prefix.length, param.lastIndexOf('_'));
+                if(param.indexOf(contextPrefix) === 0) {
+                    if(boostParameter) {
+                        value = param.substring(param.lastIndexOf('_') + 1, param.indexOf('='));
+                        facetName = param.substring(contextPrefix.length, param.lastIndexOf('_'));
+                    } else {
+                        value = param.substring(param.lastIndexOf('=') + 1, param.length);
+                        facetName = param.substring(contextPrefix.length, param.lastIndexOf('='));
+                    }
+                    addSelect(facetName, decodeURIComponent(value));
+                } else if(param.indexOf(prefix) === 0) {
+                    value = decodeURIComponent(param.substring(param.lastIndexOf('=') + 1, param.length)).split(separator);
+                    facetName = param.substring(prefix.length, param.lastIndexOf('='));
                     addSelect(facetName, value);
                 } else {
                     facetName = 'products_' + param.substring(0, param.indexOf('='));
                     if(bxFacets.hasOwnProperty(facetName)){
-                        value = getMappedFacetValue(facetName, param.substring(param.lastIndexOf('=') + 1, param.length));
+                        value = getMappedFacetValue(facetName, decodeURIComponent(param.substring(param.lastIndexOf('=') + 1, param.length)));
                         if(bxFacets.hasOwnProperty(facetName)) {
                             addSelect(facetName, value);
                         }
@@ -78,12 +104,25 @@
             return dependencyValues;
         }
 
-        function getFacetValues(fieldName) {
+        function getFacetValues(fieldName, exclusion) {
             var values = {},
-                fieldNames = (typeof fieldName !== 'undefined' && typeof fieldName === 'string') ? [fieldName] : getFacets();
+                fieldNames = (typeof fieldName !== 'undefined' && typeof fieldName === 'string') ? [fieldName] : getFacets(),
+                infoKey = typeof exclusion !== 'undefined' && typeof exclusion === 'string' && exclusion !== '' ? exclusion : null;
             fieldNames.forEach(function(fieldName) {
                 if(bxFacets.hasOwnProperty(fieldName)) {
-                    values[fieldName] = getCheckedValues(fieldName);
+                    var facetValues = getCheckedValues(fieldName);
+                    if(infoKey) {
+                        var t = [];
+                        facetValues.forEach(function (val) {
+                            if(getFacetValueExtraInfo(fieldName, val, infoKey)) {
+                                t.push(val);
+                            }
+                        });
+                        if(t.length) {
+                            facetValues = t;
+                        }
+                    }
+                    values[fieldName] = facetValues;
                 }
             });
             return values;
@@ -91,23 +130,22 @@
 
         function getCheckedValues(field) {
             var values = bxFacets[field]['facetValues'].slice(),
-                extraInfo = bxFacets[field]['facetExtraInfo'];
-            if(extraInfo.hasOwnProperty('jsonDependencies') && extraInfo.jsonDependencies !== null) {
-                var dependencies = extraInfo['jsonDependencies'];
+                dependencies = getFacetExtraInfo(field, 'jsonDependencies');
+            if(dependencies !== null) {
                 dependencies.forEach(function(dependency) {
                     var conditions = dependency['conditions'],
                         any = dependency['any'],
                         negative = dependency['negative'],
                         conditionResult = negative ? checkConditions(conditions, any) === !negative :
-                        checkConditions(conditions, any);
+                            checkConditions(conditions, any);
                     if(conditionResult) {
                         if(activeDependencies.hasOwnProperty(field)) {
                             activeDependencies[field].push(dependency);
                         }
                         var effect = dependency['effect'],
                             hide = effect['hide'];
-                        values = hide === true ? hideValues(values, dependency['values']) :
-                                sortValues(values, dependency['values'], effect['order']);
+                        values = ((hide == "true") ? hideValues(values, dependency['values']) :
+                            (hide == "false" ? dependency['values'] : sortValues(values, dependency['values'], effect['order'])));
                     }
                 });
             }
@@ -118,9 +156,9 @@
             var selected = false;
             if(currentSelects.hasOwnProperty(field)) {
                 currentSelects[field].forEach(function(select) {
-                   if(select == value){
-                       selected = true;
-                   }
+                    if(select == value){
+                        selected = true;
+                    }
                 });
             }
             return selected;
@@ -148,6 +186,7 @@
         }
 
         function checkConditions(conditions, any) {
+            if(conditions.length === 0) return true;
             var conditionResult = false;
             for(var i = 0, l =  conditions.length; i < l; i++) {
                 conditionResult = checkCondition(conditions[i]);
@@ -246,7 +285,7 @@
             var info = null,
                 extraInfo = bxFacets.hasOwnProperty(field) ? bxFacets[field]['facetExtraInfo'] : {};
             if(extraInfo.hasOwnProperty(info_key)) {
-                info = extraInfo[info_key];
+                info = extraInfo[info_key] === '' ? null : extraInfo[info_key];
             }
             return info;
         }
@@ -279,18 +318,39 @@
             return icon;
         }
 
-        function getFacetValueExtraInfo(field, value, info_key) {
+        function getFacetValueExtraInfo(field, value, info_key, filterParam) {
             var info = null;
-            if(activeDependencies.hasOwnProperty(field)){
-                activeDependencies[field].forEach(function(dependency) {
-                    if(dependency['values'].indexOf(value) !== -1){
-                        dependency['effect']['extraInfo'].forEach(function(extraInfo){
-                            if(extraInfo['name'] === info_key){
-                                info = extraInfo['value'];
+            if(info_key === 'hidden') {
+                if(bxFacets.hasOwnProperty(field)) {
+                    if(typeof filterParam !== 'undefined' && typeof filterParam === 'string' && filterParam !== '') {
+                        var displaySize = getFacetExtraInfo(field, 'enumDisplayMaxSize');
+                        if(displaySize) {
+                            displaySize = parseInt(displaySize);
+                            var filteredValues = getFacetValues(field ,filterParam)[field];
+                            var valuesSize = filteredValues.length;
+                            for(var i = 0; i < valuesSize; i++) {
+                                var val = filteredValues[i];
+                                if(val === value && displaySize < i+1) {
+                                    return true;
+                                }
                             }
-                        });
+                        }
+                    } else {
+                        if(bxFacets[field]['hidden_values'] !== undefined) {
+                            return bxFacets[field]['hidden_values'].indexOf(value) !== -1;
+                        }
                     }
-                });
+                }
+                return false;
+            }
+            var facetValueExtraInfo = getFacetExtraInfo(field, 'facetValueExtraInfo');
+            if(facetValueExtraInfo){
+                if(facetValueExtraInfo.hasOwnProperty(value)) {
+                    var valueExtraInfo = facetValueExtraInfo[value];
+                    if (valueExtraInfo.hasOwnProperty(info_key)) {
+                        return valueExtraInfo[info_key];
+                    }
+                }
             }
             return info;
         }
@@ -298,9 +358,9 @@
         function getQuickSearchFacets(){
             var fieldNames =[];
             getFacets().forEach(function(fieldName) {
-               if('true' === getFacetExtraInfo(fieldName, 'isQuickSearch')){
-                   fieldNames.push(fieldName);
-               }
+                if('true' === getFacetExtraInfo(fieldName, 'isQuickSearch')){
+                    fieldNames.push(fieldName);
+                }
             });
             return fieldNames;
         }
@@ -330,30 +390,99 @@
         function getFacetParameters() {
             var parameters = [];
             for(var fieldName in currentSelects) {
-                currentSelects[fieldName].forEach(function(facet_value) {
-                    var urlParameter = '',
-                        paramName = '';
-                    if(bxFacets[fieldName].hasOwnProperty('facetMapping') && bxFacets[fieldName]['facetMapping'].hasOwnProperty(facet_value)) {
-                        if(bxFacets[fieldName].hasOwnProperty('parameterName')) {
-                            paramName = bxFacets[fieldName]['paramsName'];
-                        } else {
-                            paramName = fieldName.substring(9, fieldName.length);
+                if(bxFacets.hasOwnProperty(fieldName)) {
+                    if(currentSelects[fieldName].length > 0) {
+                        var ignoreFacet = isFacetIgnored(fieldName);
+                        var urlParameter = '',
+                            paramName = '';
+                        if(ignoreFacet || getFacetExtraInfo(fieldName, 'isSoftFacet')) {
+                            currentSelects[fieldName].forEach(function(facet_value) {
+                                paramName =  contextParameterPrefix + fieldName;
+                                if(boostParameter) {
+                                    urlParameter = paramName + '_' + encodeURIComponent(facet_value);
+                                } else {
+                                    urlParameter = paramName + '=' + encodeURIComponent(facet_value);
+                                }
+                                parameters.push(urlParameter);
+                            });
+                        }else {
+                            var facet_value = currentSelects[fieldName].join(separator);
+                            if(bxFacets[fieldName].hasOwnProperty('facetMapping') && bxFacets[fieldName]['facetMapping'].hasOwnProperty(facet_value)) {
+                                if(bxFacets[fieldName].hasOwnProperty('parameterName')) {
+                                    paramName = bxFacets[fieldName]['paramsName'];
+                                } else {
+                                    paramName = fieldName.substring(9, fieldName.length);
+                                }
+                                urlParameter = paramName + "=" + bxFacets[fieldName]['facetMapping'][facet_value];
+                            } else {
+                                urlParameter = parameterPrefix + fieldName + '=' + encodeURIComponent(facet_value);
+                            }
+                            parameters.push(urlParameter);
                         }
-                        urlParameter = paramName + "=" + bxFacets[fieldName]['facetMapping'][facet_value];
-                    } else {
-                        paramName =  parameterPrefix + fieldName;
-                        urlParameter = paramName + '_' + facet_value;
                     }
-                    parameters.push(urlParameter);
-                });
+                }
             }
             return parameters;
+        }
+
+        function getContextParameterPrefix() {
+            return contextParameterPrefix;
+        }
+
+        function getCurrentSelects(fieldName) {
+            var select = null;
+            if(typeof fieldName !== 'undefined' && typeof fieldName === 'string') {
+                if(currentSelects.hasOwnProperty(fieldName)) {
+                    select = currentSelects[fieldName]
+                }
+            } else {
+                select = currentSelects;
+            }
+            return select;
         }
 
         function getParameterPrefix() {
             return parameterPrefix;
         }
-        
+
+        function setParameterPrefix(prefix){
+            parameterPrefix = prefix;
+        }
+
+        function getDataOwnerFacet() {
+            var dataOwnerField = null;
+            getFacets().forEach(function(fieldName) {
+                if(getFacetExtraInfo(fieldName, 'data-owner') !== null) {
+                    dataOwnerField = fieldName;
+                }
+            });
+            return dataOwnerField;
+        }
+
+        function getCurrentQuestion() {
+            var currentQuestionField = null;
+            getFacets().forEach(function(fieldName) {
+                if(getFacetExtraInfo(fieldName, 'currentQuestion') !== null) {
+                    currentQuestionField = fieldName;
+                }
+            });
+            return currentQuestionField;
+        }
+
+        function getLevel() {
+            return level;
+        }
+
+        function isFacetIgnored(fieldName) {
+            var ignored = false;
+            if(typeof fieldName !== 'undefined' && typeof fieldName === 'string') {
+                if(currentSelects.hasOwnProperty(fieldName)){
+                    ignored = currentSelects[fieldName].indexOf('*') > -1;
+                }
+            }
+            return ignored;
+        }
+
         return {
             init: init,
             getFacets: getFacets,
@@ -369,7 +498,14 @@
             addSelect: addSelect,
             removeSelect: removeSelect,
             getFacetParameters : getFacetParameters,
-            getParameterPrefix: getParameterPrefix
+            getContextParameterPrefix: getContextParameterPrefix,
+            getParameterPrefix : getParameterPrefix,
+            setParameterPrefix : setParameterPrefix,
+            getCurrentSelects: getCurrentSelects,
+            getDataOwnerFacet: getDataOwnerFacet,
+            getCurrentQuestion: getCurrentQuestion,
+            getLevel: getLevel,
+            isFacetIgnored: isFacetIgnored
         };
     }
     return init();
