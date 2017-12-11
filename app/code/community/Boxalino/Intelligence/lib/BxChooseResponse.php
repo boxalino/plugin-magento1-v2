@@ -109,14 +109,17 @@ class BxChooseResponse
         if($searchResult) {
             if($searchResult->hits) {
                 foreach ($searchResult->hits as $item) {
-                    if($item->values['id'] == $hitId) {
-                        return $item->$$field;
+                    if(reset($item->values['id']) == $hitId) {
+                        return $item->values[$field];
                     }
                 }
             } else if(isset($searchResult->hitsGroups)) {
                 foreach($searchResult->hitsGroups as $hitGroup) {
                     if($hitGroup->groupValue == $hitId) {
-                        return $hitGroup->hits[0]->$field;
+                        if(isset($hitGroup->hits[0]->values[$field])){
+                            return $hitGroup->hits[0]->values[$field];
+                        }
+                        break;
                     }
                 }
             }

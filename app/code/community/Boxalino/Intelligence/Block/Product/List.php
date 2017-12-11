@@ -78,7 +78,7 @@ class Boxalino_Intelligence_Block_Product_List extends Mage_Catalog_Block_Produc
         if($bxHelperData->isEnabledOnLayer($this->getLayer())){
             $value = $p13nHelper->getHitVariable($id, $field);
         }
-        return $value;
+        return is_array($value) ? reset($value) : $value;
     }
 
     /**

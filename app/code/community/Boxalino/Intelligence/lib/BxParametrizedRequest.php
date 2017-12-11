@@ -99,14 +99,44 @@ class BxParametrizedRequest extends BxRequest
 		}
 		return $params;
 	}
+
+	private $requestParameterExclusionPatterns = array();
+
+    public function getRequestParameterExclusionPatterns() {
+        return $this->requestParameterExclusionPatterns;
+    }
+
+    public function addRequestParameterExclusionPatterns($pattern) {
+        $this->requestParameterExclusionPatterns[] = $pattern;
+    }
 	
 	public function getRequestContextParameters() {
 		$params = array();
 		foreach($this->getPrefixedParameters($this->requestWeightedParametersPrefix) as $name => $values) {
+            $skip = false;
+            foreach($this->getRequestParameterExclusionPatterns() as $pattern) {
+                if(strpos($name, $pattern) !== false) {
+                    $skip = true;
+                    break;
+                }
+            }
+            if($skip) {
+                continue;
+            }
 			$params[$name] = $values;
 		}
 		foreach($this->getPrefixedParameters($this->requestParametersPrefix, false) as $name => $values) {
-			if(strpos($name, $this->requestWeightedParametersPrefix) !== false) {
+            $skip = false;
+            foreach($this->getRequestParameterExclusionPatterns() as $pattern) {
+                if(strpos($name, $pattern) !== false) {
+                    $skip = true;
+                    break;
+                }
+            }
+            if($skip) {
+                continue;
+            }
+		    if(strpos($name, $this->requestWeightedParametersPrefix) !== false) {
 				continue;
 			}
 			if(strpos($name, $this->requestFiltersPrefix) !== false) {

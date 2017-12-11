@@ -170,7 +170,7 @@ class BxClient
 	
 	private function getUserRecord() {
 		$userRecord = new \com\boxalino\p13n\api\thrift\UserRecord();
-		$userRecord->username = $this->getAccount();
+		$userRecord->username = $this->getUsername();
 		return $userRecord;
 	}
 	

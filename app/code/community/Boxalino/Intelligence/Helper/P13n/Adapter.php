@@ -248,6 +248,8 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
             $bxRequest = new \com\boxalino\bxclient\v1\BxParametrizedRequest($this->bxHelperData->getLanguage(), $this->getFinderChoice());
             $this->prefixContextParameter = $bxRequest->getRequestWeightedParametersPrefix();
             $this->setPrefixContextParameter($this->prefixContextParameter);
+            $bxRequest->setHitsGroupsAsHits(true);
+            $bxRequest->addRequestParameterExclusionPatterns('bxi_data_owner');
         } else {
             $bxRequest = new \com\boxalino\bxclient\v1\BxSearchRequest($this->bxHelperData->getLanguage(), $queryText, $hitCount, $this->getSearchChoice($queryText));
         }
