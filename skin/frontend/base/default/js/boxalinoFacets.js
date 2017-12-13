@@ -42,6 +42,7 @@
 
         function checkParams(){
             window.location.search.substr(1).split("&").forEach(function(param) {
+                param = param.replace('[]', '');
                 var contextPrefix = getContextParameterPrefix(),
                     prefix = getParameterPrefix(),
                     facetName = '',
@@ -400,8 +401,10 @@
                                 paramName =  contextParameterPrefix + fieldName;
                                 if(boostParameter) {
                                     urlParameter = paramName + '_' + encodeURIComponent(facet_value);
-                                } else {
+                                } else if(currentSelects[fieldName].length == 1){
                                     urlParameter = paramName + '=' + encodeURIComponent(facet_value);
+                                } else {
+                                    urlParameter = paramName + '[]=' + encodeURIComponent(facet_value);
                                 }
                                 parameters.push(urlParameter);
                             });
