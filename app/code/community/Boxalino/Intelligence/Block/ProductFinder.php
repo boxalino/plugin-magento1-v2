@@ -49,7 +49,7 @@ class Boxalino_Intelligence_Block_ProductFinder extends Mage_Core_Block_Template
         $currentUrl = Mage::helper('core/url')->getCurrentUrl();
         $url = Mage::getSingleton('core/url')->parseUrl($currentUrl);
         $path = $url->getPath();
-        if(strpos($path, $this->getData('finder_url')) !== false){
+        if(strpos($path, $this->getData('finder_url')) !== false || strpos($path, $this->getData('results_url')) !== false){
             Mage::helper('boxalino_intelligence')->setIsFinder(true);
         }
     }
