@@ -99,7 +99,7 @@ class BxChooseResponse
 
 		$searchResult = $variant->searchResult;
 		if($considerRelaxation && $variant->searchResult->totalHitCount == 0 && !($discardIfSubPhrases && $this->areThereSubPhrases())) {
-			return $this->getFirstPositiveSuggestionSearchResult($variant, $maxDistance);
+            $correctedResult = $this->getFirstPositiveSuggestionSearchResult($variant, $maxDistance);
 		}
 		return isset($correctedResult) ? $correctedResult : $searchResult;
 	}
