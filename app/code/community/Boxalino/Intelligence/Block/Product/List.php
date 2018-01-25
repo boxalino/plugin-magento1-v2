@@ -124,4 +124,14 @@ class Boxalino_Intelligence_Block_Product_List extends Mage_Catalog_Block_Produc
             ->setBxCount($count)
             ->load();
     }
+
+    protected function _beforeToHtml(){
+
+        if(!is_null(Mage::registry('current_category')) && Mage::helper('boxalino_intelligence')->isEnabledOnLayer($this->getLayer())) {
+            $toolbar = $this->getToolbarBlock();
+            $toolbar->addOrderToAvailableOrders('relevance', $this->__('Relevance'));
+            $toolbar->setDefaultOrder('relevance');
+        }
+        return parent::_beforeToHtml();
+    }
 }
