@@ -177,6 +177,13 @@ class Boxalino_Intelligence_Block_Recommendation extends Mage_Catalog_Block_Prod
     /**
      * @return mixed
      */
+    public function getItems() {
+        return $this->_getLoadedProductCollection();
+    }
+
+    /**
+     * @return mixed
+     */
     public function _getLoadedProductCollection(){
 
         return $this->_getProductCollection();
