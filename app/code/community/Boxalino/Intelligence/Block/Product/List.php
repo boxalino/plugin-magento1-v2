@@ -127,9 +127,13 @@ class Boxalino_Intelligence_Block_Product_List extends Mage_Catalog_Block_Produc
 
     protected function _beforeToHtml(){
 
-        if(!is_null(Mage::registry('current_category')) && Mage::helper('boxalino_intelligence')->isEnabledOnLayer($this->getLayer())) {
+        if(!is_null(Mage::registry('current_category')) && Mage::helper('boxalino_intelligence')->isEnabledOnLayer($this->getLayer()) &&
+                Mage::helper('boxalino_intelligence')->isNavigationSortEnabled())
+        {
             $toolbar = $this->getToolbarBlock();
-            $toolbar->addOrderToAvailableOrders('relevance', $this->__('Relevance'));
+            $orders = $toolbar->getAvailableOrders();
+            $orders = array_merge(['relevance' => $this->__('Relevance')], $orders);
+            $toolbar->setAvailableOrders($orders);
             $toolbar->setDefaultOrder('relevance');
         }
         return parent::_beforeToHtml();

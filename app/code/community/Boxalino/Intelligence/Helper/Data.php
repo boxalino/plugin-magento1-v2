@@ -591,6 +591,13 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
     }
 
     /**
+     * @return bool
+     */
+    public function isNavigationSortEnabled() {
+        return $this->isPluginEnabled() && Mage::getStoreConfigFlag('bxSearch/navigation/sort');
+    }
+
+    /**
      * @param $fallback
      */
     public function setFallback($fallback){
