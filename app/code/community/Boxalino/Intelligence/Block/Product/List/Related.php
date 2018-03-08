@@ -22,18 +22,26 @@ class Boxalino_Intelligence_Block_Product_List_Related extends Mage_Catalog_Bloc
         
         $bxHelperData = Mage::helper('boxalino_intelligence');
         if($bxHelperData->isPluginEnabled() && $bxHelperData->isRelatedEnabled()){
-            $product = Mage::registry('product');
+            $mainProduct = Mage::registry('product');
             $config = Mage::getStoreConfig('bxRecommendations/related');
             $choiceId = (isset($config['widget']) && $config['widget'] != "") ? $config['widget'] : 'similar';
             $entity_ids = array();
+
             try{
+                parent::_prepareData();
+                $relatedProducts[$mainProduct->getId()] = array();
+                foreach ($this->_itemCollection as $product) {
+                    $relatedProducts[$mainProduct->getId()][] = $product->getId();
+                }
                 $entity_ids = $bxHelperData->getAdapter()->getRecommendation(
                     $choiceId,
-                    $product,
+                    $mainProduct,
                     'product',
                     $config['min'],
                     $config['max'],
-                    $execute
+                    $execute,
+                    array(),
+                    $relatedProducts
                 );
                 $this->setData('title', $bxHelperData->getAdapter()->getSearchResultTitle($choiceId));
             }catch(\Exception $e){

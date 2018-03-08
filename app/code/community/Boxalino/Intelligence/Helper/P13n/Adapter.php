@@ -602,7 +602,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
      * @param bool $execute
      * @return array|void
      */
-    public function getRecommendation($widgetName, $context = array(), $widgetType = '', $minAmount = 3, $amount = 3, $execute=true, $returnFields = array()){
+    public function getRecommendation($widgetName, $context = array(), $widgetType = '', $minAmount = 3, $amount = 3, $execute=true, $returnFields = array(), $relatedProducts=array()){
 
         if(!$execute || !isset(self::$choiceContexts[$widgetName])){
             if (!isset(self::$choiceContexts[$widgetName])) {
@@ -635,10 +635,10 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
                         foreach($context as $product) {
                             $basketProducts[] = array('id'=>$product->getId(), 'price'=>$product->getPrice());
                         }
-                        $bxRequest->setBasketProductWithPrices('id', $basketProducts);
+                        $bxRequest->setBasketProductWithPrices('id', $basketProducts, 'mainProduct', 'mainProduct', $relatedProducts, 'products_group_id');
                     } elseif (($widgetType === 'product' || $widgetType === 'blog') && !is_array($context)) {
                         $product = $context;
-                        $bxRequest->setProductContext($this->getEntityIdFieldName(), $product->getId());
+                        $bxRequest->setProductContext($this->getEntityIdFieldName(), $product->getId(), 'mainProduct', $relatedProducts, 'products_group_id');
                     } elseif ($widgetType === 'category' && $context != null){
                         $filterField = "category_id";
                         $filterValues = is_array($context) ? $context : array($context);

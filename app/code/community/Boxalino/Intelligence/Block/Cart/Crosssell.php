@@ -19,29 +19,34 @@ class Boxalino_Intelligence_Block_Cart_Crosssell extends Mage_Checkout_Block_Car
      * @return array|null
      */
     public function getItems($execute = true){
-
         $bxHelperData = Mage::helper('boxalino_intelligence');
         if($bxHelperData->isPluginEnabled() && $bxHelperData->isCrosssellEnabled()){
-            $config = Mage::getStoreConfig('bxRecommendations/cart');
-            $items = array();
-            $products = array();
-            
-            foreach ($this->getQuote()->getAllItems() as $item){
-                $product = $item->getProduct();
-                if($product) {
-                    $products[] = $product;
-                }
-            }
-
-            $choiceId = (isset($config['widget']) && $config['widget'] != "") ? $config['widget'] : 'basket';
             try{
+                $config = Mage::getStoreConfig('bxRecommendations/cart');
+                $items = array();
+                $products = array();
+                $relatedProducts = array();
+                foreach ($this->getQuote()->getAllItems() as $item){
+                    $product = $item->getProduct();
+                    if($product) {
+                        $products[] = $product;
+                        $collection = $product->getCrossSellProductCollection();
+                        $relatedProducts[$product->getId()] = array();
+                        foreach ($collection as $p) {
+                            $relatedProducts[$product->getId()][] = $p->getId();
+                        }
+                    }
+                }
+                $choiceId = (isset($config['widget']) && $config['widget'] != "") ? $config['widget'] : 'basket';
                 $entity_ids = $bxHelperData->getAdapter()->getRecommendation(
                     $choiceId,
                     $products,
                     'basket',
                     $config['min'],
                     $config['max'],
-                    $execute
+                    $execute,
+                    array(),
+                    $relatedProducts
                 );
                 $this->setData('title', $bxHelperData->getAdapter()->getSearchResultTitle($choiceId));
             }catch(\Exception $e){

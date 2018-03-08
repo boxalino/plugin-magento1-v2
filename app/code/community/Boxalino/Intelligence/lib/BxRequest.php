@@ -21,6 +21,7 @@ class BxRequest
 	protected $bxFilters = array();
 	protected $orFilters = false;
     protected $hitsGroupsAsHits = null;
+    protected $requestContextParameters = array();
 	
 	public function __construct($language, $choiceId, $max=10, $min=0) {
 		if($choiceId == ''){
@@ -217,16 +218,18 @@ class BxRequest
 	}
 	
 	protected $contextItems = array();
-	public function setProductContext($fieldName, $contextItemId, $role = 'mainProduct') {
+	public function setProductContext($fieldName, $contextItemId, $role = 'mainProduct', $relatedProducts = array(), $relatedProductField = 'id') {
+
 		$contextItem = new \com\boxalino\p13n\api\thrift\ContextItem();
 		$contextItem->indexId = $this->getIndexId();
 		$contextItem->fieldName = $fieldName;
 		$contextItem->contextItemId = $contextItemId;
 		$contextItem->role = $role;
 		$this->contextItems[] = $contextItem;
+		$this->addRelatedProducts($relatedProducts, $relatedProductField);
 	}
-	
-	public function setBasketProductWithPrices($fieldName, $basketContent, $role = 'mainProduct', $subRole = 'mainProduct') {
+
+	public function setBasketProductWithPrices($fieldName, $basketContent, $role = 'mainProduct', $subRole = 'mainProduct', $relatedProducts = array(), $relatedProductField='id') {
 		if ($basketContent !== false && count($basketContent)) {
 			
 			// Sort basket content by price
@@ -259,14 +262,23 @@ class BxRequest
 				$this->contextItems[] = $contextItem;
 			}
 		}
+		$this->addRelatedProducts($relatedProducts, $relatedProductField);
 	}
+
+	public function addRelatedProducts($relatedProducts, $relatedProductField='id') {
+
+        foreach ($relatedProducts as $productId => $related) {
+            $key = "bx_{$this->choiceId}_$productId";
+            $this->requestContextParameters[$key] = $related;
+        }
+    }
 	
 	public function getContextItems() {
 		return $this->contextItems;
 	}
 	
 	public function getRequestContextParameters() {
-		return array();
+		return $this->requestContextParameters;
 	}
 	
 	public function retrieveHitFieldValues($item, $field, $items, $fields) {

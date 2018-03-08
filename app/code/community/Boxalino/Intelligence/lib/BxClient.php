@@ -70,6 +70,10 @@ class BxClient
 		$this->domain = $domain;
 	}
 
+	public function setHost($host) {
+	    $this->host = $host;
+    }
+
 	public function setTestMode($isTest) {
 		$this->isTest = $isTest;
 	}
@@ -86,11 +90,20 @@ class BxClient
 	}
 
 	private $choiceIdOverwrite = "owbx_choice_id";
-	public function getChoiceIdOverwrite() {
-		if(isset($this->requestMap[$this->choiceIdOverwrite])) {
-			return $this->requestMap[$this->choiceIdOverwrite];
-		}
-		return null;
+	public function getChoiceIdOverwrite()
+    {
+        if (isset($this->requestMap[$this->choiceIdOverwrite])) {
+            return $this->requestMap[$this->choiceIdOverwrite];
+        }
+        return null;
+    }
+
+	public function getRequestMap() {
+		return $this->requestMap;
+	}
+
+	public function addToRequestMap($key, $value) {
+		$this->requestMap[$key] = $value;
 	}
 
 	public static function LOAD_CLASSES($libPath) {
@@ -178,7 +191,7 @@ class BxClient
 	
 	private function getUserRecord() {
 		$userRecord = new \com\boxalino\p13n\api\thrift\UserRecord();
-		$userRecord->username = $this->getUsername();
+		$userRecord->username = $this->getAccount();
 		return $userRecord;
 	}
 	
