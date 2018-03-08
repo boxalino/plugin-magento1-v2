@@ -575,6 +575,17 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
     }
 
     /**
+     * @param $choice_id
+     * @param string $default
+     * @param int $count
+     * @return mixed|string
+     */
+    public function getSearchResultTitle($choice_id, $default = '', $count = 0) {
+        return self::$bxClient->getResponse()->getResultTitle($choice_id, $count, $default);
+
+    }
+
+    /**
      *
      */
     public function flushResponses() {

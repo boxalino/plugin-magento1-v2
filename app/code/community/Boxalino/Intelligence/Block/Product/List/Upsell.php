@@ -36,6 +36,7 @@ class Boxalino_Intelligence_Block_Product_List_Upsell extends Mage_Catalog_Block
                     $config['max'],
                     $execute
                 );
+                $this->setData('title', $bxHelperData->getAdapter()->getSearchResultTitle($choiceId));
             }catch(\Exception $e){
                 Mage::logException($e);
                 return parent::_prepareData();
@@ -66,5 +67,9 @@ class Boxalino_Intelligence_Block_Product_List_Upsell extends Mage_Catalog_Block
             return $this;
         }
         return parent::_prepareData(); 
+    }
+
+    public function bxRecommendationTitle() {
+        return $this->getData('title');
     }
 }

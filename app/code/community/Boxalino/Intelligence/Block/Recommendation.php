@@ -180,7 +180,7 @@ class Boxalino_Intelligence_Block_Recommendation extends Mage_Catalog_Block_Prod
     public function getItems() {
         return $this->_getLoadedProductCollection();
     }
-
+    
     /**
      * @return mixed
      */
@@ -233,6 +233,7 @@ class Boxalino_Intelligence_Block_Recommendation extends Mage_Catalog_Block_Prod
                 $config['min'],
                 $config['max']
             );
+            $this->setData('title', $this->bxHelperData->getAdapter()->getSearchResultTitle($widget, $this->getData('title')));
         }catch(\Exception $e){
             Mage::logException($e);
         }
@@ -275,5 +276,9 @@ class Boxalino_Intelligence_Block_Recommendation extends Mage_Catalog_Block_Prod
             $this->_prepareData();
         }
         return parent::_beforeToHtml();
+    }
+
+    public function bxRecommendationTitle() {
+        return $this->getData('title');
     }
 }
