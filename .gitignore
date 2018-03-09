@@ -166,3 +166,5 @@ app/locale/*/*
 /.project
 /.buildpath
 app/etc/modules/Mage_ConfigurableSwatches.xml
+
+/vendor/
