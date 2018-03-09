@@ -207,6 +207,9 @@
             <search>
                 <enabled>0</enabled>
             </search>
+            <navigation>
+                <sort>0</sort>
+            </navigation>
             <autocomplete>
                 <enabled>1</enabled>
                 <category>1</category>

@@ -161,7 +161,7 @@ class Boxalino_Intelligence_Block_Recommendation extends Mage_Catalog_Block_Prod
                 }
                 foreach ($order->getAllItems() as $item) {
                     if ($item->getPrice() > 0) {
-                      $product = $item->getProduct()
+                      $product = $item->getProduct();
                       if ($product) {
                         $context[] = $product;
                       }
@@ -174,6 +174,13 @@ class Boxalino_Intelligence_Block_Recommendation extends Mage_Catalog_Block_Prod
         return $context;
     }
 
+    /**
+     * @return mixed
+     */
+    public function getItems() {
+        return $this->_getLoadedProductCollection();
+    }
+    
     /**
      * @return mixed
      */
@@ -226,6 +233,7 @@ class Boxalino_Intelligence_Block_Recommendation extends Mage_Catalog_Block_Prod
                 $config['min'],
                 $config['max']
             );
+            $this->setData('title', $this->bxHelperData->getAdapter()->getSearchResultTitle($widget, $this->getData('title')));
         }catch(\Exception $e){
             Mage::logException($e);
         }
@@ -235,8 +243,8 @@ class Boxalino_Intelligence_Block_Recommendation extends Mage_Catalog_Block_Prod
             $entity_ids = array(0);
         }
 
-        $this->_itemCollection = $this->_productCollection = Mage::getResourceModel('catalog/product_collection');
-        $this->_itemCollection->addFieldToFilter('entity_id', $entity_ids)
+        $this->_itemCollection = $this->_productCollection = $this->bxHelperData->prepareProductCollection($entity_ids);
+        $this->_itemCollection
             ->addAttributeToSelect('*')
             ->addMinimalPrice()
             ->addFinalPrice();
@@ -268,5 +276,9 @@ class Boxalino_Intelligence_Block_Recommendation extends Mage_Catalog_Block_Prod
             $this->_prepareData();
         }
         return parent::_beforeToHtml();
+    }
+
+    public function bxRecommendationTitle() {
+        return $this->getData('title');
     }
 }

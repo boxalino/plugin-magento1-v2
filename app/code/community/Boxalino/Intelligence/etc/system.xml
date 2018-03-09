@@ -471,6 +471,16 @@
                             <show_in_store>1</show_in_store>
                             <comment>Is Boxalino navigation active?</comment>
                         </enabled>
+                        <sort translate="label">
+                            <label>Enable default sorting</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_enabledisable</source_model>
+                            <sort_order>2</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <comment>Should the navigation use the relevance sorting as default?</comment>
+                        </sort>
                     </fields>
                 </navigation>
                 <autocomplete>
@@ -658,10 +668,21 @@
                                 Optional: default value is "navigation" and should normally not be changed
                             </comment>
                         </navigation_choice_id>
+                        <finder_choice_id translate="label">
+                            <label>Finder choice ID</label>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>4</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <comment>
+                                Optional: default value is "productfinder" and should normally not be changed
+                            </comment>
+                        </finder_choice_id>
                         <search_sub_phrases_limit translate="label">
                             <label>Search limit for sub-phrases</label>
                             <frontend_type>text</frontend_type>
-                            <sort_order>4</sort_order>
+                            <sort_order>5</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
@@ -672,7 +693,7 @@
                         <multiselect_fields>
                             <label>Multi-select Fields</label>
                             <frontend_type>text</frontend_type>
-                            <sort_order>5</sort_order>
+                            <sort_order>6</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
@@ -687,7 +708,7 @@
                         <parameter_separator translate="label">
                             <label>Separator for URL Parameter</label>
                             <frontend_type>text</frontend_type>
-                            <sort_order>6</sort_order>
+                            <sort_order>7</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>

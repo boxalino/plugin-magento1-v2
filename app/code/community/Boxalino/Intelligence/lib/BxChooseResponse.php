@@ -10,8 +10,43 @@ class BxChooseResponse
 		$this->response = $response;
 		$this->bxRequests = is_array($bxRequests) ? $bxRequests : array($bxRequests);
 	}
-	
-	public function getResponse() {
+
+    protected $notificationLog = array();
+
+    protected $notificationMode = false;
+
+    public function setNotificationMode($mode) {
+        $this->notificationMode = $mode;
+        foreach($this->bxRequests as $bxRequest) {
+            $facet = $bxRequest->getFacets();
+            if(!is_null($facet)) {
+                $facet->setNotificationMode($mode);
+            }
+        }
+    }
+
+    public function getNotificationMode() {
+        return $this->notificationMode;
+    }
+
+    public function addNotification($name, $parameters) {
+        if($this->notificationMode) {
+            $this->notifications[] = array('name'=>$name, 'parameters'=>$parameters);
+        }
+    }
+
+    public function getNotifications() {
+        $finalNotifications = $this->notifications;
+        foreach($this->bxRequests as $bxRequest) {
+            $finalNotifications[] = array('name'=>'bxFacet', 'parameters'=>$bxRequest->getChoiceId());
+            foreach($bxRequest->getFacets()->getNotifications() as $notification) {
+                $finalNotifications[] = $notification;
+            }
+        }
+        return $finalNotifications;
+    }
+
+    public function getResponse() {
 		return $this->response;
 	}
 	
@@ -64,10 +99,53 @@ class BxChooseResponse
 
 		$searchResult = $variant->searchResult;
 		if($considerRelaxation && $variant->searchResult->totalHitCount == 0 && !($discardIfSubPhrases && $this->areThereSubPhrases())) {
-			return $this->getFirstPositiveSuggestionSearchResult($variant, $maxDistance);
+            $correctedResult = $this->getFirstPositiveSuggestionSearchResult($variant, $maxDistance);
 		}
-		return $searchResult;
+		return isset($correctedResult) ? $correctedResult : $searchResult;
 	}
+	
+    public function getSearchResultHitVariable($searchResult, $hitId, $field) {
+
+        if($searchResult) {
+            if($searchResult->hits) {
+                foreach ($searchResult->hits as $item) {
+                    if(reset($item->values['id']) == $hitId) {
+                        return $item->values[$field];
+                    }
+                }
+            } else if(isset($searchResult->hitsGroups)) {
+                foreach($searchResult->hitsGroups as $hitGroup) {
+                    if($hitGroup->groupValue == $hitId) {
+                        if(isset($hitGroup->hits[0]->values[$field])){
+                            return $hitGroup->hits[0]->values[$field];
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    public function getSearchResultHitFieldValue($searchResult, $hitId, $fieldName=''){
+
+        if($searchResult && $fieldName != '') {
+            if($searchResult->hits) {
+                foreach ($searchResult->hits as $item) {
+                    if($item->values['id'] == $hitId) {
+                        return isset($item->values[$fieldName]) ? $item->values[$fieldName][0] : null;
+                    }
+                }
+            } else if(isset($searchResult->hitsGroups)) {
+                foreach($searchResult->hitsGroups as $hitGroup) {
+                    if($hitGroup->groupValue == $hitId) {
+                        return isset($hitGroup->hits[0]->values[$fieldName]) ? $hitGroup->hits[0]->values[$fieldName][0] : null;
+                    }
+                }
+            }
+        }
+        return null;
+    }
 
 	public function getSearchResultHitIds($searchResult, $fieldId='id') {
 		$ids = array();
@@ -88,8 +166,23 @@ class BxChooseResponse
         return $ids;
 	}
 
-    public function getHitIds($choice=null, $considerRelaxation=true, $count=0, $maxDistance=10, $fieldId='id', $discardIfSubPhrases = true) {
+    public function getHitExtraInfo($choice=null, $hitId = 0, $info_key='', $default_value = '', $count=0, $considerRelaxation=true, $maxDistance=10, $discardIfSubPhrases = true) {
+        $variant = $this->getChoiceResponseVariant($choice, $count);
+        $extraInfo = $this->getSearchResultHitVariable($this->getVariantSearchResult($variant, $considerRelaxation, $maxDistance, $discardIfSubPhrases), $hitId, 'extraInfo');
+        return (isset($extraInfo[$info_key]) ? $extraInfo[$info_key] : ($default_value != '' ? $default_value :  null));
+    }
 
+    public function getHitVariable($choice=null, $hitId = 0, $field='',  $count=0, $considerRelaxation=true, $maxDistance=10, $discardIfSubPhrases = true){
+        $variant = $this->getChoiceResponseVariant($choice, $count);
+        return $this->getSearchResultHitVariable($this->getVariantSearchResult($variant, $considerRelaxation, $maxDistance, $discardIfSubPhrases), $hitId, $field);
+    }
+
+    public function getHitFieldValue($choice=null, $hitId = 0,  $fieldName='',  $count=0, $considerRelaxation=true, $maxDistance=10, $discardIfSubPhrases = true){
+        $variant = $this->getChoiceResponseVariant($choice, $count);
+        return $this->getSearchResultHitFieldValue($this->getVariantSearchResult($variant, $considerRelaxation, $maxDistance, $discardIfSubPhrases), $hitId, $fieldName);
+    }
+
+    public function getHitIds($choice=null, $considerRelaxation=true, $count=0, $maxDistance=10, $fieldId='id', $discardIfSubPhrases = true) {
 		$variant = $this->getChoiceResponseVariant($choice, $count);
 		return $this->getSearchResultHitIds($this->getVariantSearchResult($variant, $considerRelaxation, $maxDistance, $discardIfSubPhrases), $fieldId);
     }
@@ -152,11 +245,13 @@ class BxChooseResponse
 		$variant = $this->getChoiceResponseVariant($choice, $count);
 		$searchResult = $this->getVariantSearchResult($variant, $considerRelaxation, $maxDistance, $discardIfSubPhrases);
 		$facets = $this->getRequestFacets($choice);
-
-		if(empty($facets) || $searchResult == null){
-			return new \com\boxalino\bxclient\v1\BxFacets();;
-		}
-		$facets->setSearchResults($searchResult);
+        if(empty($facets)){
+            $facets = new \com\boxalino\bxclient\v1\BxFacets();
+            $facets->setNotificationMode($this->notificationMode);
+        }
+        if(!is_null($searchResult)){
+            $facets->setSearchResults($searchResult);
+        }
 		return $facets;
     }
 
@@ -289,8 +384,8 @@ class BxChooseResponse
 		}
 		return json_encode($object);
 	}
-  
-  public function getSearchResultExtraInfo($searchResult, $extraInfoKey, $defaultExtraInfoValue = null) {
+
+	public function getSearchResultExtraInfo($searchResult, $extraInfoKey, $defaultExtraInfoValue = null) {
         if($searchResult) {
             if(is_array($searchResult->extraInfo) && sizeof($searchResult->extraInfo) > 0 && isset($searchResult->extraInfo[$extraInfoKey])) {
                 return $searchResult->extraInfo[$extraInfoKey];

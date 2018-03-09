@@ -1,7 +1,7 @@
 <widgets>
-    <boxalino_product_finder type="boxalino_intelligence/widget_productfinder" module="boxalino_intelligence">
+    <boxalino_product_finder type="boxalino_intelligence/widget_productFinder" module="boxalino_intelligence">
         <name>Boxalino Product Finder</name>
-        <description type="desc">Create a block with configurable facets.</description>
+        <description type="desc">Create a Boxalino Finder widget.</description>
         <parameters>
             <template>
                 <label>Template</label>
@@ -10,13 +10,13 @@
                 <type>text</type>
                 <description>Template for the Product Finder.</description>
             </template>
-            <choice_id>
-                <label>Choice ID</label>
+            <finder_url>
+                <label>Finder URL Key</label>
                 <visible>1</visible>
-                <required>0</required>
+                <required>1</required>
                 <type>text</type>
-            <description>If left empty, the product finder choice ID will be used.</description>
-        </choice_id>
+                <description>URL Key for the finder page.</description>
+            </finder_url>
         </parameters>
     </boxalino_product_finder>
 </widgets>
