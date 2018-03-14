@@ -662,6 +662,18 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
         return self::$bxClient->getResponse()->getHitIds($widgetName, true, $count);
     }
 
+
+    public function addNotification($type, $notification) {
+        self::$bxClient->addNotification($type, $notification);
+    }
+
+    public function finalNotificationCheck($force = false, $requestMapKey = 'dev_bx_notifications') {
+
+        if(!is_null(self::$bxClient)) {
+            self::$bxClient->finalNotificationCheck($force, $requestMapKey);
+        }
+    }
+
     public function getResponse(){
         $this->simpleSearch();
         return self::$bxClient->getResponse();

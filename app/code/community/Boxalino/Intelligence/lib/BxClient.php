@@ -401,7 +401,6 @@ class BxClient
             }
             return $bundleChoiceResponse;
         } catch(\Exception $e) {
-            var_dump($e->getMessage());exit;
             $this->throwCorrectP13nException($e);
         }
     }
@@ -675,7 +674,7 @@ class BxClient
     {
         if ($force || (isset($this->requestMap[$requestMapKey]) && $this->requestMap[$requestMapKey] == 'true')) {
             echo "<pre><h1>Notifications</h1>" ;
-            var_export($this->notifications, true);
+            var_dump($this->notifications);
             echo "</pre>";
             exit;
         }

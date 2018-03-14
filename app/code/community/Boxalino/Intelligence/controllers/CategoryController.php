@@ -16,8 +16,15 @@ class Boxalino_Intelligence_CategoryController extends Mage_Catalog_CategoryCont
             if($bxHelperData->isNavigationEnabled()) {
                 $this->_initCatagory();
                 $adapter = $bxHelperData->getAdapter();
-                if($adapter->getResponse()->getRedirectLink() != "") {
-                    $this->getResponse()->setRedirect($adapter->getResponse()->getRedirectLink());
+                $start = microtime(true);
+                $adapter->addNotification('debug', "request start at " . $start);
+                $redirect_link = $adapter->getResponse()->getRedirectLink();
+                $adapter->addNotification('debug',
+                    "request end, time: " . (microtime(true) - $start) * 1000 . "ms" .
+                    ", memory: " . memory_get_usage(true));
+
+                if($redirect_link != "") {
+                    $this->getResponse()->setRedirect($redirect_link);
                 }
                 Mage::unregister('current_category');
                 Mage::unregister('current_entity_key');
@@ -39,7 +46,6 @@ class Boxalino_Intelligence_CategoryController extends Mage_Catalog_CategoryCont
             Mage::logException($e);
             $bxHelperData->setFallback(true);
         }
-
-        return parent::viewAction();
+        parent::viewAction();
     }
 }
