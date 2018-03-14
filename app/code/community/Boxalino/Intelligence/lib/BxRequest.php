@@ -21,6 +21,8 @@ class BxRequest
 	protected $bxFilters = array();
 	protected $orFilters = false;
     protected $hitsGroupsAsHits = null;
+    protected $groupFacets = null;
+
     protected $requestContextParameters = array();
 	
 	public function __construct($language, $choiceId, $max=10, $min=0) {
@@ -187,6 +189,10 @@ class BxRequest
         $this->hitsGroupsAsHits = $groupsAsHits;
     }
 
+    public function setGroupFacets($groupFacets) {
+        $this->groupFacets = $groupFacets;
+    }
+
 	public function getSimpleSearchQuery() {
 		
 		$searchQuery = new \com\boxalino\p13n\api\thrift\SimpleSearchQuery();
@@ -196,6 +202,7 @@ class BxRequest
 		$searchQuery->offset = $this->getOffset();
 		$searchQuery->hitCount = $this->getMax();
 		$searchQuery->queryText = $this->getQueryText();
+		$searchQuery->groupFacets = is_null($this->groupFacets) ? false : $this->groupFacets;
 		$searchQuery->groupBy = $this->groupBy;
         if(!is_null($this->hitsGroupsAsHits)) {
             $searchQuery->hitsGroupsAsHits = $this->hitsGroupsAsHits;

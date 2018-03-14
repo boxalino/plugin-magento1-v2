@@ -279,6 +279,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
         $bxRequest->setFacets($this->prepareFacets());
         $bxRequest->setFilters($this->getSystemFilters($queryText));
         $bxRequest->setMax($hitCount);
+        $bxRequest->setGroupFacets(true);
         if(!is_null($categoryId) && !$addFinder) {
             $filterField = "category_id";
             $filterValues = array($categoryId);
@@ -662,6 +663,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
     }
 
     public function getResponse(){
+        $this->simpleSearch();
         return self::$bxClient->getResponse();
     }
 }

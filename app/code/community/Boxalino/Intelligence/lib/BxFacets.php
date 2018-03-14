@@ -15,6 +15,29 @@ class BxFacets
 
     protected $priceRangeMargin = false;
 
+    protected $notificationLog = array();
+
+    protected $notificationMode = false;
+
+    public function setNotificationMode($mode) {
+        $this->notificationMode = $mode;
+    }
+
+    public function getNotificationMode() {
+        return $this->notificationMode;
+    }
+
+    public function addNotification($name, $parameters) {
+        if($this->notificationMode) {
+            $this->notificationLog[] = array('name'=>$name, 'parameters'=>$parameters);
+        }
+    }
+
+    public function getNotifications() {
+        return $this->notificationLog;
+    }
+
+
     public function setSearchResults($searchResult) {
         $this->searchResult = $searchResult;
     }
@@ -29,11 +52,11 @@ class BxFacets
         return $this->filters;
     }
 
-    public function addCategoryFacet($selectedValue=null, $order=2, $maxCount=-1, $andSelectedValues = false) {
+    public function addCategoryFacet($selectedValue=null, $order=2, $maxCount=-1, $andSelectedValues = false, $label=null) {
         if($selectedValue) {
-            $this->addFacet('category_id', $selectedValue, 'hierarchical', null, '1', false, $maxCount, $andSelectedValues);
+            $this->addFacet('category_id', $selectedValue, 'hierarchical', null, '1', false, 1, $andSelectedValues);
         }
-        $this->addFacet($this->getCategoryFieldName(), null, 'hierarchical', null, $order, false, $maxCount);
+        $this->addFacet($this->getCategoryFieldName(), null, 'hierarchical', $label, $order, false, $maxCount);
     }
 
     public function addPriceRangeFacet($selectedValue=null, $order=2, $label='Price', $fieldName = 'discountedPrice', $maxCount=-1) {
@@ -75,13 +98,20 @@ class BxFacets
         if($this->searchResult && (sizeof($this->facets) !== sizeof($this->searchResult->facetResponses))) {
             foreach($this->searchResult->facetResponses as $facetResponse) {
                 if(!isset($this->facets[$facetResponse->fieldName])) {
-                    $this->facets[$facetResponse->fieldName] = ['label' => $facetResponse->fieldName];
+                    $this->facets[$facetResponse->fieldName] = [
+                        'label' => $facetResponse->fieldName,
+                        'type' => $facetResponse->numerical ? 'ranged' : 'list',
+                        'order' => sizeof($this->facets),
+                        'selectedValues' => [],
+                        'boundsOnly' => $facetResponse->range,
+                        'maxCount' => -1
+                    ];
                 }
             }
         }
         foreach($this->facets as $fieldName => $facet) {
             $facetResponse = $this->getFacetResponse($fieldName);
-            if(sizeof($facetResponse->values)>0 || sizeof($facet['selectedValues'])>0) {
+            if(!is_null($facetResponse) && (sizeof($facetResponse->values)>0 || sizeof($facet['selectedValues'])>0)) {
                 $fieldNames[$fieldName] = array('fieldName'=>$fieldName, 'returnedOrder'=> sizeof($fieldNames));
             }
         }
@@ -129,7 +159,9 @@ class BxFacets
     }
 
     public function getLeftFacets($returnHidden=false) {
-        return $this->getFacetExtraInfoFacets('position', 'left', true, $returnHidden);
+        $leftFacets = $this->getFacetExtraInfoFacets('position', 'left', true, $returnHidden);
+        $this->addNotification('getLeftFacets', json_encode(array($returnHidden, $leftFacets)));
+        return $leftFacets;
     }
 
     public function getTopFacets($returnHidden=false) {
@@ -171,7 +203,7 @@ class BxFacets
         }
         try {
             $facetResponse =    $this->getFacetResponse($fieldName);
-            if(is_array($facetResponse->extraInfo) && sizeof($facetResponse->extraInfo) > 0){
+            if(!is_null($facetResponse) && is_array($facetResponse->extraInfo) && sizeof($facetResponse->extraInfo) > 0){
                 return $facetResponse->extraInfo;
             }
         } catch(\Exception $e) {
@@ -185,8 +217,11 @@ class BxFacets
             $fieldName = 'category_id';
         }
         try {
-            return $this->getFacetResponseExtraInfo($this->getFacetResponse($fieldName), $extraInfoKey, $defaultExtraInfoValue);
+            $extraInfo = $this->getFacetResponseExtraInfo($this->getFacetResponse($fieldName), $extraInfoKey, $defaultExtraInfoValue);
+            $this->addNotification('getFacetResponseExtraInfo', json_encode(array($fieldName, $extraInfoKey, $defaultExtraInfoValue, $extraInfo)));
+            return $extraInfo;
         } catch(\Exception $e) {
+            $this->addNotification('Exception - getFacetResponseExtraInfo', json_encode(array($fieldName, $extraInfoKey, $defaultExtraInfoValue)));
             return $defaultExtraInfoValue;
         }
         return $defaultExtraInfoValue;
@@ -264,7 +299,6 @@ class BxFacets
         $defaultHideCoverageThreshold = $this->getHideCoverageThreshold($fieldName, $defaultHideCoverageThreshold);
         if($defaultHideCoverageThreshold > 0 && sizeof($this->getSelectedValues($fieldName)) == 0) {
             $ratio = $this->getFacetCoverage($fieldName) / $this->getTotalHitCount();
-            return $ratio < $defaultHideCoverageThreshold;
             return floatval($ratio) < floatval($defaultHideCoverageThreshold);
         }
         return false;
@@ -292,9 +326,8 @@ class BxFacets
                     return $facetResponse;
                 }
             }
-            throw new \Exception("trying to get facet response on unexisting fieldname " . $fieldName);
         }
-        throw new \Exception("trying to get facet response but not facet response set");
+        return null;
     }
 
     protected function getFacetType($fieldName) {
@@ -425,20 +458,31 @@ class BxFacets
 
     public function getCategoryById($categoryId) {
         $facetResponse = $this->getFacetResponse($this->getCategoryFieldName());
-        foreach ($facetResponse->values as $bxFacet) {
-            if($bxFacet->hierarchyId == $categoryId) {
-                return $categoryId;
+        if(!is_null($facetResponse)) {
+            foreach ($facetResponse->values as $bxFacet) {
+                if($bxFacet->hierarchyId == $categoryId) {
+                    return $categoryId;
+                }
             }
         }
         return null;
     }
 
+    private $facetKeyValuesCache = array();
     protected function getFacetKeysValues($fieldName, $ranking='alphabetical', $minCategoryLevel=0) {
+
+        if(isset($this->facetKeyValuesCache[$fieldName.'_'.$minCategoryLevel])) {
+            return $this->facetKeyValuesCache[$fieldName.'_'.$minCategoryLevel];
+        }
         if($fieldName == "") {
             return array();
         }
+        if($fieldName == 'category_id') return array();
         $facetValues = array();
         $facetResponse = $this->getFacetResponse($fieldName);
+        if(is_null($facetResponse)) {
+            return array();
+        }
         $type = $this->getFacetType($fieldName);
         switch($type) {
             case 'hierarchical':
@@ -542,6 +586,7 @@ class BxFacets
             }
             $facetValues = $finalFacetValues;
         }
+        $this->facetKeyValuesCache[$fieldName.'_'.$minCategoryLevel] = $facetValues;
         return $facetValues;
     }
 
@@ -620,6 +665,9 @@ class BxFacets
         if($facet != null) {
             if($facet['type'] == 'hierarchical') {
                 $facetResponse = $this->getFacetResponse($fieldName);
+                if(is_null($facetResponse)) {
+                   return false;
+                }
                 $tree = $this->buildTree($facetResponse->values);
                 $tree = $this->getSelectedTreeNode($tree);
                 return $tree && sizeof($tree['node']->hierarchy)>1;
@@ -645,6 +693,9 @@ class BxFacets
     public function getParentCategories() {
         $fieldName = $this->getCategoryFieldName();
         $facetResponse = $this->getFacetResponse($fieldName);
+        if(is_null($facetResponse)) {
+           return array();
+        }
         $tree = $this->buildTree($facetResponse->values);
         $treeEnd = $this->getSelectedTreeNode($tree);
         if($treeEnd == null) {
@@ -672,6 +723,9 @@ class BxFacets
     public function getParentCategoriesHitCount($id){
         $fieldName = $this->getCategoryFieldName();
         $facetResponse = $this->getFacetResponse($fieldName);
+        if(is_null($facetResponse)) {
+            return 0;
+        }
         $tree = $this->buildTree($facetResponse->values);
         $treeEnd = $this->getSelectedTreeNode($tree);
         if($treeEnd == null) {
@@ -702,6 +756,9 @@ class BxFacets
         if($facet != null) {
             if($facet['type'] == 'hierarchical') {
                 $facetResponse = $this->getFacetResponse($fieldName);
+                if(is_null($facetResponse)) {
+                    return '';
+                }
                 $tree = $this->buildTree($facetResponse->values);
                 $tree = $this->getSelectedTreeNode($tree);
                 $parts = explode('/', $tree['node']->stringValue);
@@ -733,6 +790,41 @@ class BxFacets
         return $categoryValueArray;
     }
 
+    public function getCategoryIdsFromLevel($level) {
+        $facetResponse = $this->getFacetResponse($this->getCategoryFieldName());
+        $ids = [];
+        if(!is_null($facetResponse)) {
+            foreach ($facetResponse->values as $category) {
+                if(sizeof($category->hierarchy) == $level + 2){
+                    $ids[] = $category->hierarchyId;
+                }
+            }
+        }
+        return $ids;
+    }
+
+    public function getCategoryFromLevel($level) {
+        $facetResponse = $this->getFacetResponse($this->getCategoryFieldName());
+        $categories = [];
+        if(!is_null($facetResponse)) {
+            foreach ($facetResponse->values as $category) {
+                if(sizeof($category->hierarchy) == $level + 2){
+                    $categories[] = $category->stringValue;
+                }
+            }
+        }
+        return $categories;
+    }
+
+    public function getSelectedCategoryIds()
+    {
+        $ids = array();
+        if (isset($this->facets['category_id'])){
+            $ids = $this->facets['category_id']['selectedValues'];
+        }
+        return $ids;
+    }
+
     public function getCategories($ranking='alphabetical', $minCategoryLevel=0) {
         return $this->getFacetValues($this->getCategoryFieldName(), $ranking, $minCategoryLevel);
     }
@@ -747,8 +839,12 @@ class BxFacets
         return array_keys($this->getFacetKeysValues($fieldName, $ranking, $minCategoryLevel));
     }
 
+    private $facetValueArrayCache = array();
     protected function getFacetValueArray($fieldName, $facetValue) {
-
+        $hash = $fieldName . ' - ' . $facetValue;
+        if(isset($this->facetValueArrayCache[$hash])) {
+            return $this->facetValueArrayCache[$hash];
+        }
         $keyValues = $this->getFacetKeysValues($fieldName, 'alphabetical', $this->lastSetMinCategoryLevel);
         if(($fieldName == $this->priceFieldName) && ($this->selectedPriceValues != null)){
             $fv = reset($keyValues);
@@ -760,16 +856,19 @@ class BxFacets
             $to = round($to, 2);
             $valueLabel = $from . ' - ' . $to;
             $paramValue = "$from-$to";
-            return array($valueLabel, $paramValue, $fv->hitCount, true, false);
+            $this->facetValueArrayCache[$hash] = array($valueLabel, $paramValue, $fv->hitCount, true, false);
+            return $this->facetValueArrayCache[$hash];
         }
         if(is_array($facetValue)){
             $facetValue = reset($facetValue);
         }
         if(!isset($keyValues[$facetValue]) && $fieldName == $this->getCategoryFieldName()) {
             $facetResponse = $this->getFacetResponse($this->getCategoryFieldName());
-            foreach ($facetResponse->values as $bxFacet) {
-                if($bxFacet->hierarchyId == $facetValue) {
-                    $keyValues[$facetValue] = $bxFacet;
+            if(!is_null($facetResponse)) {
+                foreach ($facetResponse->values as $bxFacet) {
+                    if($bxFacet->hierarchyId == $facetValue) {
+                        $keyValues[$facetValue] = $bxFacet;
+                    }
                 }
             }
         }
@@ -783,18 +882,21 @@ class BxFacets
         switch($type) {
             case 'hierarchical':
                 $parts = explode("/", $fv->stringValue);
-                return array($parts[sizeof($parts)-1], $parts[0], $fv->hitCount, $fv->selected, $hidden);
+                $this->facetValueArrayCache[$hash] =  array($parts[sizeof($parts)-1], $parts[0], $fv->hitCount, $fv->selected, $hidden);
+                return $this->facetValueArrayCache[$hash];
             case 'ranged':
                 $from = round($fv->rangeFromInclusive, 2);
                 $to = round($fv->rangeToExclusive, 2);
                 $valueLabel = $from . ' - ' . $to;
                 $paramValue = $fv->stringValue;
                 $paramValue = "$from-$to";
-                return array($valueLabel, $paramValue, $fv->hitCount, $fv->selected, $hidden);
+                $this->facetValueArrayCache[$hash] =  array($valueLabel, $paramValue, $fv->hitCount, $fv->selected, $hidden);
+                return $this->facetValueArrayCache[$hash];
 
             default:
                 $fv = $keyValues[$facetValue];
-                return array($fv->stringValue, $fv->stringValue, $fv->hitCount, $fv->selected, $hidden);
+                $this->facetValueArrayCache[$hash] =  array($fv->stringValue, $fv->stringValue, $fv->hitCount, $fv->selected, $hidden);
+                return $this->facetValueArrayCache[$hash];
         }
     }
 
