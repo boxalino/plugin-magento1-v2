@@ -62,6 +62,7 @@ class Boxalino_Intelligence_Block_Layer_State extends Mage_Catalog_Block_Layer_S
             $filters = array();
             try{
                 $facets = $bxHelperData->getAdapter()->getFacets();
+                $forceIncludedFacets = $facets->getForceIncludedFieldNames(true);
                 foreach ($facetModel->getFacets() as $block){
                     $filter = $block->getFacet();
                     $fieldName = $filter->getFieldName();
@@ -80,13 +81,20 @@ class Boxalino_Intelligence_Block_Layer_State extends Mage_Catalog_Block_Layer_S
                                 }
                                 if(isset($items[$value])){
                                     $item =  $items[$value];
+                                    if(isset($forceIncludedFacets[$fieldName])) {
+                                        $bxHelperData->setIncludedParams($item->getFilter()->getRequestVar(), $item->getBxValue());
+                                    }
                                     $filters[] = $item;
                                 }
                             }
                         } else {
                             $selectedValue = $facets->getSelectedValueLabel($fieldName);
                             if($selectedValue != '' && isset($items[$selectedValue])) {
-                                $filters[] = $items[$selectedValue];
+                                $item = $items[$selectedValue];
+                                if(isset($forceIncludedFacets[$fieldName])) {
+                                    $bxHelperData->setIncludedParams($item->getFilter()->getRequestVar(), $item->getBxValue());
+                                }
+                                $filters[] = $item;
                             }
                         }
                     }

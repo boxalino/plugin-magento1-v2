@@ -14,12 +14,17 @@ class Boxalino_Intelligence_Model_Layer_Filter_Item extends Mage_Catalog_Model_L
             $addParams = $bxHelperData->getSystemParams();
             $requestVar = $this->getFilter()->getRequestVar();
             $query = array($requestVar =>$this->getValue());
+            if($this->getType() == 'changeQuery') {
+                $addParams = array_merge($addParams, $bxHelperData->getIncludedParams());
+                $addParams['bx_cq'] = [$bxHelperData->getAdapter()->getResponse()->getCorrectedQuery()];
+            }
+
             foreach ($removeParams as $remove) {
                 $query[$remove] = null;
             }
             foreach ($addParams as $param => $add) {
                     if($requestVar != $param){
-                        $query = array_merge($query, [$param => implode($bxHelperData->getSeparator(), $add)]);
+                        $query = array_merge($query, [$param => is_array($add) ? implode($bxHelperData->getSeparator(), $add) : $add]);
                     }
             }
             $params['_current']     = true;
@@ -45,7 +50,7 @@ class Boxalino_Intelligence_Model_Layer_Filter_Item extends Mage_Catalog_Model_L
             );
             foreach ($addParams as $param => $values) {
                 if($requestVar != $param) {
-                    $add = [$param => implode($bxHelperData->getSeparator(), $values)];
+                    $add = [$param => is_array($values) ? implode($bxHelperData->getSeparator(), $values) : $values];
                     $query = array_merge($query, $add);
                 }
             }

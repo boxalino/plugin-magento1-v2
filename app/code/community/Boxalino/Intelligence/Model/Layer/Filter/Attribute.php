@@ -76,6 +76,9 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
         if(!$bxHelperData->getAdapter()->areThereSubPhrases()){
             $data = $this->_getItemsData();
             $items = [];
+            $forceIncludedFacets = $this->getFacets()->getForceIncludedFieldNames(true);
+            $changeQuery = isset($forceIncludedFacets[$this->fieldName]);
+
             foreach ($data as $itemData) {
                 if($this->fieldName == 'discountedPrice' && substr($itemData['label'], -3) == '- 0') {
                     $values = explode(' - ', $itemData['label']);
@@ -85,7 +88,11 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
                 $selected = isset($itemData['selected']) ? $itemData['selected'] : null;
                 $type = isset($itemData['type']) ? $itemData['type'] : null;
                 $hidden = isset($itemData['hidden']) ? $itemData['hidden'] : null;
-                $items[$itemData['label']] = $this->_createItem($itemData['label'], $itemData['value'], $itemData['count'], $selected, $type, $hidden);
+                $bxValue = isset($itemData['bx_value']) ?$itemData['bx_value'] : null;
+                if($selected && $changeQuery) {
+                    $type = 'changeQuery';
+                }
+                $items[$itemData['label']] = $this->_createItem($itemData['label'], $itemData['value'], $itemData['count'], $selected, $type, $hidden, $bxValue);
             }
             $this->_items = $items;
         }
@@ -101,7 +108,7 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
      * @param null $hidden
      * @return mixed
      */
-    public function _createItem($label, $value, $count = 0, $selected = null, $type = null, $hidden = null){
+    public function _createItem($label, $value, $count = 0, $selected = null, $type = null, $hidden = null, $bxValue = null){
         return Mage::getModel('catalog/layer_filter_item')
             ->setFilter($this)
             ->setLabel($label)
@@ -109,7 +116,8 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
             ->setCount($count)
             ->setSelected($selected)
             ->setType($type)
-            ->setHidden($hidden);
+            ->setHidden($hidden)
+            ->setBxValue($bxValue);
     }
 
     /**
@@ -227,8 +235,9 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
                             'count' => $bxFacets->getFacetValueCount($fieldName, $facetValue),
                             'selected' => $selected,
                             'type' => 'flat',
-                            'hidden' => $bxFacets->isFacetValueHidden($fieldName, $facetValue)
-                        );
+                            'hidden' => $bxFacets->isFacetValueHidden($fieldName, $facetValue),
+                            'bx_value' => $this->getParamValue($isSystemFilter, $bxFacets, $fieldName, $facetValue, $attributeModel, $selectedValues, false, $isMultiValued)
+                    );
                     }
                 }
             } else {
@@ -243,7 +252,8 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
                         'count' => $bxFacets->getFacetValueCount($fieldName, $facetValue),
                         'selected' => $selected,
                         'type' => 'flat',
-                        'hidden' => $bxFacets->isFacetValueHidden($fieldName, $facetValue)
+                        'hidden' => $bxFacets->isFacetValueHidden($fieldName, $facetValue),
+                        'bx_value' => $this->getParamValue($isSystemFilter, $bxFacets, $fieldName, $facetValue, $attributeModel, $selectedValues, false, $isMultiValued)
                     );
                 }
             }

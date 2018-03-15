@@ -277,6 +277,9 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
         $bxRequest->setOffset($pageOffset);
         $bxRequest->setSortFields($bxSortFields);
         $bxRequest->setFacets($this->prepareFacets());
+        if(!is_null($this->changeQuery)) {
+            $bxRequest->setQuerytext($this->changeQuery);
+        }
         $bxRequest->setFilters($this->getSystemFilters($queryText));
         $bxRequest->setMax($hitCount);
         $bxRequest->setGroupFacets(true);
@@ -382,6 +385,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
         return 'bx_';
     }
 
+    protected $changeQuery = null;
     /**
      * @return \com\boxalino\bxclient\v1\BxFacets
      */
@@ -397,7 +401,12 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
         $facetOptions = $bxHelperData->getFacetOptions();
         $systemParamValues = array();
         $separator = $bxHelperData->getSeparator();
+
         foreach ($requestParams as $key => $values) {
+            if($key == 'bx_cq') {
+                $this->changeQuery = $values;
+                continue;
+            }
             $additionalChecks = false;
             if (strpos($key, $this->getUrlParameterPrefix()) === 0 && $key != 'bx_category_id') {
                 $fieldName = substr($key, 3);

@@ -673,4 +673,13 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
     public function setIsFinder($isFinder) {
         $this->isFinder = $isFinder;
     }
+
+    protected $includedParams = array();
+    public function setIncludedParams($key, $value) {
+        $this->includedParams[$key] = $value;
+    }
+
+    public function getIncludedParams() {
+        return $this->includedParams;
+    }
 }
