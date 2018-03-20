@@ -634,7 +634,11 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
                 self::$bxClient->addRequest($bxRequest);
             } else {
                 if (($minAmount >= 0) && ($amount >= 0) && ($minAmount <= $amount)) {
-                    $bxRequest = new \com\boxalino\bxclient\v1\BxRecommendationRequest($this->bxHelperData->getLanguage(), $widgetName, $amount, $minAmount);
+                    if($widgetType == 'parametrized') {
+                      $bxRequest = new \com\boxalino\bxclient\v1\BxParametrizedRequest($this->bxHelperData->getLanguage(), $widgetName, $amount, $minAmount, $returnFields);
+                    } else {
+                      $bxRequest = new \com\boxalino\bxclient\v1\BxRecommendationRequest($this->bxHelperData->getLanguage(), $widgetName, $amount, $minAmount);
+                    }
                     if ($widgetType != 'blog') {
                       $bxRequest->setGroupBy($this->getEntityIdFieldName());
                       $bxRequest->setFilters($this->getSystemFilters());

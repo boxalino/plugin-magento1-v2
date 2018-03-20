@@ -30,6 +30,13 @@
                     <frontName>boxalinointelligence</frontName>
                 </args>
             </boxalinointelligence>
+            <recommendations>
+              <use>standard</use>
+                <args>
+                   <module>Boxalino_Intelligence</module>
+                   <frontName>recommendations</frontName>
+                </args>
+           </recommendations>
         </routers>
         <layout>
             <updates>

@@ -1,0 +1,25 @@
+<?php
+$widget = $this->getChoiceId();
+$image = 'upsell_products_list';
+$lang = $this->getLanguage();
+$productCollection = $this->getItems($widget);
+$baseUrl = Mage::getBaseUrl();
+
+$json = array();
+$json['title'] = $this->getRecommendationTitle($widget);
+$json['widget'] = $widget;
+$json['lang'] = $lang;
+$json['products'] = array();
+if($productCollection) {
+  foreach($productCollection as $product) {
+      $jsonProduct = array();
+      $jsonProduct['url'] =  $product->getProductUrl();
+      $jsonProduct['final_price'] =  $product['final_price'];
+      $jsonProduct['base_price'] =  $product['price'];
+      $jsonProduct['priceHtml'] = $this->getPriceHtml($product, true, '-upsell');
+      $jsonProduct['image_url'] =  str_replace('//', '/', $baseUrl . $product['image']);
+      $jsonProduct['name'] =  $product->getName();
+      $json['products'][] = $jsonProduct;
+  }
+}
+echo json_encode($json);

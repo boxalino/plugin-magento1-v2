@@ -33,6 +33,17 @@ class Boxalino_Intelligence_Block_Recommendation extends Mage_Catalog_Block_Prod
         parent::_construct();
     }
 
+    public function init($widget, $scenario){
+
+      if (is_null($this->getData('widget'))) {
+        $this->setData('widget', $widget);
+      }
+      if (is_null($this->getData('scenario'))) {
+        $this->setData('scenario', $scenario);
+      }
+
+    }
+
     public function getReturnFields() {
       return array();
     }
@@ -172,6 +183,16 @@ class Boxalino_Intelligence_Block_Recommendation extends Mage_Catalog_Block_Prod
                 break;
         }
         return $context;
+    }
+
+    /**
+     * @return mixed|string
+     */
+    public function getRecommendationTitle($widget){
+
+        $title = $this->bxHelperData->getAdapter()->getSearchResultTitle($widget);
+
+        return isset($title) ? $title : 'Recommendation';
     }
 
     /**
