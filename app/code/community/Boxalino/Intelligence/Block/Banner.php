@@ -22,12 +22,37 @@ Class Boxalino_Intelligence_Block_Banner extends Mage_Core_Block_Template{
   }
 
   protected function prepareRecommendations(){
-    $this->p13nHelper->getRecommendation('banner', array(), 'banner', 15, 15, true, array('title', 'products_bxi_bxi_jssor_slide', 'products_bxi_bxi_jssor_transition', 'products_bxi_bxi_name', 'products_bxi_bxi_jssor_control', 'products_bxi_bxi_jssor_break'));
+    $vals = $this->getValues();
+    $this->p13nHelper->getRecommendation($vals['choiceID'], array(), 'banner', $vals['min'], $vals['max'], true, array('title', 'products_bxi_bxi_jssor_slide', 'products_bxi_bxi_jssor_transition', 'products_bxi_bxi_name', 'products_bxi_bxi_jssor_control', 'products_bxi_bxi_jssor_break'));
   }
 
   protected function isActive(){
 
     return $this->bxHelperData->isBannerEnabled();
+
+  }
+
+  public function getValues(){
+
+    if (!empty($this->getData('choiceID'))) {
+      $vals['choiceID'] = strVal($this->getData('choiceID'));
+    } else {
+      $vals['choiceID'] = 'banner';
+    }
+
+    if (!empty($this->getData('min'))) {
+      $vals['min'] = intval($this->getData('min'));
+    } else {
+      $vals['min'] = 1;
+    }
+
+    if (!empty($this->getData('max'))) {
+      $vals['max'] = intval($this->getData('max'));
+    } else {
+      $vals['max'] = 1;
+    }
+
+    return $vals;
 
   }
 
@@ -48,7 +73,8 @@ Class Boxalino_Intelligence_Block_Banner extends Mage_Core_Block_Template{
         10 => $this->getBannerJssorSlidesStyle(),
         11 => $this->getBannerJssorBulletNavigator(),
         12 => $this->getBannerJssorArrowNavigator(),
-        13 => $this->getBannerFunction()
+        13 => $this->getBannerFunction(),
+        14 => $this->getBannerLayout()
 
         );
 
@@ -66,7 +92,8 @@ Class Boxalino_Intelligence_Block_Banner extends Mage_Core_Block_Template{
 
     public function getBannerSlides() {
 
-        $slides = $this->p13nHelper->getResponse()->getHitFieldValues(array('products_bxi_bxi_jssor_slide', 'products_bxi_bxi_name'), $this->_data['widget']);
+        $vals = $this->getValues();
+        $slides = $this->p13nHelper->getResponse()->getHitFieldValues(array('products_bxi_bxi_jssor_slide', 'products_bxi_bxi_name'), $vals['choiceID']);
         $counters = array();
         foreach($slides as $id => $vals) {
             $slides[$id]['div'] = $this->getBannerSlide($id, $vals, $counters);
@@ -107,8 +134,8 @@ Class Boxalino_Intelligence_Block_Banner extends Mage_Core_Block_Template{
 
     public function getBannerJssorSlideGenericJS($key) {
         $language = $this->bxHelperData->getLanguage();
-
-        $slides = $this->p13nHelper->getResponse()->getHitFieldValues(array($key), $this->_data['widget']);
+        $vals = $this->getValues();
+        $slides = $this->p13nHelper->getResponse()->getHitFieldValues(array($key), $vals['choiceID']);
 
         $jsArray = array();
         foreach($slides as $id => $vals) {
@@ -223,6 +250,22 @@ Class Boxalino_Intelligence_Block_Banner extends Mage_Core_Block_Template{
         $bannerFunction = $this->p13nHelper->getResponse()->getExtraInfo('banner_jssor_function');
 
         return $bannerFunction;
+
+    }
+
+    public function getBannerLayout() {
+
+        $bannerLayout = $this->p13nHelper->getResponse()->getExtraInfo('banner_jssor_layout');
+
+        return $bannerLayout;
+
+    }
+
+    public function getBannerTitle(){
+      $vals = $this->getValues();
+      $bannerTitle = $this->p13nHelper->getClientResponse()->getResultTitle($vals['choiceID']);
+
+      return $bannerTitle;
 
     }
 

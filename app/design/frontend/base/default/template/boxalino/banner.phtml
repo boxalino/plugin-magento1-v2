@@ -18,6 +18,7 @@ if ($this->isActive()) {
         $jssorBulletNavigator = $this->getBannerJssorBulletNavigator();
         $jssorArrowNavigator = $this->getBannerJssorArrowNavigator();
         $jssorFunction = $this->getBannerFunction();
+        $jssorLayout = $this->getBannerLayout();
 
         if ($hitCount < 2) {
          $jssorOptions = substr_replace($jssorOptions, '$DragOrientation:0, ', 1, 0);
