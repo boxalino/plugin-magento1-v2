@@ -1,0 +1,17 @@
+app/code/community/Boxalino/Intelligence/ app/code/community/Boxalino/Intelligence/
+app/design/frontend/base/default/layout/boxalino.xml app/design/frontend/base/default/layout/boxalino.xml
+app/design/frontend/base/default/template/boxalino/ app/design/frontend/base/default/template/boxalino/
+app/etc/modules/Boxalino_Intelligence.xml app/etc/modules/Boxalino_Intelligence.xml
+app/locale/de_CH/Boxalino_Intelligence.csv app/locale/de_CH/Boxalino_Intelligence.csv
+app/locale/en_US/Boxalino.csv app/locale/en_US/Boxalino.csv
+app/locale/de_DE/Boxalino_Intelligence.csv app/locale/de_DE/Boxalino_Intelligence.csv
+app/locale/fr_CH/Boxalino_Intelligence.csv app/locale/fr_CH/Boxalino_Intelligence.csv
+app/locale/fr_FR/Boxalino_Intelligence.csv app/locale/fr_FR/Boxalino_Intelligence.csv
+skin/frontend/base/default/css/boxalino.css skin/frontend/base/default/css/boxalino.css
+skin/frontend/base/default/css/nouislider.css skin/frontend/base/default/css/nouislider.css
+skin/frontend/base/default/js/boxalinoAutocomplete.js skin/frontend/base/default/js/boxalinoAutocomplete.js
+skin/frontend/base/default/js/boxalinoFacets.js skin/frontend/base/default/js/boxalinoFacets.js
+skin/frontend/base/default/js/jquery-1.10.2.min.js skin/frontend/base/default/js/jquery-1.10.2.min.js
+skin/frontend/base/default/js/jquery-noConflict.js skin/frontend/base/default/js/jquery-noConflict.js
+skin/frontend/base/default/js/jssor-26.1.5.min.js skin/frontend/base/default/js/jssor-26.1.5.min.js
+skin/frontend/base/default/js/nouislider.js skin/frontend/base/default/js/nouislider.js

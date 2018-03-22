@@ -256,7 +256,7 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                     array('p_t' => $db->getTableName($this->_prefix . 'catalog_product_relation')),
                     'e.entity_id = p_t.child_id', array('group_id' => 'parent_id')
                 )
-                ->join(array('c_p_w' => 'catalog_product_website'), 'e.entity_id = c_p_w.product_id', array('website_id'))
+                ->join(array('c_p_w' => $db->getTableName($this->_prefix . 'catalog_product_website')), 'e.entity_id = c_p_w.product_id', array('website_id'))
                 ->where('c_p_w.website_id = ?', $website_id);
             if($this->indexType == 'delta')$select->where('created_at >= ? OR updated_at >= ?', $this->_getLastIndex());
 
