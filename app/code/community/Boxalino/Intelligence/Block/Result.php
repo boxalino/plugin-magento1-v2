@@ -38,9 +38,6 @@ class Boxalino_Intelligence_Block_Result extends Mage_CatalogSearch_Block_Result
                         $this->correctedQuery = $p13nHelper->getCorrectedQuery();
                     }
                     $this->queries =  $this->bxHelperData->getAdapter()->getSubPhrasesQueries();
-                    if(count($this->queries) < 2) {
-                        Mage::app()->getFrontController()->getResponse()->setRedirect(Mage::getUrl('*/*', array('_query' => 'q=' . $this->queries[0])));
-                    }
                 }
             } else {
                 $this->fallback = true;

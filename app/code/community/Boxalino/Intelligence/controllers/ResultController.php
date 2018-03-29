@@ -20,6 +20,9 @@ class Boxalino_Intelligence_ResultController extends Mage_CatalogSearch_ResultCo
                 if ($redirect_link != "") {
                     $this->getResponse()->setRedirect($redirect_link);
                 }
+                if($bxHelperData->getAdapter()->areThereSubPhrases() && sizeof($queries = $bxHelperData->getAdapter()->getSubPhrasesQueries()) == 1) {
+                    $this->getResponse()->setRedirect(Mage::getUrl('*/*', array('_query' => ['q' => $queries[0], 'bx_initial_q' => Mage::app()->getRequest()->getParam('q')])));
+                }
             }
         } catch(\Exception $e) {
             Mage::logException($e);
