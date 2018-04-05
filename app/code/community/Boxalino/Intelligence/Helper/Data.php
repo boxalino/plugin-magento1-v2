@@ -321,6 +321,19 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
 
   }
 
+    public function getBlogReturnFields() {
+        $fields = array(
+            'title',
+            $this->getExcerptFieldName(),
+            $this->getLinkFieldName(),
+            $this->getMediaUrlFieldName(),
+            $this->getDateFieldName()
+        );
+        $extraFields = $this->getExtraFieldNames();
+
+        return array_merge($fields, $extraFields);
+    }
+
   public function getBlogArticleWidget(){
     return Mage::getStoreConfig('bxRecommendations/blog/widget');
 
@@ -347,12 +360,24 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
   }
   public function getExtraFieldNames(){
 
-    return Mage::getStoreConfig('bxRecommendations/blog/extraFieldNames');
+    $fieldNames = Mage::getStoreConfig('bxRecommendations/blog/extraFieldNames');
+
+    if (isset($fieldNames)) {
+      return explode(',', $fieldNames);
+    }
+
+    return array();
 
   }
   public function getBlogArticleImageWidth(){
 
-    return Mage::getStoreConfig('bxRecommendations/blog/blogArticleImageHeight');
+    $imageWidth = Mage::getStoreConfig('bxRecommendations/blog/blogArticleImageHeight');
+
+    if (!is_null($imageWidth)) {
+      $imageWidth = '100%';
+    }
+
+    return $imageWidth;
 
   }
   public function getBlogArticleImageHeight(){
@@ -525,6 +550,14 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
     public function isSearchEnabled()
     {
         return $this->isPluginEnabled() && Mage::getStoreConfigFlag('bxSearch/search/enabled');
+    }
+
+    /**
+     * @return bool
+     */
+    public function isBlogSearchEnabled()
+    {
+        return $this->isPluginEnabled() && Mage::getStoreConfigFlag('bxSearch/search/blog');
     }
 
     /**

@@ -214,6 +214,9 @@
             <search>
                 <enabled>0</enabled>
             </search>
+            <blog>
+                <enabled>0</enabled>
+            </blog>
             <navigation>
                 <sort>0</sort>
             </navigation>

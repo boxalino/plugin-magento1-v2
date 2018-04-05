@@ -19,6 +19,7 @@ Class Boxalino_Intelligence_Block_LandingPage extends Mage_Core_Block_Template{
   }
 
   public function isPluginActive(){
+    $this->getOtherParams();
     $this->setLandingPageChoiceId();
     return $this->bxHelperData->isPluginEnabled();
   }
@@ -29,7 +30,33 @@ Class Boxalino_Intelligence_Block_LandingPage extends Mage_Core_Block_Template{
 
   }
 
-  public function setLandingPageChoiceId($choice = 'landingpage'){
+  public function getOtherParams(){
+
+    if (!empty($this->getData('bxOtherParams'))) {
+
+      $params = explode(',', $this->getData('bxOtherParams'));
+
+      foreach ($params as $param) {
+
+        $kv = explode('=', $param);
+
+        $extraParams[$kv[0]] = $kv[1];
+
+      }
+
+    $this->p13nHelper->getLandingpageContextParameters($extraParams);
+
+    }
+
+  }
+
+  public function setLandingPageChoiceId(){
+
+    if (!empty($this->getData('choiceID'))) {
+      $choice = $this->getData('choiceID');
+    } else {
+      $choice = 'landingpage';
+    }
 
     $this->p13nHelper->setLandingPageChoiceId($choice);
 

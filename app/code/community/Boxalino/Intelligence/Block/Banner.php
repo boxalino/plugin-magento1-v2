@@ -52,6 +52,18 @@ Class Boxalino_Intelligence_Block_Banner extends Mage_Core_Block_Template{
       $vals['max'] = 1;
     }
 
+    if (!empty($this->getData('jssorID'))) {
+      $vals['jssorID'] = strVal($this->getData('jssorID'));
+    } else {
+      $vals['jssorID'] = 'jssor_1';
+    }
+
+    if (!empty($this->getData('jssorIndex'))) {
+      $vals['jssorIndex'] = strVal($this->getData('jssorIndex'));
+    } else {
+      $vals['jssorIndex'] = '1';
+    }
+
     return $vals;
 
   }
@@ -92,11 +104,24 @@ Class Boxalino_Intelligence_Block_Banner extends Mage_Core_Block_Template{
 
     public function getBannerSlides() {
 
-        $vals = $this->getValues();
-        $slides = $this->p13nHelper->getResponse()->getHitFieldValues(array('products_bxi_bxi_jssor_slide', 'products_bxi_bxi_name'), $vals['choiceID']);
+        $configValues = $this->getValues();
+
+        $slides = $this->p13nHelper->getResponse()->getHitFieldValues(array('products_bxi_bxi_jssor_slide', 'products_bxi_bxi_name'), $configValues['choiceID']);
         $counters = array();
         foreach($slides as $id => $vals) {
             $slides[$id]['div'] = $this->getBannerSlide($id, $vals, $counters);
+        }
+
+        // if the small banner is used, use the first banner for the first block & the second for the second
+
+        if ($this->getBannerLayout() == 'small') {
+
+          if ($configValues['jssorIndex'] == '1') {
+            return array(reset($slides));
+          }
+          if ($configValues['jssorIndex'] == '2') {
+            return array(end($slides));
+          }
         }
         return $slides;
     }

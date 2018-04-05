@@ -5,7 +5,6 @@ if ($this->isActive()) {
         $this->prepareRecommendations();
         $hitCount = $this->getHitCount();
         $jssorSlides = $this->getBannerSlides();
-        $jssorId = $this->getBannerJssorId();
         $jssorSlideTransitions = $this->getBannerJssorSlideTransitions();
         $jssorSlideBreaks = $this->getBannerJssorSlideBreaks();
         $jssorSlideControls = $this->getBannerJssorSlideControls();
@@ -19,8 +18,19 @@ if ($this->isActive()) {
         $jssorArrowNavigator = $this->getBannerJssorArrowNavigator();
         $jssorFunction = $this->getBannerFunction();
         $jssorLayout = $this->getBannerLayout();
+        $configVals = $this->getValues();
+        $jssorConfigId = $this->getBannerJssorId();
+        $jssorId = $configVals['jssorID'];
+        $jssorIndex = $configVals['jssorIndex'];
 
-        if ($hitCount < 2) {
+        // replace id from Intelligence with id from block configuration
+
+        $jssorOptions = str_replace($jssorConfigId, $jssorId, $jssorOptions);
+        $jssorFunction = str_replace($jssorConfigId, $jssorId, $jssorFunction);
+
+        // if there is only one banner or it is using the 'small' layout, don't be draggable
+
+        if ($hitCount < 2 || $jssorLayout == 'small') {
          $jssorOptions = substr_replace($jssorOptions, '$DragOrientation:0, ', 1, 0);
         }
 
@@ -33,15 +43,15 @@ if ($this->check()) {
 
 <?php echo $jssorId ?>_slider_init = function() {
 
-    var jssor_1_SlideoTransitions = <?php echo $jssorSlideTransitions ?>;
+    var <?php echo $jssorId ?>_SlideoTransitions = <?php echo $jssorSlideTransitions ?>;
 
-    var jssor_1_SlideoBreaks = <?php echo $jssorSlideBreaks ?>;
+    var <?php echo $jssorId ?>_SlideoBreaks = <?php echo $jssorSlideBreaks ?>;
 
-    var jssor_1_SlideoControls = <?php echo $jssorSlideControls ?>;
+    var <?php echo $jssorId ?>_SlideoControls = <?php echo $jssorSlideControls ?>;
 
-    var jssor_1_options = <?php echo $jssorOptions ?>;
+    var <?php echo $jssorId ?>_options = <?php echo $jssorOptions ?>;
 
-    var jssor_1_slider = new $JssorSlider$(<?php echo $jssorId ?>, jssor_1_options);
+    var <?php echo $jssorId ?>_slider = new $JssorSlider$(<?php echo $jssorId ?>, <?php echo $jssorId ?>_options);
 
     var MAX_WIDTH = <?php echo $jssorMaxWidth ?>;
 
@@ -79,7 +89,7 @@ if ($this->check()) {
 
     </div>
 
-    <?php if ($hitCount > 1){
+    <?php if ($hitCount > 1 && $jssorLayout != 'small'){
 
       echo $jssorBulletNavigator;
       echo $jssorArrowNavigator;

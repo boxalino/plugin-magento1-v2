@@ -38,7 +38,7 @@ class Boxalino_Intelligence_Block_Product_List_Blog extends Boxalino_Intelligenc
 
       );
 
-      $extraFields = explode(',', $this->getExtraFieldNames());
+      $extraFields = $this->getExtraFieldNames();
 
       return array_merge($fields, $extraFields);
     }
@@ -96,6 +96,9 @@ class Boxalino_Intelligence_Block_Product_List_Blog extends Boxalino_Intelligenc
          foreach($article as $k => $v) {
            $a[$k] = isset($v[0]) ? $v[0] : '';
          }
+         $excerpt = strip_tags($a['products_blog_excerpt']);
+         $excerpt = str_replace('[&hellip;]', '', $excerpt);
+         $a['products_blog_excerpt'] = $excerpt;
          $articles[] = $a;
        }
        return $articles;

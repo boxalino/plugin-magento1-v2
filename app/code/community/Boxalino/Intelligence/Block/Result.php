@@ -94,6 +94,10 @@ class Boxalino_Intelligence_Block_Result extends Mage_CatalogSearch_Block_Result
                 $this->_template = 'boxalino/catalogsearch/result.phtml';
                 return $this;
             }
+            if (count($this->getBlogTotalHitCount())>0 && $this->bxHelperData->isBlogSearchEnabled()) {
+                $this->_template = 'boxalino/catalogsearch/resultNoSubphrases.phtml';
+                return $this;
+            }
             if ($this->bxHelperData->isNoResultsEnabled() && $this->hasNoResult()) {
                 $this->_template = 'boxalino/catalogsearch/noresults.phtml';
                 return $this;
@@ -122,6 +126,11 @@ class Boxalino_Intelligence_Block_Result extends Mage_CatalogSearch_Block_Result
             $query->setNumResults($size);
         }
         return $this->getData('result_count');
+    }
+
+    public function getBlogTotalHitCount(){
+      $bxHelperData = Mage::helper('boxalino_intelligence');
+        return $bxHelperData->getAdapter()->getBlogTotalHitCount();
     }
 
     /**

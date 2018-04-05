@@ -115,7 +115,7 @@ class BxChooseResponse
 			} else if(isset($searchResult->hitsGroups)) {
 				foreach($searchResult->hitsGroups as $hitGroup) {
 					if($hitGroup->groupValue == $hitId) {
-						return $hitGroup->hits[0]->$field;
+						return $hitGroup->hits[0]->values[$field];
 					}
 				}
 			}

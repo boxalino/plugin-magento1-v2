@@ -118,7 +118,15 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
      * @param $queryText
      * @return mixed|string
      */
-    public function getSearchChoice($queryText) {
+    public function getSearchChoice($queryText, $isBlog = false) {
+
+      if($isBlog) {
+            $choice = Mage::getStoreConfig('bxSearch/advanced/blog_choice_id');
+            if ($choice == null) {
+                $choice = "read_search";
+            }
+            return $choice;
+        }
 
       $landingPageChoiceId = $this->landingPageChoice;
 
@@ -290,7 +298,33 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
             $bxRequest->addFilter(new com\boxalino\bxclient\v1\BxFilter($filterField, $filterValues, $filterNegative));
         }
         self::$bxClient->addRequest($bxRequest);
+
+        if($this->bxHelperData->isBlogSearchEnabled() && is_null($categoryId)) {
+             $this->addBlogResult($queryText, $hitCount);
+         }
     }
+
+     private function addBlogResult($queryText, $hitCount) {
+         $bxRequest = new \com\boxalino\bxclient\v1\BxSearchRequest($this->bxHelperData->getLanguage(), $queryText, $hitCount, $this->getSearchChoice($queryText, true));
+         $requestParams = Mage::app()->getRequest()->getParams();
+         $pageOffset = isset($requestParams['bx_blog_page']) ? ($requestParams['bx_blog_page'] - 1) * ($hitCount) : 0;
+         $pageOffset = 0;
+         $bxRequest->setOffset($pageOffset);
+         $bxRequest->setGroupBy('id');
+         $returnFields = $this->bxHelperData->getBlogReturnFields();
+         $bxRequest->setReturnFields($returnFields);
+         self::$bxClient->addRequest($bxRequest);
+     }
+
+    public function getLandingpageContextParameters($extraParams = null){
+
+       foreach ($extraParams as $key => $value) {
+
+         self::$bxClient->addRequestContextParameter($key, $value);
+
+       }
+
+     }
 
     public function getFinderChoice() {
         $choice_id = Mage::getStoreConfig('bxSearch/advanced/finder_choice_id');
@@ -350,6 +384,22 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
         $overWriteLimit = $request->getParam('limit') != null ? $request->getParam('limit') : Mage::getBlockSingleton('catalog/product_list_toolbar')->getLimit();
         $pageOffset = isset($_REQUEST['p'])? ($_REQUEST['p']-1)*($overWriteLimit) : 0;
         $this->search($queryText, $pageOffset, $overWriteLimit, new \com\boxalino\bxclient\v1\BxSortFields($field, $dir), $categoryId, $addFinder);
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getMagentoStoreConfigPageSize()
+    {
+
+        $storeConfig = $this->getMagentoStoreConfig();
+        $storeDisplayMode = $storeConfig['list_mode'];
+
+        //we may get grid-list, list-grid, grid or list
+        $storeMainMode = explode('-', $storeDisplayMode);
+        $storeMainMode = $storeMainMode[0];
+        $hitCount = $storeConfig[$storeMainMode . '_per_page'];
+        return $hitCount;
     }
 
     /**
@@ -504,9 +554,26 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
         return self::$bxClient->getResponse()->getHitIds($this->currentSearchChoice, true, 0, 10, $this->getEntityIdFieldName());
     }
 
-    public function getHitVariable($id, $field) {
+    public function getBlogIds() {
         $this->simpleSearch();
-        return self::$bxClient->getResponse()->getHitVariable($this->currentSearchChoice, $id, $field, 0);
+        $choice_id = $this->getSearchChoice('', true);
+        return self::$bxClient->getResponse()->getHitIds($choice_id, true, 0, 10, $this->getEntityIdFieldName());
+
+    }
+
+    public function getBlogTotalHitCount() {
+        $this->simpleSearch();
+        $choice_id = $this->getSearchChoice('', true);
+        return self::$bxClient->getResponse()->getTotalHitCount($choice_id);
+    }
+
+    public function getHitVariable($id, $field, $is_blog=false) {
+        $this->simpleSearch();
+        $choice_id = $this->currentSearchChoice;
+        if($is_blog) {
+            $choice_id = $this->getSearchChoice('', true);
+        }
+        return self::$bxClient->getResponse()->getHitVariable($choice_id, $id, $field, 0);
     }
 
     /**
