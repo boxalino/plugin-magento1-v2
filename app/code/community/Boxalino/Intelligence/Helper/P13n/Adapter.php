@@ -461,7 +461,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
             if (strpos($key, $this->getUrlParameterPrefix()) === 0 && $key != 'bx_category_id') {
                 $fieldName = substr($key, 3);
                 if(!isset($attributeCollection[$fieldName]) || $key == 'bx_discountedPrice'){
-                    $bxSelectedValues[$fieldName] = explode($separator, $values);
+                    $bxSelectedValues[$fieldName] = is_array($values) ? $values : explode($separator, $values);
                 } else {
                     $key = substr($fieldName, strlen('products_'), strlen($fieldName));
                     $additionalChecks = true;
