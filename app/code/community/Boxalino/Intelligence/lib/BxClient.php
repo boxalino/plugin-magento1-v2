@@ -75,7 +75,13 @@ class BxClient
 		}
 		$this->domain = $domain;
 		$this->apiKey = $apiKey;
+		if (empty($apiKey)) {
+			$this->apiKey = null;
+		}
 		$this->apiSecret = $apiSecret;
+		if (empty($apiSecret)) {
+			$this->apiSecret = null;
+		}
 	}
 
 	public function setHost($host) {
