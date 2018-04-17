@@ -63,7 +63,9 @@
             </action>
         </reference>
         <reference name="content">
-            <block type="boxalino_intelligence/facets" name="top_filter" as="listing_top_filter" before="-"
+            <block type="boxalino_intelligence/searchMessage" name="searchMessage" before="top_filter"
+                   template="boxalino/catalogsearch/searchMessage.phtml" />
+            <block type="boxalino_intelligence/facets" name="top_filter" before="listing_top_filter"
                    template="boxalino/top_filter.phtml" />
         </reference>
     </catalog_category_layered>

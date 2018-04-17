@@ -94,7 +94,7 @@ class Boxalino_Intelligence_Block_Result extends Mage_CatalogSearch_Block_Result
                 $this->_template = 'boxalino/catalogsearch/result.phtml';
                 return $this;
             }
-            if (count($this->getBlogTotalHitCount())>0 && $this->bxHelperData->isBlogSearchEnabled()) {
+            if ($this->getBlogTotalHitCount()>0 && $this->bxHelperData->isBlogSearchEnabled()) {
                 $this->_template = 'boxalino/catalogsearch/resultNoSubphrases.phtml';
                 return $this;
             }
