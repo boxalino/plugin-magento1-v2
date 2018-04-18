@@ -716,6 +716,10 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
         return $this->includedParams;
     }
 
+    protected $changeQuery = false;
+    public function setChangeQuery($change) {
+        $this->changeQuery = $change;
+    }
     public function getSEOMetaTitle(){
       if ($this->isPluginEnabled()) {
         $language = $this->getLanguage();
@@ -786,4 +790,7 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
       return null;
     }
 
+    public function getChangeQuery() {
+        return $this->changeQuery;
+    }
 }

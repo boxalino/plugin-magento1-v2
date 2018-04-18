@@ -76,9 +76,7 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
         if(!$bxHelperData->getAdapter()->areThereSubPhrases()){
             $data = $this->_getItemsData();
             $items = [];
-            $forceIncludedFacets = $this->getFacets()->getForceIncludedFieldNames(true);
-            $changeQuery = isset($forceIncludedFacets[$this->fieldName]);
-
+            $semanticFilterValues = $this->getFacets()->getSelectedSemanticFilterValues($this->fieldName);
             foreach ($data as $itemData) {
                 if($this->fieldName == 'discountedPrice' && substr($itemData['label'], -3) == '- 0') {
                     $values = explode(' - ', $itemData['label']);
@@ -89,7 +87,8 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
                 $type = isset($itemData['type']) ? $itemData['type'] : null;
                 $hidden = isset($itemData['hidden']) ? $itemData['hidden'] : null;
                 $bxValue = isset($itemData['bx_value']) ?$itemData['bx_value'] : null;
-                if($selected && $changeQuery) {
+                if($selected && in_array($itemData['label'], $semanticFilterValues)) {
+                    $bxHelperData->setChangeQuery(true);
                     $type = 'changeQuery';
                 }
                 $items[$itemData['label']] = $this->_createItem($itemData['label'], $itemData['value'], $itemData['count'], $selected, $type, $hidden, $bxValue);

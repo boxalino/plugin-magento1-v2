@@ -105,22 +105,22 @@ class BxChooseResponse
     }
 	
 	public function getSearchResultHitVariable($searchResult, $hitId, $field) {
-		if($searchResult) {
-			if($searchResult->hits) {
-				foreach ($searchResult->hits as $item) {
-					if($item->values['id'] == $hitId) {
-						return $item->$$field;
-					}
-				}
-			} else if(isset($searchResult->hitsGroups)) {
-				foreach($searchResult->hitsGroups as $hitGroup) {
-					if($hitGroup->groupValue == $hitId) {
-						return $hitGroup->hits[0]->values[$field];
-					}
-				}
-			}
-		}
-		return null;
+        if($searchResult) {
+            if($searchResult->hits) {
+                foreach ($searchResult->hits as $item) {
+                    if($item->values['id'][0] == $hitId) {
+                        return isset($item->values[$field]) ? $item->values[$field][0] : null;
+                    }
+                }
+            } else if(isset($searchResult->hitsGroups)) {
+                foreach($searchResult->hitsGroups as $hitGroup) {
+                    if($hitGroup->groupValue == $hitId) {
+                        return isset($hitGroup->hits[0]->values[$field]) ? $hitGroup->hits[0]->values[$field][0] : null;
+                    }
+                }
+            }
+        }
+        return null;
 	}
 	
 	public function getSearchResultHitFieldValue($searchResult, $hitId, $fieldName=''){

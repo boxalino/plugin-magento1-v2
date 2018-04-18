@@ -118,6 +118,23 @@ class BxFacets
         return $fieldNames;
     }
 
+    public function getSelectedSemanticFilterValues($field) {
+        $selectedValues = array();
+        $fieldNames = $this->getFieldNames();
+
+        foreach ($fieldNames as $fieldName) {
+            if($fieldName == $field) {
+                foreach ($this->getFacetResponse($fieldName)->values as $value) {
+                    if($value->selected && !in_array($value->stringValue, $this->facets[$fieldName]['selectedValues'])) {
+                        $selectedValues[] = $value->stringValue;
+                    }
+                }
+                break;
+            }
+        }
+        return $selectedValues;
+    }
+
     public function getFieldNames() {
         $fieldNames = array();
 

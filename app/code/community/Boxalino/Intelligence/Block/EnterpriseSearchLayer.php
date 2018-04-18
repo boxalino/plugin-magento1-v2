@@ -89,4 +89,16 @@ class Boxalino_Intelligence_Block_EnterpriseSearchLayer extends Enterprise_Searc
         }
         return parent::canShowBlock();
     }
+
+    public function getClearUrl() {
+        $bxHelperData = Mage::helper('boxalino_intelligence');
+        if($bxHelperData->getChangeQuery() && $bxHelperData->isEnabledOnLayer($this->getLayer())){
+            $params['_current']     = true;
+            $params['_use_rewrite'] = true;
+            $params['_query']       = ['bx_cq' => $bxHelperData->getAdapter()->getResponse()->getCorrectedQuery()];
+            $params['_escape']      = true;
+            return Mage::getUrl('*/*/*', $params);
+        }
+        return parent::getClearUrl();
+    }
 }
