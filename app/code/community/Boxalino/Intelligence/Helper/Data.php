@@ -720,77 +720,43 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
     public function setChangeQuery($change) {
         $this->changeQuery = $change;
     }
-    public function getSEOMetaTitle(){
-      if ($this->isPluginEnabled()) {
-        $language = $this->getLanguage();
-        $choice = Mage::getStoreConfigFlag('bxSearch/advanced/navigation_choice_id');
-        $seoMetaTitle = $this->getAdapter()->getResponse()->getExtraInfo('bx-html-meta-title', '', $choice);
-        return $seoMetaTitle;
-      }
-      return null;
-    }
 
-    public function getSEOMetaDescription(){
-      if ($this->isPluginEnabled()) {
-        $language = $this->getLanguage();
-        $choice = Mage::getStoreConfigFlag('bxSearch/advanced/navigation_choice_id');
-        $seoMetaDescrption = $this->getAdapter()->getResponse()->getExtraInfo('bx-html-meta-description', '', $choice);
-        return $seoMetaDescrption;
-      }
-      return null;
+    public function getChangeQuery() {
+        return $this->changeQuery;
     }
 
     public function getSEOPageTitle(){
       if ($this->isPluginEnabled()) {
-        $language = $this->getLanguage();
-        $choice = Mage::getStoreConfigFlag('bxSearch/advanced/navigation_choice_id');
-        $seoMetaTitle = $this->getAdapter()->getResponse()->getExtraInfo('bx-html-meta-title', '', $choice);
+        $seoPageTitle = $this->getExtraInfoWithKey('bx-page-title');
+        return $seoPageTitle;
+      }
+      return;
+    }
+
+    public function getSEOMetaTitle(){
+      if ($this->isPluginEnabled()) {
+        $seoMetaTitle = $this->getExtraInfoWithKey('bx-html-meta-title');
         return $seoMetaTitle;
       }
-      return null;
+      return;
     }
 
-    public function getMiddleImageUrl(){
+    public function getSEOMetaDescription(){
       if ($this->isPluginEnabled()) {
-        $language = $this->getLanguage();
-        $choice = Mage::getStoreConfigFlag('bxSearch/advanced/navigation_choice_id');
-        $middleImageUrl = $this->getAdapter()->getResponse()->getExtraInfo('bx-middle-image-url', '', $choice);
-        return $middleImageUrl;
+        $seoMetaDescription = $this->getExtraInfoWithKey('bx-html-meta-description');
+        return $seoMetaDescription;
       }
-      return null;
+      return;
     }
 
-    public function getMiddleImageAltText(){
-      if ($this->isPluginEnabled()) {
+    public function getExtraInfoWithKey($key){
+      if ($this->isPluginEnabled() && !empty($key) {
         $language = $this->getLanguage();
-        $choice = Mage::getStoreConfigFlag('bxSearch/advanced/navigation_choice_id');
-        $middleImageAltText = $this->getAdapter()->getResponse()->getExtraInfo('bx-middle-image-alt', '', $choice);
-        return $middleImageAltText;
+        $queryText = Mage::helper('catalogsearch')->getQueryText();
+        $choice = $this->getAdapter()->getSearchChoice($queryText);
+        $extraInfo = $this->getAdapter()->getResponse()->getExtraInfo($key, '', $choice);
+        return $extraInfo;
       }
-      return null;
-    }
-
-    public function getLowerImageUrl(){
-      if ($this->isPluginEnabled()) {
-        $language = $this->getLanguage();
-        $choice = Mage::getStoreConfigFlag('bxSearch/advanced/navigation_choice_id');
-        $lowerImageUrl = $this->getAdapter()->getResponse()->getExtraInfo('bx-lower-image-url', '', $choice);
-        return $lowerImageUrl;
-      }
-      return null;
-    }
-
-    public function getLowerImageAltText(){
-      if ($this->isPluginEnabled()) {
-        $language = $this->getLanguage();
-        $choice = Mage::getStoreConfigFlag('bxSearch/advanced/navigation_choice_id');
-        $lowerImageAltText = $this->getAdapter()->getResponse()->getExtraInfo('bx-lower-image-alt', '', $choice);
-        return $lowerImageAltText;
-      }
-      return null;
-    }
-
-    public function getChangeQuery() {
-        return $this->changeQuery;
+      return;
     }
 }
