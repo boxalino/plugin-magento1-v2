@@ -43,6 +43,8 @@ class Boxalino_Intelligence_CategoryController extends Mage_Catalog_CategoryCont
                 }
             }
         } catch(\Exception $e) {
+            Mage::unregister('current_category');
+            Mage::unregister('current_entity_key');
             Mage::logException($e);
             $bxHelperData->setFallback(true);
         }
