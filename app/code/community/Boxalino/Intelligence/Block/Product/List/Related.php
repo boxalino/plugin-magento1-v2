@@ -43,7 +43,6 @@ class Boxalino_Intelligence_Block_Product_List_Related extends Mage_Catalog_Bloc
                     array(),
                     $relatedProducts
                 );
-                $this->setData('title', $bxHelperData->getAdapter()->getSearchResultTitle($choiceId));
             }catch(\Exception $e){
                 Mage::logException($e);
                 return parent::_prepareData();
@@ -53,6 +52,7 @@ class Boxalino_Intelligence_Block_Product_List_Related extends Mage_Catalog_Bloc
                 return null;
             }
 
+            $this->setData('title', $bxHelperData->getAdapter()->getSearchResultTitle($choiceId));
             if(empty($entity_ids)){
                 $entity_ids = array(0);    
             }

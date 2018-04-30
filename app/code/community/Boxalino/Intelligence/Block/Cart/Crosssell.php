@@ -48,7 +48,6 @@ class Boxalino_Intelligence_Block_Cart_Crosssell extends Mage_Checkout_Block_Car
                     array(),
                     $relatedProducts
                 );
-                $this->setData('title', $bxHelperData->getAdapter()->getSearchResultTitle($choiceId));
             }catch(\Exception $e){
                 Mage::logException($e);
                 return parent::getItems();
@@ -58,6 +57,7 @@ class Boxalino_Intelligence_Block_Cart_Crosssell extends Mage_Checkout_Block_Car
                 return null;
             }
 
+            $this->setData('title', $bxHelperData->getAdapter()->getSearchResultTitle($choiceId));
             if(empty($entity_ids)){
                 return $items;
             }
