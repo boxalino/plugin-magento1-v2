@@ -750,7 +750,7 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
     }
 
     public function getExtraInfoWithKey($key){
-      if ($this->isPluginEnabled() && !empty($key) {
+      if ($this->isPluginEnabled() && !empty($key)) {
         $language = $this->getLanguage();
         $queryText = Mage::helper('catalogsearch')->getQueryText();
         $choice = $this->getAdapter()->getSearchChoice($queryText);
