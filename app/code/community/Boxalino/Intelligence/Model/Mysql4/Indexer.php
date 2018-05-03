@@ -804,27 +804,27 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
         //product stock
         $select = $db->select()
             ->from(
-                $db->getTableName($this->_prefix . 'cataloginventory_stock_status'),
-                array('entity_id' => 'product_id', 'stock_status', 'qty')
-            )
-            ->where('stock_id = ?', 1);
+                $db->getTableName($this->_prefix . 'cataloginventory_stock_item'),
+                array('entity_id' => 'product_id', 'qty', 'is_in_stock')
+            );
         if($this->indexType == 'delta')$select->where('product_id IN(?)', $this->deltaIds);
 
         $result = $db->query($select);
 
         if($result->rowCount()){
             while($row = $result->fetch()){
-                $data[] = array('entity_id'=>$row['entity_id'], 'qty'=>$row['qty']);
+                $data[] = array('entity_id'=>$row['entity_id'], 'qty'=>$row['qty'], 'is_in_stock'=>$row['is_in_stock']);
                 if(isset($duplicateIds[$row['entity_id']])){
-                    $data[] = array('entity_id'=>'duplicate'.$row['entity_id'], 'qty'=>$row['qty']);
+                    $data[] = array('entity_id'=>'duplicate'.$row['entity_id'], 'qty'=>$row['qty'], 'is_in_stock'=>$row['is_in_stock']);
                 }
             }
-            $d = array_merge(array(array('entity_id', 'qty')), $data);
+            $d = array_merge(array(array('entity_id', 'qty', 'is_in_stock')), $data);
             $files->savePartToCsv('product_stock.csv', $d);
             $data = null;
             $d = null;
             $attributeSourceKey = $this->bxData->addCSVItemFile($files->getPath('product_stock.csv'), 'entity_id');
             $this->bxData->addSourceNumberField($attributeSourceKey, 'qty', 'qty');
+            $this->bxData->addSourceStringField($attributeSourceKey, 'is_in_stock', 'is_in_stock');
         }
         $result = null;
 
