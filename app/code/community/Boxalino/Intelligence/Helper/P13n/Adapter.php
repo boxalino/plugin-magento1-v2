@@ -389,6 +389,49 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
         $this->search($queryText, $pageOffset, $overWriteLimit, new \com\boxalino\bxclient\v1\BxSortFields($field, $dir), $categoryId, $addFinder);
     }
 
+    protected function addNarrativeRequest($choice_id = 'narrative') {
+        $requestParams = Mage::app()->getRequest()->getParams();
+        $field = '';
+        $order = isset($requestParams['product_list_order']) ? $requestParams['product_list_order'] : $this->getMagentoStoreConfigListOrder();
+        if (($order == 'title') || ($order == 'name')) {
+            $field = 'products_bx_parent_title';
+        } elseif ($order == 'price') {
+            $field = 'products_bx_grouped_price';
+        }
+        $dir = isset($requestParams['product_list_dir']) ? true : false;
+        $hitCount = isset($requestParams['product_list_limit']) ? $requestParams['product_list_limit'] : $this->getMagentoStoreConfigPageSize();
+        $pageOffset = isset($requestParams['p']) ? ($requestParams['p'] - 1) * ($hitCount) : 0;
+
+        $language = $this->bxHelperData->getLanguage();
+        $bxRequest = new \com\boxalino\bxclient\v1\BxRequest($language, $choice_id, $hitCount);
+        $bxRequest->setOffset($pageOffset);
+        $bxRequest->setSortFields(new \com\boxalino\bxclient\v1\BxSortFields($field, $dir));
+        $facets = $this->prepareFacets();
+        $bxRequest->setFacets($facets);
+        self::$bxClient->addRequest($bxRequest);
+
+        foreach ($requestParams as $key => $value) {
+            self::$bxClient->addRequestContextParameter($key, $value);
+            if($key == 'choice_id') {
+                $choice_ids = explode($value, ',');
+                if(is_array($choice_ids)) {
+                    foreach ($choice_ids as $choice) {
+                        $bxRequest = new \com\boxalino\bxclient\v1\BxRequest($language, $choice, $hitCount);
+                        self::$bxClient->addRequest($bxRequest);
+                    }
+                }
+            }
+        }
+    }
+
+    public function getNarratives($choice_id = 'narrative') {
+        if(is_null(self::$bxClient->getChoiceIdRecommendationRequest($choice_id))) {
+            $this->addNarrativeRequest($choice_id);
+        }
+        $narrative = $this->getResponse()->getNarratives($choice_id);
+        return $narrative;
+    }
+
     /**
      * @return mixed
      */
@@ -551,10 +594,10 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
     /**
      * @return array
      */
-    public function getEntitiesIds()
-    {
+    public function getEntitiesIds($choiceId = '', $index = 0){
         $this->simpleSearch();
-        return self::$bxClient->getResponse()->getHitIds($this->currentSearchChoice, true, 0, 10, $this->getEntityIdFieldName());
+        $choiceId = $choiceId == '' ? $this->currentSearchChoice : $choiceId;
+        return self::$bxClient->getResponse()->getHitIds($choiceId, true, $index, 10, $this->getEntityIdFieldName());
     }
 
     public function getBlogIds() {
