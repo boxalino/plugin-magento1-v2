@@ -78,6 +78,13 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
     }
 
     /**
+     * @return \com\boxalino\bxclient\v1\BxClient
+     */
+    public function getBxClient() {
+        return self::$bxClient;
+    }
+
+    /**
      * @param string $queryText
      * @return array
      */
