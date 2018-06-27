@@ -14,6 +14,11 @@ Class Boxalino_Intelligence_Block_Journey extends Mage_Core_Block_Template{
         $this->p13nHelper = $this->bxHelperData->getAdapter();
 
         parent::_construct();
+
+        if(!is_null($this->getData('choice'))) {
+            $replaceMain = is_null($this->getData('replace_main')) ? true : $this->getData('replace_main');
+            $this->p13nHelper->getNarratives($this->getData('choice'), $this->getData('additional_choices'), $replaceMain, false);
+        }
     }
 
     protected function createBlock($type, $name, $data, $arguments, $children)

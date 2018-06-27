@@ -452,22 +452,26 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
     }
 
     protected $isNarrative = false;
-    public function getNarratives($choice_id = 'narrative', $choices = null, $replaceMain = true) {
-        $this->simpleSearch();
+    public function getNarratives($choice_id = 'narrative', $choices = null, $replaceMain = true, $execute = true) {
+
         if(is_null(self::$bxClient->getChoiceIdRecommendationRequest($choice_id))) {
             $this->addNarrativeRequest($choice_id, $choices, $replaceMain);
         }
-        $narrative = $this->getResponse()->getNarratives($choice_id);
-        return $narrative;
+        if($execute) {
+            $narrative = $this->getResponse()->getNarratives($choice_id);
+            return $narrative;
+        }
     }
 
-    public function getNarrativeDependencies($choice_id = 'narrative', $choices = null, $replaceMain = true) {
+    public function getNarrativeDependencies($choice_id = 'narrative', $choices = null, $replaceMain = true, $execute = true) {
         $this->simpleSearch();
         if(is_null(self::$bxClient->getChoiceIdRecommendationRequest($choice_id))) {
             $this->addNarrativeRequest($choice_id, $choices, $replaceMain);
         }
-        $dependencies = $this->getResponse()->getNarrativeDependencies($choice_id);
-        return $dependencies;
+        if($execute) {
+            $dependencies = $this->getResponse()->getNarrativeDependencies($choice_id);
+            return $dependencies;
+        }
     }
 
     /**
@@ -623,19 +627,20 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
     /**
      * @return int
      */
-    public function getTotalHitCount(){
+    public function getTotalHitCount($variant_index = null){
 
         $this->simpleSearch();
-        return self::$bxClient->getResponse()->getTotalHitCount($this->currentSearchChoice);
+        $choiceId = is_null($variant_index) ? $this->currentSearchChoice : $this->getClientResponse()->getChoiceIdFromVariantIndex($variant_index);
+        return $this->getClientResponse()->getTotalHitCount($choiceId);
     }
 
     /**
      * @return array
      */
-    public function getEntitiesIds($choiceId = '', $index = 0){
+    public function getEntitiesIds($variant_index = null){
         $this->simpleSearch();
-        $choiceId = $choiceId == '' ? $this->currentSearchChoice : $choiceId;
-        return self::$bxClient->getResponse()->getHitIds($choiceId, true, $index, 10, $this->getEntityIdFieldName());
+        $choiceId = is_null($variant_index) ? $this->currentSearchChoice : $this->getClientResponse()->getChoiceIdFromVariantIndex($variant_index);
+        return $this->getClientResponse()->getHitIds($choiceId, true, 0, 10, $this->getEntityIdFieldName());
     }
 
     public function getBlogIds() {
@@ -840,6 +845,11 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
 
     public function getResponse(){
         $this->simpleSearch();
+        return self::$bxClient->getResponse();
+    }
+
+    public function getClientResponse()
+    {
         return self::$bxClient->getResponse();
     }
 }

@@ -53,7 +53,7 @@ class Boxalino_Intelligence_Block_Journey_Product_ProductView extends Mage_Catal
         $visualElement = $this->getData('bxVisualElement');
 
         $variant_index = 0;
-        $index = 0;//$this->getElementIndex();
+        $index = $this->getElementIndex();
         foreach ($visualElement['parameters'] as $parameter) {
             if($parameter['name'] == 'variant') {
                 $variant_index = reset($parameter['values']);
@@ -62,7 +62,7 @@ class Boxalino_Intelligence_Block_Journey_Product_ProductView extends Mage_Catal
             }
         }
 
-        $ids = $this->p13nHelper->getEntitiesIds(null, $variant_index);
+        $ids = $this->p13nHelper->getEntitiesIds($variant_index);
         $entity_id = $ids[$index];
         $collection = $this->bxResourceManager->getResource($variant_index, 'collection');
         if(!is_null($collection)) {
