@@ -363,6 +363,9 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
      */
     public function simpleSearch($addFinder=false){
 
+        if($this->isNarrative) {
+            return;
+        }
         $isFinder = Mage::helper('boxalino_intelligence')->getIsFinder();
         $request = Mage::app()->getRequest();
         $queryText = Mage::helper('catalogsearch')->getQueryText();
@@ -396,7 +399,11 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
         $this->search($queryText, $pageOffset, $overWriteLimit, new \com\boxalino\bxclient\v1\BxSortFields($field, $dir), $categoryId, $addFinder);
     }
 
-    protected function addNarrativeRequest($choice_id = 'narrative') {
+    protected function addNarrativeRequest($choice_id = 'narrative', $choices = null, $replaceMain = true) {
+        if($replaceMain) {
+            $this->currentSearchChoice = $choice_id;
+            $this->isNarrative = true;
+        }
         $requestParams = Mage::app()->getRequest()->getParams();
         $field = '';
         $order = isset($requestParams['product_list_order']) ? $requestParams['product_list_order'] : $this->getMagentoStoreConfigListOrder();
@@ -429,14 +436,38 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
                 }
             }
         }
+        if(!is_null($choices)) {
+            $choice_ids = explode(',', $choices);
+            if(is_array($choice_ids)) {
+                foreach ($choice_ids as $choice) {
+                    $bxRequest = new \com\boxalino\bxclient\v1\BxRequest($language, $choice, $hitCount);
+                    if(strpos($choice, 'banner') !== FALSE) {
+                        self::$bxClient->addRequestContextParameter('banner_context', [1]);
+                        $bxRequest->setReturnFields(array('title', 'products_bxi_bxi_jssor_slide', 'products_bxi_bxi_jssor_transition', 'products_bxi_bxi_name', 'products_bxi_bxi_jssor_control', 'products_bxi_bxi_jssor_break'));
+                    }
+                    self::$bxClient->addRequest($bxRequest);
+                }
+            }
+        }
     }
 
-    public function getNarratives($choice_id = 'narrative') {
+    protected $isNarrative = false;
+    public function getNarratives($choice_id = 'narrative', $choices = null, $replaceMain = true) {
+        $this->simpleSearch();
         if(is_null(self::$bxClient->getChoiceIdRecommendationRequest($choice_id))) {
-            $this->addNarrativeRequest($choice_id);
+            $this->addNarrativeRequest($choice_id, $choices, $replaceMain);
         }
         $narrative = $this->getResponse()->getNarratives($choice_id);
         return $narrative;
+    }
+
+    public function getNarrativeDependencies($choice_id = 'narrative', $choices = null, $replaceMain = true) {
+        $this->simpleSearch();
+        if(is_null(self::$bxClient->getChoiceIdRecommendationRequest($choice_id))) {
+            $this->addNarrativeRequest($choice_id, $choices, $replaceMain);
+        }
+        $dependencies = $this->getResponse()->getNarrativeDependencies($choice_id);
+        return $dependencies;
     }
 
     /**

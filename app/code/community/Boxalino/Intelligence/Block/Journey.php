@@ -118,26 +118,50 @@ Class Boxalino_Intelligence_Block_Journey extends Mage_Core_Block_Template{
         return false;
     }
 
+    protected function getDependencyElement($url, $type) {
+        $element = '';
+        if($type == 'css'){
+            $element = "<link href=\"{$url}\" type=\"text/css\" rel=\"stylesheet\" />";
+        } else if($type == 'js') {
+            $element = "<script src=\"{$url}\" type=\"text/javascript\"></script>";
+        }
+        return $element;
+    }
+
+    public function renderDependencies() {
+        $html = '';
+        $replaceMain = is_null($this->getData('replace_main')) ? true : $this->getData('replace_main');
+        $dependencies = $this->p13nHelper->getNarrativeDependencies($this->getData('choice'), $this->getData('additional_choices'), $replaceMain);
+        if(isset($dependencies['js'])) {
+            foreach ($dependencies['js'] as $js) {
+                $url = $js;
+                $html .= $this->getDependencyElement($url, 'js');
+            }
+        }
+        if(isset($dependencies['css'])) {
+            foreach ($dependencies['css'] as $css) {
+                $url = $css;
+                $html .= $this->getDependencyElement($url, 'css');
+            }
+        }
+        return $html;
+    }
+
     public function renderElements() {
 
         $html = '';
         $position = $this->getData('position');
-        $narratives = $this->p13nHelper->getNarratives();
-        if(is_array($narratives)) {
-            foreach ($narratives['acts'] as $i => $act) {
-                foreach ($act['chapter']['renderings'] as $rendering) {
-                    foreach ($rendering['rendering']['visualElements'] as $visualElement) {
-                        if($this->checkVisualElementForParameter($visualElement['visualElement'], 'position', $position)) {
-                            try {
-                                $block = $this->createVisualElement($visualElement['visualElement']);
-                                if ($block) {
-                                    $html .= $block->toHtml();
-                                }
-                            } catch (\Exception $e) {
-                                Mage::logException($e);
-                            }
-                        }
+        $replaceMain = is_null($this->getData('replace_main')) ? true : $this->getData('replace_main');
+        $narratives = $this->p13nHelper->getNarratives($this->getData('choice'), $this->getData('additional_choices'), $replaceMain);
+        foreach ($narratives as $visualElement) {
+            if($this->checkVisualElementForParameter($visualElement['visualElement'], 'position', $position)) {
+                try {
+                    $block = $this->createVisualElement($visualElement['visualElement']);
+                    if ($block) {
+                        $html .= $block->toHtml();
                     }
+                } catch (\Exception $e) {
+                    Mage::logException($e);
                 }
             }
         }
