@@ -725,38 +725,31 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
         return $this->changeQuery;
     }
 
-    public function getSEOPageTitle(){
+    public function getSEOPageTitle($choice = null){
       if ($this->isPluginEnabled()) {
-        $seoPageTitle = $this->getExtraInfoWithKey('bx-page-title');
+        $seoPageTitle = $this->getExtraInfoWithKey('bx-page-title', $choice);
         return $seoPageTitle;
       }
       return;
     }
 
-    public function getSEOMetaTitle(){
+    public function getSEOMetaTitle($choice = null){
       if ($this->isPluginEnabled()) {
-        $seoMetaTitle = $this->getExtraInfoWithKey('bx-html-meta-title');
+        $seoMetaTitle = $this->getExtraInfoWithKey('bx-html-meta-title', $choice);
         return $seoMetaTitle;
       }
       return;
     }
 
-    public function getSEOMetaDescription(){
+    public function getSEOMetaDescription($choice = null){
       if ($this->isPluginEnabled()) {
-        $seoMetaDescription = $this->getExtraInfoWithKey('bx-html-meta-description');
+        $seoMetaDescription = $this->getExtraInfoWithKey('bx-html-meta-description', $choice);
         return $seoMetaDescription;
       }
       return;
     }
 
-    public function getExtraInfoWithKey($key){
-      if ($this->isPluginEnabled() && !empty($key)) {
-        $language = $this->getLanguage();
-        $queryText = Mage::helper('catalogsearch')->getQueryText();
-        $choice = $this->getAdapter()->getSearchChoice($queryText);
-        $extraInfo = $this->getAdapter()->getResponse()->getExtraInfo($key, '', $choice);
-        return $extraInfo;
-      }
-      return;
+    public function getExtraInfoWithKey($key, $choice = null){
+        return $this->getAdapter()->getExtraInfoWithKey($key, $choice);
     }
 }

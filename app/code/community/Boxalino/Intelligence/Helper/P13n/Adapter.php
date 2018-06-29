@@ -24,7 +24,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
     /**
      * @var
      */
-    protected $currentSearchChoice;
+    protected $currentSearchChoice = null;
 
     /**
      * @var bool
@@ -851,5 +851,14 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
     public function getClientResponse()
     {
         return self::$bxClient->getResponse();
+    }
+
+    public function getExtraInfoWithKey($key, $choice_id = null){
+        if ($this->bxHelperData->isPluginEnabled() && !empty($key)) {
+            $choice = is_null($choice_id) ? $this->currentSearchChoice : $choice_id;
+            $extraInfo = $this->getClientResponse()->getExtraInfo($key, '', $choice);
+            return $extraInfo;
+        }
+        return;
     }
 }
