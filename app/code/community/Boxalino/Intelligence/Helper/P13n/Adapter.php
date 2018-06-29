@@ -53,6 +53,9 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
 
         if($this->bxHelperData->isPluginEnabled()){
             $this->initializeBXClient();
+            if(isset($_REQUEST['dev_bx_test_mode']) && $_REQUEST['dev_bx_test_mode'] == 'true') {
+                self::$bxClient->setTestMode(true);
+            }
         }
     }
 
