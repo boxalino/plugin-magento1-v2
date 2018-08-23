@@ -808,7 +808,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
                         foreach($context as $product) {
                             $basketProducts[] = array('id'=>$product->getId(), 'price'=>$product->getPrice());
                         }
-                        $bxRequest->setBasketProductWithPrices('id', $basketProducts, 'mainProduct', 'mainProduct', $relatedProducts, 'products_group_id');
+                        $bxRequest->setBasketProductWithPrices('id', $basketProducts, 'mainProduct', 'subProduct', $relatedProducts, 'products_group_id');
                     } elseif (($widgetType === 'product' || $widgetType === 'blog') && !is_array($context)) {
                         $product = $context;
                         $bxRequest->setProductContext($this->getEntityIdFieldName(), $product->getId(), 'mainProduct', $relatedProducts, 'products_group_id');
