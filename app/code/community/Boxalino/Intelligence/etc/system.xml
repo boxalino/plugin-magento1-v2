@@ -81,7 +81,7 @@
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
-                            <comment>Optional: API Token</comment>
+                            <comment>API Token (value for the new set-up)</comment>
                         </apiKey>
                         <apiSecret translate="label">
                             <label>ApiSecret</label>
@@ -90,7 +90,7 @@
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
-                            <comment>Optional: API Password</comment>
+                            <comment>API Password (value for the new set-up)</comment>
                         </apiSecret>
                     </fields>
                 </general>
@@ -129,7 +129,7 @@
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
-                            <comment>Optional: uses default value "cdn.bx-cloud.com" if left empty</comment>
+                            <comment>Uses default value "cdn.bx-cloud.com" if left empty; Use "main.bx-cloud.com" for the new set-up.</comment>
                         </host>
                         <p13n_username>
                             <label>P13n Username</label>
