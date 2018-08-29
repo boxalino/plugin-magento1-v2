@@ -13,9 +13,7 @@ class P13nTCurlClient extends TCurlClient {
 
     protected $curl_timeout;
 
-    public function __construct(
-        $host, $port=80, $uri='', $scheme = 'http', $curl_timeout = 1000
-    )
+    public function __construct($host, $port=80, $profileId, $uri='', $scheme = 'http', $curl_timeout = 1000)
     {
         $this->curl_timeout = $curl_timeout;
         parent::__construct($host, $port, $uri, $scheme);
@@ -41,6 +39,7 @@ class P13nTCurlClient extends TCurlClient {
             @curl_setopt(self::$curlHandle, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
             curl_setopt(self::$curlHandle, CURLOPT_CONNECTTIMEOUT_MS, $this->curl_timeout);
             curl_setopt(self::$curlHandle, CURLOPT_MAXREDIRS, 1);
+            curl_setopt(self::$curlHandle, CURLOPT_HTTPHEADER, array("X-BX-PROFILEID: {$this->profileId}"));
         }
         $host = $this->host_.($this->port_ != 80 ? ':'.$this->port_ : '');
         $fullUrl = $this->scheme_."://".$host.$this->uri_;
@@ -49,6 +48,7 @@ class P13nTCurlClient extends TCurlClient {
             'Accept: application/x-thrift',
             'User-Agent: PHP/THttpClient',
             'Content-Type: application/x-thrift',
+            'X-BX-PROFILEID : '. $this->profileId,
             'Content-Length: '.TStringFuncFactory::create()->strlen($this->request_),
             'Authorization: Basic '.$this->authorizationString);
 

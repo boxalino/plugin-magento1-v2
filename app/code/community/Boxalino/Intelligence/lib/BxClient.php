@@ -239,6 +239,8 @@ class BxClient
 
 	private function getP13n($timeout=2, $useCurlIfAvailable=true){
 
+        list($sessionid, $profileid) = $this->getSessionAndProfile();
+
 		if (isset($this->requestMap['dev_bx_socket'])) {
 			$this->setSocket($this->requestMap['dev_bx_socket']);
 		}
@@ -253,9 +255,9 @@ class BxClient
 		}
 
 		if($useCurlIfAvailable && function_exists('curl_version')) {
-			$transport = new \Thrift\Transport\P13nTCurlClient($this->host, $this->port, $this->uri, $this->schema, $this->curl_timeout);
+			$transport = new \Thrift\Transport\P13nTCurlClient($this->host, $this->port, $profileid, $this->uri, $this->schema, $this->curl_timeout);
 		} else {
-			$transport = new \Thrift\Transport\P13nTHttpClient($this->host, $this->port, $this->uri, $this->schema);
+			$transport = new \Thrift\Transport\P13nTHttpClient($this->host, $this->port, $profileid, $this->uri, $this->schema);
 		}
 
 		$transport->setAuthorization($this->p13n_username, $this->p13n_password);
@@ -343,8 +345,7 @@ class BxClient
 			'User-Host'	  => array($this->getIP()),
 			'User-SessionId' => array($sessionid),
 			'User-Referer'   => array(@$_SERVER['HTTP_REFERER']),
-			'User-URL'	   => array($this->getCurrentURL()),
-            'X-BX-PROFILEID' => array($profileid)
+			'User-URL'	   => array($this->getCurrentURL())
 		);
 	}
 
@@ -383,9 +384,11 @@ class BxClient
 		if(strpos($e->getMessage(), 'Could not connect ') !== false) {
 			throw new \Exception('The connection to our server failed even before checking your credentials. This might be typically caused by 2 possible things: wrong values in host, port, schema or uri (typical value should be host=cdn.bx-cloud.com, port=443, uri =/p13n.web/p13n and schema=https, your values are : host=' . $this->host . ', port=' . $this->port . ', schema=' . $this->schema . ', uri=' . $this->uri . '). Another possibility, is that your server environment has a problem with ssl certificate (peer certificate cannot be authenticated with given ca certificates), which you can either fix, or avoid the problem by adding the line "curl_setopt(self::$curlHandle, CURLOPT_SSL_VERIFYPEER, false);" in the file "lib\Thrift\Transport\P13nTCurlClient" after the call to curl_init in the function flush. Full error message=' . $e->getMessage());
 		}
+
 		if(strpos($e->getMessage(), 'Bad protocol id in TCompact message') !== false) {
 			throw new \Exception('The connection to our server has worked, but your credentials were refused. Provided credentials username=' . $this->p13n_username. ', password=' . $this->p13n_password . '. Full error message=' . $e->getMessage());
 		}
+
 		if(strpos($e->getMessage(), 'choice not found') !== false) {
 			$parts = explode('choice not found', $e->getMessage());
 			$pieces = explode('	at ', $parts[1]);
