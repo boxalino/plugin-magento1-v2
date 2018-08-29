@@ -97,7 +97,7 @@ class TCurlClient extends TTransport {
      * @param int    $port
      * @param string $uri
      */
-    public function __construct($host, $profileId, $port=80, $uri='', $scheme = 'http') {
+    public function __construct($host, $port=80, $profileId, $uri='', $scheme = 'http') {
         if ((TStringFuncFactory::create()->strlen($uri) > 0) && ($uri{0} != '/')) {
             $uri = '/'.$uri;
         }
