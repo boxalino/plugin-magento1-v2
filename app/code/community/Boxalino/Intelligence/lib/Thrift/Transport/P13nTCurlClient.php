@@ -65,7 +65,7 @@ class P13nTCurlClient extends TCurlClient
         curl_setopt(self::$curlHandle, CURLOPT_URL, $fullUrl);
         $this->response_ = curl_exec(self::$curlHandle);
 
-        // Connect failed?
+        // Connection failed?
         if (!$this->response_) {
             curl_close(self::$curlHandle);
             self::$curlHandle = null;

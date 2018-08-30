@@ -47,7 +47,7 @@ class P13nTHttpClient extends THttpClient
         $contextid = stream_context_create(array('http' => $options));
         $this->handle_ = @fopen($this->scheme_.'://'.$host.$this->uri_, 'r', false, $contextid);
 
-        // Connect failed?
+        // Connection failed?
         if ($this->handle_ === FALSE) {
             $this->handle_ = null;
             $error = 'P13nTHttpClient: Could not connect to '.$host.$this->uri_;
