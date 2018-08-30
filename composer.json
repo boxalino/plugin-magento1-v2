@@ -1,9 +1,9 @@
 {
-    "name": "boxalino/plugin-magento1-v2",
-    "type": "magento-module",
-    "require": {
-        "magento-hackathon/magento-composer-installer": "*"
-    },
-    "license": "proprietary",
-    "minimum-stability": "stable"
+  "name": "boxalino/plugin-magento1-v2",
+  "type": "magento-module",
+  "require": {
+    "magento-hackathon/magento-composer-installer": "*"
+  },
+  "license": "proprietary",
+  "minimum-stability": "stable"
 }
