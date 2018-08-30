@@ -5,25 +5,22 @@ use Thrift\Transport\TTransport;
 use Thrift\Exception\TTransportException;
 use Thrift\Factory\TStringFuncFactory;
 
-class P13nTCurlClient extends TCurlClient {
-
-    private static $curlHandle;
-
+class P13nTCurlClient extends TCurlClient
+{
+    /**
+     * @var string
+     */
     protected $authorizationString;
 
-    protected $curl_timeout;
+    /**
+     * @var int
+     */
+    protected $timeout = 1000;
 
     /**
      * @var string
      */
     protected $profileId = 0;
-
-
-    public function __construct($host, $port=80, $uri='', $scheme = 'http', $curl_timeout = 1000)
-    {
-        $this->curl_timeout = $curl_timeout;
-        parent::__construct($host, $port, $uri, $scheme);
-    }
 
     /**
      * Opens and sends the actual request over the HTTP connection
@@ -31,7 +28,6 @@ class P13nTCurlClient extends TCurlClient {
      * @throws TTransportException if a writing error occurs
      */
     public function flush() {
-        // God, PHP really has some esoteric ways of doing simple things.
         if (!self::$curlHandle) {
             //register_shutdown_function(array('Thrift\\Transport\\TCurlClient', 'closeCurlHandle'));
             self::$curlHandle = curl_init();
@@ -89,8 +85,15 @@ class P13nTCurlClient extends TCurlClient {
         }
     }
 
-    public function setAuthorization($username, $password) {
+    /**
+     * @param $username
+     * @param $password
+     * @return $this
+     */
+    public function setAuthorization($username, $password)
+    {
         $this->authorizationString = base64_encode($username.':'.$password);
+        return $this;
     }
 
     /**
@@ -102,6 +105,18 @@ class P13nTCurlClient extends TCurlClient {
     public function setProfileId($profileId)
     {
         $this->profileId = $profileId;
+        return $this;
+    }
+
+    /**
+     * adding tracker for the node-pinning architecture
+     *
+     * @param $profileId
+     * @return $this
+     */
+    public function setTimeout($timeout)
+    {
+        $this->timeout = $timeout;
         return $this;
     }
 }

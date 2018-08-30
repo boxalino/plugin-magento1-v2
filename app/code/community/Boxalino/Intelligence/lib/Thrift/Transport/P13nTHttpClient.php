@@ -5,14 +5,18 @@ use Thrift\Transport\TTransport;
 use Thrift\Exception\TTransportException;
 use Thrift\Factory\TStringFuncFactory;
 
-class P13nTHttpClient extends THttpClient {
+class P13nTHttpClient extends THttpClient
+{
 
+    /**
+     * @var string
+     */
     protected $authorizationString;
 
     /**
      * @var string
      */
-    protected $profileId;
+    protected $profileId = 0;
 
 
     /**
@@ -21,7 +25,6 @@ class P13nTHttpClient extends THttpClient {
      * @throws TTransportException if a writing error occurs
      */
     public function flush() {
-        // God, PHP really has some esoteric ways of doing simple things.
         $host = $this->host_.($this->port_ != 80 ? ':'.$this->port_ : '');
 
         $headers = array('Host: '.$host,
@@ -52,8 +55,15 @@ class P13nTHttpClient extends THttpClient {
         }
     }
 
-    public function setAuthorization($username, $password) {
+    /**
+     * @param $username
+     * @param $password
+     * @return $this
+     */
+    public function setAuthorization($username, $password)
+    {
         $this->authorizationString = base64_encode($username.':'.$password);
+        return $this;
     }
 
     /**
