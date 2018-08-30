@@ -13,7 +13,13 @@ class P13nTCurlClient extends TCurlClient {
 
     protected $curl_timeout;
 
-    public function __construct($host, $port=80, $profileId, $uri='', $scheme = 'http', $curl_timeout = 1000)
+    /**
+     * @var string
+     */
+    protected $profileId = 0;
+
+
+    public function __construct($host, $port=80, $uri='', $scheme = 'http', $curl_timeout = 1000)
     {
         $this->curl_timeout = $curl_timeout;
         parent::__construct($host, $port, $uri, $scheme);
@@ -33,7 +39,7 @@ class P13nTCurlClient extends TCurlClient {
             curl_setopt(self::$curlHandle, CURLOPT_BINARYTRANSFER, true);
             curl_setopt(self::$curlHandle, CURLOPT_USERAGENT, 'PHP/TCurlClient');
             curl_setopt(self::$curlHandle, CURLOPT_CUSTOMREQUEST, 'POST');
-			curl_setopt(self::$curlHandle, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt(self::$curlHandle, CURLOPT_SSL_VERIFYPEER, false);
             // FOLLOWLOCATION cannot be activated when safe_mode is enabled or an open_basedir is set
             @curl_setopt(self::$curlHandle, CURLOPT_FOLLOWLOCATION, true);
             @curl_setopt(self::$curlHandle, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
@@ -84,6 +90,18 @@ class P13nTCurlClient extends TCurlClient {
     }
 
     public function setAuthorization($username, $password) {
-    $this->authorizationString = base64_encode($username.':'.$password);
-  }
+        $this->authorizationString = base64_encode($username.':'.$password);
+    }
+
+    /**
+     * adding tracker for the node-pinning architecture
+     *
+     * @param $profileId
+     * @return $this
+     */
+    public function setProfileId($profileId)
+    {
+        $this->profileId = $profileId;
+        return $this;
+    }
 }
