@@ -17,24 +17,34 @@
  * specific language governing permissions and limitations
  * under the License.
  *
- * @package thrift.transport
+ * @package thrift
  */
 
-namespace Thrift\Exception;
+namespace Thrift\Type;
 
 /**
- * Transport exceptions
+ * Base class for constant Management
  */
-class TTransportException extends TException
+abstract class TConstant
 {
-  const UNKNOWN = 0;
-  const NOT_OPEN = 1;
-  const ALREADY_OPEN = 2;
-  const TIMED_OUT = 3;
-  const END_OF_FILE = 4;
+    /**
+     * Don't instanciate this class
+     */
+    protected function __construct() {}
 
-  public function __construct($message=null, $code=0)
-  {
-    parent::__construct($message, $code);
-  }
+    /**
+     * Get a constant value
+     * @param  string $constant
+     * @return mixed
+     */
+    public static function get($constant)
+    {
+        if (is_null(static::$$constant)) {
+            static::$$constant = call_user_func(
+                    sprintf('static::init_%s', $constant)
+                );
+        }
+
+        return static::$$constant;
+    }
 }
