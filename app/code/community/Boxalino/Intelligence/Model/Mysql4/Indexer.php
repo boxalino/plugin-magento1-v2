@@ -432,33 +432,43 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                                 );
                         }
                     }
+
                     if($optionSelect){
-                        $attributeSourceModel = Mage::getModel('eav/config')->getAttribute('catalog_product', $attribute['attribute_code'])
-                            ->setStoreId($storeId)->getSource();
-                        $fetchedOptionValues = null;
-
-                        if ($attributeSourceModel instanceof Mage_Eav_Model_Entity_Attribute_Source_Abstract) {
-                            // Fetch attribute options through method to respect source model implementation.
-                            $fetchedOptionValues = $attributeSourceModel->getAllOptions(false);
+                        $languagesForLabels[$lang] = $storeId;
+                        if($langIndex == 0)
+                        {
+                            $languagesForLabels[Mage_Core_Model_Store::ADMIN_CODE] = 0;
+                            $labelColumns[Mage_Core_Model_Store::ADMIN_CODE] = 'value_' . Mage_Core_Model_Store::ADMIN_CODE;
                         }
+                        foreach($languagesForLabels as $labelLanguage => $store)
+                        {
+                            $attributeSourceModel = Mage::getModel('eav/config')->getAttribute('catalog_product', $attribute['attribute_code'])
+                                ->setStoreId($store)->getSource();
+                            $fetchedOptionValues = null;
 
-                        if($fetchedOptionValues){
-                            foreach($fetchedOptionValues as $v){
-                                if (isset($v['value'])) {
-                                    if (isset($optionValues[$v['value']])) {
-                                        $optionValues[$v['value']]['value_' . $lang] = $v['label'];
-                                    } else {
-                                        $optionValues[$v['value']] = array(
-                                            $attribute['attribute_code'] . '_id' => $v['value'],
-                                            'value_' . $lang => $v['label']
-                                        );
+                            if ($attributeSourceModel instanceof Mage_Eav_Model_Entity_Attribute_Source_Abstract) {
+                                // Fetch attribute options through method to respect source model implementation.
+                                $fetchedOptionValues = $attributeSourceModel->getAllOptions(false);
+                            }
+
+                            if($fetchedOptionValues){
+                                foreach($fetchedOptionValues as $v){
+                                    if (isset($v['value'])) {
+                                        if (isset($optionValues[$v['value']])) {
+                                            $optionValues[$v['value']]['value_' . $labelLanguage] = $v['label'];
+                                        } else {
+                                            $optionValues[$v['value']] = array(
+                                                $attribute['attribute_code'] . '_id' => $v['value'],
+                                                'value_' . $labelLanguage => $v['label']
+                                            );
+                                        }
                                     }
                                 }
+                            }else{
+                                $optionSelect = false;
                             }
-                        }else{
-                            $optionSelect = false;
+                            $fetchedOptionValues = null;
                         }
-                        $fetchedOptionValues = null;
                     }
 
                     $select
