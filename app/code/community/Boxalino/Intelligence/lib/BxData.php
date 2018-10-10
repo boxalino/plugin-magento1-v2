@@ -2,6 +2,8 @@
 
 namespace com\boxalino\bxclient\v1;
 
+use http\Exception\RuntimeException;
+
 class BxData
 {
     const URL_VERIFY_CREDENTIALS = '/frontend/dbmind/en/dbmind/api/credentials/verify';
@@ -98,7 +100,20 @@ class BxData
         return $this->addSourceFile($filePath, $sourceId, $container, 'resource', 'CSV', $params, $validate);
     }
 
+    /**
+     * Adding an additional table file with the content as it has it
+     *
+     * @param $filePath
+     * @return string
+     * @throws \Exception
+     */
+    public function addExtraTableToEntity($filePath, $container, $column, $columns, $maxLength = 23)
+    {
+        $params = ['referenceIdColumn'=>$column, 'labelColumns'=>$columns, 'encoding' => 'UTF-8', 'delimiter'=>',', 'enclosure'=>'"', 'escape'=>"\\\\", 'lineSeparator'=>"\\n"];
+        $sourceId = $this->getSourceIdFromFileNameFromPath($filePath, $container, $maxLength, true);
 
+        return $this->addSourceFile($filePath, $sourceId, $container, 'resource', 'CSV', $params);
+    }
 
     public function setCSVTransactionFile($filePath, $orderIdColumn, $productIdColumn, $customerIdColumn, $orderDateIdColumn, $totalOrderValueColumn, $productListPriceColumn, $productDiscountedPriceColumn, $productIdField='bx_item_id', $customerIdField='bx_customer_id', $productsContainer = 'products', $customersContainer = 'customers', $format = 'CSV', $encoding = 'UTF-8', $delimiter = ',', $enclosure = '"', $escape = "\\\\", $lineSeparator = "\\n",$container = 'transactions', $sourceId = 'transactions', $validate=true) {
 
@@ -550,6 +565,11 @@ class BxData
 
         if($responseBody === false)
         {
+            if(strpos(curl_error($s), 'Operation timed out after') !== false)
+            {
+                throw new \RuntimeException("The connection closed due to the timeout reach. Contact us at support@boxalino.com if you want updates on the exporter status. You can update the reponse wait time in your Magento admin.");
+            }
+
             if(strpos(curl_error($s), "couldn't open file") !== false) {
                 if($temporaryFilePath !== null) {
                     throw new \Exception('There seems to be a problem with the folder BxData uses to temporarily store a zip file with all your files before sending it. As you are currently provided a path, this is most likely the problem. Please make sure it is a valid path, or leave it to null (default value), then BxData will use sys_get_temp_dir() + "/bxclient" which typically works fine.');

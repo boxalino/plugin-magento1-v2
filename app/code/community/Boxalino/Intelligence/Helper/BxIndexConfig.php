@@ -23,17 +23,15 @@ class Boxalino_Intelligence_Helper_BxIndexConfig
      * @param $websites
      * @throws \Exception
      */
-    public function initialize() {
+    public function initialize()
+    {
         $this->indexConfig = array();
         $websites = Mage::app()->getWebsites();
         foreach($websites  as $website) {
             foreach ($website->getGroups(true) as $group) {
                 foreach ($group->getStores() as $store) {
-
                     $enabled = $store->getConfig('bxExporter/exporter/enabled');
-
                     if($enabled == '1') {
-
                         $account = $store->getConfig('bxGeneral/general/account_name');
 
                         if($account == "") {
@@ -43,7 +41,6 @@ class Boxalino_Intelligence_Helper_BxIndexConfig
                         }
 
                         $language = $store->getConfig('bxGeneral/advanced/language');
-
                         if($language == "") {
                             $locale = $store->getConfig('general/locale/code');
                             $parts = explode('_', $locale);
@@ -53,7 +50,6 @@ class Boxalino_Intelligence_Helper_BxIndexConfig
                         if (!array_key_exists($account, $this->indexConfig)) {
                             $this->indexConfig[$account] = array();
                         }
-
 
                         if (array_key_exists($language, $this->indexConfig[$account])) {
                             throw new \Exception(
@@ -154,6 +150,15 @@ class Boxalino_Intelligence_Helper_BxIndexConfig
     public function getFirstAccountStore($account) {
         $array = $this->getAccountFirstLanguageArray($account);
         return $array['store'];
+    }
+
+    /**
+     * @param $account
+     * @return null | int
+     */
+    public function getExporterTimeout($account)
+    {
+        return (int) $this->getFirstAccountStore($account)->getConfig('bxExporter/exporter/timeout');
     }
 
     /**
@@ -353,5 +358,25 @@ class Boxalino_Intelligence_Helper_BxIndexConfig
         $includes = explode(',', $this->getFirstAccountStore($account)->getConfig('bxExporter/transactions/include_properties'));
         $excludes = explode(',', $this->getFirstAccountStore($account)->getConfig('bxExporter/transactions/exclude_properties'));
         return $this->getFinalProperties($allProperties, $includes, $excludes, $requiredProperties);
+    }
+
+    /**
+     * Getting additional tables for each entity to be exported (products, customers, transactions)
+     *
+     * @param $account
+     * @param string $type
+     * @return array
+     * @throws \Exception
+     */
+    public function getAccountExtraTablesByEntityType($account, $type)
+    {
+        $configPath = "bxExporter/" . $type . "/extra_tables";
+        $additionalTablesList = $this->getFirstAccountStore($account)->getConfig($configPath);
+        if($additionalTablesList)
+        {
+            return explode(',', $additionalTablesList);
+        }
+
+        return [];
     }
 }

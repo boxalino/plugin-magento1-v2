@@ -210,4 +210,30 @@ class Boxalino_Intelligence_Helper_BxFiles
             }
         }
     }
+
+    /**
+     * removing empty files from the exporter path
+     *
+     * @param null $fileNamePattern
+     */
+    public function clearEmptyFiles($fileNamePattern = null)
+    {
+        $files = array_diff(scandir($this->_dir), ['..','.']);
+        foreach ($files as $file)
+        {
+            $filePath = $this->_dir . "/" . $file;
+            if(filesize($filePath))
+            {
+                continue;
+            }
+
+            if(!is_null($fileNamePattern) && (substr($file, 0, strlen($fileNamePattern)) === $fileNamePattern))
+            {
+                @unlink($filePath);
+                continue;
+            }
+
+            @unlink($filePath);
+        }
+    }
 }
