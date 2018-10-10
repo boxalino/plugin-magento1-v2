@@ -1886,7 +1886,7 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                 Mage::log("bxLog: {$entity} - additional table {$table} exported.", Zend_Log::INFO, self::BOXALINO_LOG_FILE);
             } catch (\Exception $exception)
             {
-                Mage::log("bxLog: {$entity} additional table error: ". $exception->getMessage(), Zend_Log::ERROR, self::BOXALINO_LOG_FILE);
+                Mage::log("bxLog: {$entity} additional table error: ". $exception->getMessage(), Zend_Log::ERR, self::BOXALINO_LOG_FILE);
                 continue;
             }
         }
@@ -1925,7 +1925,7 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
             return $db->fetchAll($select);
         } catch(\Exception $exc)
         {
-            Mage::log("bxLog: {$entity} additional table error: ". $exception->getMessage(), Zend_Log::ERROR, self::BOXALINO_LOG_FILE);
+            Mage::log("bxLog: {$entity} additional table error: ". $exception->getMessage(), Zend_Log::WARN, self::BOXALINO_LOG_FILE);
             return array();
         }
 
