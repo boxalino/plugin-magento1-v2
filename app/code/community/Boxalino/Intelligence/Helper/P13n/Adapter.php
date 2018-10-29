@@ -119,11 +119,11 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
 
     public function setLandingPageChoiceId($choice = ''){
 
-      if (!empty($choice)) {
-        return $this->landingPageChoice = $choice;
-      }
+        if (!empty($choice)) {
+            return $this->landingPageChoice = $choice;
+        }
 
-      return $choice;
+        return $choice;
 
     }
 
@@ -133,7 +133,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
      */
     public function getSearchChoice($queryText, $isBlog = false) {
 
-      if($isBlog) {
+        if($isBlog) {
             $choice = Mage::getStoreConfig('bxSearch/advanced/blog_choice_id');
             if ($choice == null) {
                 $choice = "read_search";
@@ -141,11 +141,11 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
             return $choice;
         }
 
-      $landingPageChoiceId = $this->landingPageChoice;
+        $landingPageChoiceId = $this->landingPageChoice;
 
         if (!empty($landingPageChoiceId)) {
-          $this->currentSearchChoice = $landingPageChoiceId;
-          return $landingPageChoiceId;
+            $this->currentSearchChoice = $landingPageChoiceId;
+            return $landingPageChoiceId;
         }
 
         if($queryText == null && !is_null(Mage::registry('current_category'))) {
@@ -237,15 +237,15 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
                 if ($i == 0) {
                     $textualSuggestionFacets = $bxAutocompleteResponse->getTextualSuggestionFacets($suggestion);
                     if ($textualSuggestionFacets != null) {
-						$count = 0;
+                        $count = 0;
                         foreach ($textualSuggestionFacets->getCategories($autocompleteConfig['ranking'], $autocompleteConfig['level']) as $category) {
                             $_data['categories'][] = ['id' => $facets->getCategoryValueId($category),
                                 'title' => $facets->getCategoryValueLabel($category),
                                 'num_results' => $facets->getCategoryValueCount($category)
                             ];
-							if($count++>=$autocompleteConfig['count']) {
-								break;
-							}
+                            if($count++>=$autocompleteConfig['count']) {
+                                break;
+                            }
                         }
                     }
                 }
@@ -313,31 +313,31 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
         self::$bxClient->addRequest($bxRequest);
 
         if($this->bxHelperData->isBlogSearchEnabled() && is_null($categoryId)) {
-             $this->addBlogResult($queryText, $hitCount);
-         }
+            $this->addBlogResult($queryText, $hitCount);
+        }
     }
 
-     private function addBlogResult($queryText, $hitCount) {
-         $bxRequest = new \com\boxalino\bxclient\v1\BxSearchRequest($this->bxHelperData->getLanguage(), $queryText, $hitCount, $this->getSearchChoice($queryText, true));
-         $requestParams = Mage::app()->getRequest()->getParams();
-         $pageOffset = isset($requestParams['bx_blog_page']) ? ($requestParams['bx_blog_page'] - 1) * ($hitCount) : 0;
-         $pageOffset = 0;
-         $bxRequest->setOffset($pageOffset);
-         $bxRequest->setGroupBy('id');
-         $returnFields = $this->bxHelperData->getBlogReturnFields();
-         $bxRequest->setReturnFields($returnFields);
-         self::$bxClient->addRequest($bxRequest);
-     }
+    private function addBlogResult($queryText, $hitCount) {
+        $bxRequest = new \com\boxalino\bxclient\v1\BxSearchRequest($this->bxHelperData->getLanguage(), $queryText, $hitCount, $this->getSearchChoice($queryText, true));
+        $requestParams = Mage::app()->getRequest()->getParams();
+        $pageOffset = isset($requestParams['bx_blog_page']) ? ($requestParams['bx_blog_page'] - 1) * ($hitCount) : 0;
+        $pageOffset = 0;
+        $bxRequest->setOffset($pageOffset);
+        $bxRequest->setGroupBy('id');
+        $returnFields = $this->bxHelperData->getBlogReturnFields();
+        $bxRequest->setReturnFields($returnFields);
+        self::$bxClient->addRequest($bxRequest);
+    }
 
     public function getLandingpageContextParameters($extraParams = null){
 
-       foreach ($extraParams as $key => $value) {
+        foreach ($extraParams as $key => $value) {
 
-         self::$bxClient->addRequestContextParameter($key, $value);
+            self::$bxClient->addRequestContextParameter($key, $value);
 
-       }
+        }
 
-     }
+    }
 
     public function getFinderChoice() {
         $choice_id = Mage::getStoreConfig('bxSearch/advanced/finder_choice_id');
@@ -482,7 +482,6 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
      */
     public function getMagentoStoreConfigPageSize()
     {
-
         $storeConfig = $this->getMagentoStoreConfig();
         $storeDisplayMode = $storeConfig['list_mode'];
 
@@ -496,8 +495,8 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
     /**
      * @return mixed
      */
-    protected function getMagentoStoreConfigListOrder(){
-
+    protected function getMagentoStoreConfigListOrder()
+    {
         $storeConfig = $this->getMagentoStoreConfig();
         return $storeConfig['default_sort_by'];
     }
@@ -505,8 +504,8 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
     /**
      * @return mixed
      */
-    private function getMagentoStoreConfig(){
-
+    private function getMagentoStoreConfig()
+    {
         return Mage::getStoreConfig('catalog/frontend');
     }
 
@@ -521,8 +520,8 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
      * @return string
      */
 
-    public function getUrlParameterPrefix() {
-
+    public function getUrlParameterPrefix()
+    {
         return 'bx_';
     }
 
@@ -530,8 +529,8 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
     /**
      * @return \com\boxalino\bxclient\v1\BxFacets
      */
-    private function prepareFacets(){
-
+    private function prepareFacets()
+    {
         $bxFacets = new \com\boxalino\bxclient\v1\BxFacets();
         $selectedValues = array();
         $bxSelectedValues = array();
@@ -630,8 +629,8 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
     /**
      * @return int
      */
-    public function getTotalHitCount($variant_index = null){
-
+    public function getTotalHitCount($variant_index = null)
+    {
         $this->simpleSearch();
         $choiceId = is_null($variant_index) ? $this->currentSearchChoice : $this->getClientResponse()->getChoiceIdFromVariantIndex($variant_index);
         return $this->getClientResponse()->getTotalHitCount($choiceId);
@@ -640,26 +639,30 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
     /**
      * @return array
      */
-    public function getEntitiesIds($variant_index = null){
+    public function getEntitiesIds($variant_index = null)
+    {
         $this->simpleSearch();
         $choiceId = is_null($variant_index) ? $this->currentSearchChoice : $this->getClientResponse()->getChoiceIdFromVariantIndex($variant_index);
         return $this->getClientResponse()->getHitIds($choiceId, true, 0, 10, $this->getEntityIdFieldName());
     }
 
-    public function getBlogIds() {
+    public function getBlogIds()
+    {
         $this->simpleSearch();
         $choice_id = $this->getSearchChoice('', true);
         return self::$bxClient->getResponse()->getHitIds($choice_id, true, 0, 10, $this->getEntityIdFieldName());
 
     }
 
-    public function getBlogTotalHitCount() {
+    public function getBlogTotalHitCount()
+    {
         $this->simpleSearch();
         $choice_id = $this->getSearchChoice('', true);
         return self::$bxClient->getResponse()->getTotalHitCount($choice_id);
     }
 
-    public function getHitVariable($id, $field, $is_blog=false) {
+    public function getHitVariable($id, $field, $is_blog=false)
+    {
         $this->simpleSearch();
         $choice_id = $this->currentSearchChoice;
         if($is_blog) {
@@ -671,7 +674,8 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
     /**
      * @return null
      */
-    public function getFacets($getFinder = false) {
+    public function getFacets($getFinder = false)
+    {
         $this->simpleSearch($getFinder);
         $facets = self::$bxClient->getResponse()->getFacets($this->currentSearchChoice);
         if(empty($facets)){
@@ -684,7 +688,8 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
     /**
      * @return null
      */
-    public function getCorrectedQuery() {
+    public function getCorrectedQuery()
+    {
         $this->simpleSearch();
         return self::$bxClient->getResponse()->getCorrectedQuery($this->currentSearchChoice);
     }
@@ -692,8 +697,8 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
     /**
      * @return bool
      */
-    public function areResultsCorrected() {
-
+    public function areResultsCorrected()
+    {
         $this->simpleSearch();
         return self::$bxClient->getResponse()->areResultsCorrected($this->currentSearchChoice);
     }
@@ -701,8 +706,8 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
     /**
      * @return bool
      */
-    public function areThereSubPhrases() {
-
+    public function areThereSubPhrases()
+    {
         $this->simpleSearch();
         return self::$bxClient->getResponse()->areThereSubPhrases($this->currentSearchChoice);
     }
@@ -710,7 +715,8 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
     /**
      * @return bool
      */
-    public function areResultsCorrectedAndAlsoProvideSubPhrases(){
+    public function areResultsCorrectedAndAlsoProvideSubPhrases()
+    {
         $this->simpleSearch();
         return self::$bxClient->getResponse()->areResultsCorrectedAndAlsoProvideSubPhrases($this->currentSearchChoice);
     }
@@ -718,8 +724,8 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
     /**
      * @return array
      */
-    public function getSubPhrasesQueries() {
-
+    public function getSubPhrasesQueries()
+    {
         $this->simpleSearch();
         return self::$bxClient->getResponse()->getSubPhrasesQueries($this->currentSearchChoice);
     }
@@ -728,8 +734,8 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
      * @param $queryText
      * @return int|mixed
      */
-    public function getSubPhraseTotalHitCount($queryText) {
-
+    public function getSubPhraseTotalHitCount($queryText)
+    {
         $this->simpleSearch();
         return self::$bxClient->getResponse()->getSubPhraseTotalHitCount($queryText,$this->currentSearchChoice);
     }
@@ -738,7 +744,8 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
      * @param $queryText
      * @return array
      */
-    public function getSubPhraseEntitiesIds($queryText) {
+    public function getSubPhraseEntitiesIds($queryText)
+    {
         $this->simpleSearch();
         return self::$bxClient->getResponse()->getSubPhraseHitIds($queryText, $this->currentSearchChoice, 0, $this->getEntityIdFieldName());
     }
@@ -749,15 +756,16 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
      * @param int $count
      * @return mixed|string
      */
-    public function getSearchResultTitle($choice_id, $default = '', $count = 0) {
+    public function getSearchResultTitle($choice_id, $default = '', $count = 0)
+    {
         return self::$bxClient->getResponse()->getResultTitle($choice_id, $count, $default);
-
     }
 
     /**
      *
      */
-    public function flushResponses() {
+    public function flushResponses()
+    {
         self::$bxClient->flushResponses();
         self::$bxClient->resetRequests();
     }
@@ -771,8 +779,8 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
      * @param bool $execute
      * @return array|void
      */
-    public function getRecommendation($widgetName, $context = array(), $widgetType = '', $minAmount = 3, $amount = 3, $execute=true, $returnFields = array(), $relatedProducts=array()){
-
+    public function getRecommendation($widgetName, $context = array(), $widgetType = '', $minAmount = 3, $amount = 3, $execute=true, $returnFields = array(), $relatedProducts=array())
+    {
         if(!$execute || !isset(self::$choiceContexts[$widgetName])){
             if (!isset(self::$choiceContexts[$widgetName])) {
                 self::$choiceContexts[$widgetName] = [];
@@ -794,13 +802,13 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
             } else {
                 if (($minAmount >= 0) && ($amount >= 0) && ($minAmount <= $amount)) {
                     if($widgetType == 'parametrized') {
-                      $bxRequest = new \com\boxalino\bxclient\v1\BxParametrizedRequest($this->bxHelperData->getLanguage(), $widgetName, $amount, $minAmount, $returnFields);
+                        $bxRequest = new \com\boxalino\bxclient\v1\BxParametrizedRequest($this->bxHelperData->getLanguage(), $widgetName, $amount, $minAmount, $returnFields);
                     } else {
-                      $bxRequest = new \com\boxalino\bxclient\v1\BxRecommendationRequest($this->bxHelperData->getLanguage(), $widgetName, $amount, $minAmount);
+                        $bxRequest = new \com\boxalino\bxclient\v1\BxRecommendationRequest($this->bxHelperData->getLanguage(), $widgetName, $amount, $minAmount);
                     }
                     if ($widgetType != 'blog') {
-                      $bxRequest->setGroupBy($this->getEntityIdFieldName());
-                      $bxRequest->setFilters($this->getSystemFilters());
+                        $bxRequest->setGroupBy($this->getEntityIdFieldName());
+                        $bxRequest->setFilters($this->getSystemFilters());
                     }
                     $bxRequest->setReturnFields(array_merge(array($this->getEntityIdFieldName()), $returnFields));
                     if ($widgetType === 'basket' && is_array($context)) {
@@ -835,18 +843,20 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
     }
 
 
-    public function addNotification($type, $notification) {
+    public function addNotification($type, $notification)
+    {
         self::$bxClient->addNotification($type, $notification);
     }
 
-    public function finalNotificationCheck($force = false, $requestMapKey = 'dev_bx_notifications') {
-
+    public function finalNotificationCheck($force = false, $requestMapKey = 'dev_bx_notifications')
+    {
         if(!is_null(self::$bxClient)) {
             self::$bxClient->finalNotificationCheck($force, $requestMapKey);
         }
     }
 
-    public function getResponse(){
+    public function getResponse()
+    {
         $this->simpleSearch();
         return self::$bxClient->getResponse();
     }
@@ -856,7 +866,8 @@ class Boxalino_Intelligence_Helper_P13n_Adapter{
         return self::$bxClient->getResponse();
     }
 
-    public function getExtraInfoWithKey($key, $choice_id = null){
+    public function getExtraInfoWithKey($key, $choice_id = null)
+    {
         if ($this->bxHelperData->isPluginEnabled() && !empty($key)) {
             $choice = is_null($choice_id) ? $this->currentSearchChoice : $choice_id;
             $extraInfo = $this->getClientResponse()->getExtraInfo($key, '', $choice);

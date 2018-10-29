@@ -71,9 +71,7 @@ class Boxalino_Intelligence_Block_Layer_State extends Mage_Catalog_Block_Layer_S
                         $selectedValues = $facets->getSelectedValues($fieldName);
                         if(!empty($selectedValues)) {
                             foreach ($selectedValues as $i => $v){
-
                                 $value = $facets->getSelectedValueLabel($fieldName, $i);
-
                                 if($fieldName == 'discountedPrice' && substr($value, -3) == '- 0') {
                                     $values = explode(' - ', $value);
                                     $values[1] = '*';
