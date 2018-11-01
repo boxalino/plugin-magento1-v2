@@ -140,7 +140,7 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                     }catch(\RuntimeException $e){
                         Mage::log('bxLog: pushing data stopped due to the configured timeout: ' . $e->getMessage(), Zend_Log::WARN, self::BOXALINO_LOG_FILE);
                     }catch(\Exception $e){
-                        Mage::logException('bxLog: pushData failed with exception: ' . $e->getMessage());
+                        Mage::logException($e);
                         Mage::log('bxLog: pushData failed with exception: ' . $e->getMessage(), Zend_Log::INFO, self::BOXALINO_LOG_FILE);
                     }
                     Mage::log('bxLog: Finished account: ' . $account, Zend_Log::INFO, self::BOXALINO_LOG_FILE);
