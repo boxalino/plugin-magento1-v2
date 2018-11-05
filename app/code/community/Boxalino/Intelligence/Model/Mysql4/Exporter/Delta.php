@@ -8,6 +8,11 @@ class Boxalino_Intelligence_Model_Mysql4_Exporter_Delta extends Boxalino_Intelli
     protected $_lastIndex = 0;
 
     /**
+     * @var array
+     */
+    protected $_allProductTags = array();
+
+    /**
      * @description Declare where Indexer should start
      * @return void
      */

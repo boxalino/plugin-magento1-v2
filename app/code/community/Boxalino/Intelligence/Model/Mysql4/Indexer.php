@@ -3,8 +3,8 @@
 /**
  * Class Boxalino_Intelligence_Model_Mysql4_Indexer
  */
-abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Model_Mysql4_Abstract{
-
+abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Model_Mysql4_Abstract
+{
     /**
      * @var
      */
@@ -65,10 +65,10 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
     /**
      *
      */
-    protected function exportStores(){
-
+    protected function exportStores()
+    {
         $this->_helperExporter = Mage::helper('boxalino_intelligence');
-        Mage::log("bxLog: starting Boxalino export", Zend_Log::INFO, self::BOXALINO_LOG_FILE);
+        Mage::log("bxLog: starting {$this->indexType} Boxalino export", Zend_Log::INFO, self::BOXALINO_LOG_FILE);
 
         $this->config = Mage::helper('boxalino_intelligence/bxIndexConfig');
         Mage::log("bxLog: retrieved index config: " . $this->config->toString(), Zend_Log::INFO, self::BOXALINO_LOG_FILE);
@@ -140,7 +140,7 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                     }catch(\RuntimeException $e){
                         Mage::log('bxLog: pushing data stopped due to the configured timeout: ' . $e->getMessage(), Zend_Log::WARN, self::BOXALINO_LOG_FILE);
                     }catch(\Exception $e){
-                        Mage::logException('bxLog: pushData failed with exception: ' . $e->getMessage());
+                        Mage::logException($e);
                         Mage::log('bxLog: pushData failed with exception: ' . $e->getMessage(), Zend_Log::INFO, self::BOXALINO_LOG_FILE);
                     }
                     Mage::log('bxLog: Finished account: ' . $account, Zend_Log::INFO, self::BOXALINO_LOG_FILE);
@@ -486,7 +486,7 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
 
                             if($fetchedOptionValues){
                                 foreach($fetchedOptionValues as $v){
-                                    if (isset($v['value'])) {
+                                    if (isset($v['value']) && !is_array($v['value'])) {
                                         if (isset($optionValues[$v['value']])) {
                                             $optionValues[$v['value']]['value_' . $labelLanguage] = $v['label'];
                                         } else {

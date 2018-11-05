@@ -7,7 +7,7 @@ require_once "Mage/Catalog/controllers/CategoryController.php";
 class Boxalino_Intelligence_CategoryController extends Mage_Catalog_CategoryController{
 
     /**
-     * 
+     *
      */
     public function viewAction()
     {

@@ -3,7 +3,8 @@
 /**
  * Class Boxalino_Intelligence_Helper_P13n_Adapter
  */
-class Boxalino_Intelligence_Helper_P13n_Adapter{
+class Boxalino_Intelligence_Helper_P13n_Adapter
+{
 
     /**
      * @var \com\boxalino\bxclient\v1\BxClient

@@ -3,12 +3,14 @@
 /**
  * Class Boxalino_Intelligence_Block_Journey_Product_ProductView
  */
-class Boxalino_Intelligence_Block_Journey_Product_ProductView extends Mage_Catalog_Block_Product_View implements Boxalino_Intelligence_Block_Journey_CPOJourney{
+class Boxalino_Intelligence_Block_Journey_Product_View extends Mage_Catalog_Block_Product_View
+    implements Boxalino_Intelligence_Block_Journey_CPOJourney
+{
 
     protected $bxJourney;
+
     protected $bxHelperData;
     protected $p13nHelper;
-
     protected $bxResourceManager;
 
     public function _construct()
