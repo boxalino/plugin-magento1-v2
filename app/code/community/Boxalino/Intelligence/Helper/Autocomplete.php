@@ -3,7 +3,8 @@
 /**
  * Class Boxalino_Intelligence_Helper_Autocomplete
  */
-class Boxalino_Intelligence_Helper_Autocomplete{
+class Boxalino_Intelligence_Helper_Autocomplete
+{
 
     /**
      * @param $products

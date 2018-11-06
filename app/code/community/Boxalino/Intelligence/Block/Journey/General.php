@@ -3,7 +3,9 @@
 /**
  * Class Boxalino_Intelligence_Block_Journey_General
  */
-Class Boxalino_Intelligence_Block_Journey_General extends Mage_Core_Block_Template implements Boxalino_Intelligence_Block_Journey_CPOJourney {
+Class Boxalino_Intelligence_Block_Journey_General extends Mage_Core_Block_Template
+    implements Boxalino_Intelligence_Block_Journey_CPOJourney
+{
 
     protected $bxJourney;
 
@@ -32,7 +34,8 @@ Class Boxalino_Intelligence_Block_Journey_General extends Mage_Core_Block_Templa
         return $this->bxJourney->createVisualElement($element, $additional_parameter)->toHtml();
     }
 
-    public function getLocalizedValue($values) {
+    public function getLocalizedValue($values)
+    {
         return $this->p13nHelper->getResponse()->getLocalizedValue($values);
     }
 }

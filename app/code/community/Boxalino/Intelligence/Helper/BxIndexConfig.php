@@ -3,13 +3,12 @@
 /**
  * Class Boxalino_Intelligence_Helper_BxIndexConfig
  */
-class Boxalino_Intelligence_Helper_BxIndexConfig
+class Boxalino_Intelligence_Helper_BxIndexConfig extends Mage_Core_Helper_Abstract
 {
     /**
      * @var array
      */
-    private $indexConfig = array();
-
+    protected $indexConfig = array();
 
     /**
      * BxIndexConfig constructor.
@@ -108,7 +107,7 @@ class Boxalino_Intelligence_Helper_BxIndexConfig
      * @return mixed
      * @throws \Exception
      */
-    private function getAccountArray($account) {
+    protected function getAccountArray($account) {
         if(isset($this->indexConfig[$account])) {
             return $this->indexConfig[$account];
         }
@@ -120,7 +119,7 @@ class Boxalino_Intelligence_Helper_BxIndexConfig
      * @return mixed
      * @throws \Exception
      */
-    private function getAccountFirstLanguageArray($account) {
+    protected function getAccountFirstLanguageArray($account) {
         $accountArray = $this->getAccountArray($account);
         foreach($accountArray as $l => $vals) {
             return $vals;
@@ -134,7 +133,7 @@ class Boxalino_Intelligence_Helper_BxIndexConfig
      * @return mixed
      * @throws \Exception
      */
-    private function getAccountLanguageArray($account, $language) {
+    protected function getAccountLanguageArray($account, $language) {
         $accountArray = $this->getAccountArray($account);
         if(isset($accountArray[$language])) {
             return $accountArray[$language];
