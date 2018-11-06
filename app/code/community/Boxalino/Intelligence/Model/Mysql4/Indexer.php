@@ -1034,7 +1034,7 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                 array('t_d' => $db->getTableName($this->_prefix . 'catalog_product_entity_varchar')),
                 't_d.entity_id = c_p_e.entity_id AND c_p_r.parent_id IS NULL',
                 array(
-                    'LOWER(t_d.value)',
+                    new \Zend_Db_Expr('LOWER(t_d.value) as value'),
                     't_d.store_id'
                 )
             );
@@ -1042,7 +1042,7 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                 array('t_d' => $db->getTableName($this->_prefix . 'catalog_product_entity_varchar')),
                 't_d.entity_id = c_p_r.parent_id',
                 array(
-                    'LOWER(t_d.value)',
+                    new \Zend_Db_Expr('LOWER(t_d.value) as value'),
                     't_d.store_id'
                 )
             );
