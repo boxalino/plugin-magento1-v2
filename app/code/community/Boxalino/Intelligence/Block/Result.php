@@ -3,7 +3,8 @@
 /**
  * Class Boxalino_Intelligence_Block_Result
  */
-class Boxalino_Intelligence_Block_Result extends Mage_CatalogSearch_Block_Result {
+class Boxalino_Intelligence_Block_Result extends Mage_CatalogSearch_Block_Result
+{
 
     /**
      * @var bool
@@ -24,30 +25,48 @@ class Boxalino_Intelligence_Block_Result extends Mage_CatalogSearch_Block_Result
      * @var null
      */
     protected $correctedQuery = null;
-    
+
+    /**
+     * @var null
+     */
+    protected $bxRewriteAllowed = null;
+
+    /**
+     * @var Mage_Core_Helper_Abstract
+     */
+    protected $bxHelperData;
+
+    /**
+     * @var Boxalino_Intelligence_Helper_P13n_Adapter
+     */
+    protected $adapter = null;
+
     /**
      * Boxalino_Intelligence_Block_Result constructor
      */
-    public function _construct() {
-        $this->bxHelperData = Mage::helper('boxalino_intelligence');
-        $p13nHelper = $this->bxHelperData->getAdapter();
-        try {
-            if ($this->bxHelperData->isSearchEnabled()) {
-                if ($this->hasSubPhrases()) {
-                    if ($p13nHelper->areResultsCorrectedAndAlsoProvideSubPhrases()) {
-                        $this->correctedQuery = $p13nHelper->getCorrectedQuery();
+    public function __construct() {
+        if($this->getBxRewriteAllowed()) {
+            $this->bxHelperData = Mage::helper('boxalino_intelligence');
+            try {
+                if ($this->bxHelperData->isSearchEnabled()) {
+                    $this->adapter = $this->bxHelperData->getAdapter();
+                    if ($this->hasSubPhrases()) {
+                        if ($this->adapter->areResultsCorrectedAndAlsoProvideSubPhrases()) {
+                            $this->correctedQuery = $this->adapter->getCorrectedQuery();
+                        }
+                        $this->queries = $this->adapter->getSubPhrasesQueries();
                     }
-                    $this->queries =  $this->bxHelperData->getAdapter()->getSubPhrasesQueries();
+                } else {
+                    $this->fallback = true;
                 }
-            } else {
+            } catch (\Exception $e) {
+                $this->bxHelperData->setFallback(true);
                 $this->fallback = true;
+                Mage::logException($e);
             }
-        } catch (\Exception $e){
-            $this->bxHelperData->setFallback(true);
-            $this->fallback = true;
-            Mage::logException($e);
         }
-        parent::_construct();
+
+        return parent::__construct();
     }
 
     /**
@@ -69,12 +88,12 @@ class Boxalino_Intelligence_Block_Result extends Mage_CatalogSearch_Block_Result
     /**
      * @return int|null
      */
-    public function hasSubPhrases() {
-
+    public function hasSubPhrases()
+    {
         if ($this->fallback) {
             return 0;
         }
-        
+
         try {
             return Mage::helper('boxalino_intelligence')->getAdapter()->areThereSubPhrases();
         } catch (\Exception $e){
@@ -87,7 +106,12 @@ class Boxalino_Intelligence_Block_Result extends Mage_CatalogSearch_Block_Result
      * @param string $template
      * @return $this|Mage_Core_Block_Template
      */
-    public function setTemplate($template) {
+    public function setTemplate($template)
+    {
+        if(!$this->getBxRewriteAllowed())
+        {
+            return parent::setTemplate($template);
+        }
 
         if ($this->bxHelperData->isSearchEnabled()) {
             if ($this->hasSubPhrases()) {
@@ -103,6 +127,7 @@ class Boxalino_Intelligence_Block_Result extends Mage_CatalogSearch_Block_Result
                 return $this;
             }
         }
+
         return parent::setTemplate($template);
     }
     /**
@@ -111,7 +136,7 @@ class Boxalino_Intelligence_Block_Result extends Mage_CatalogSearch_Block_Result
      * @return string
      */
     public function getResultCount() {
-        
+
         if ($this->fallback) {
             return parent::getResultCount();
         }
@@ -136,20 +161,20 @@ class Boxalino_Intelligence_Block_Result extends Mage_CatalogSearch_Block_Result
     /**
      * @return string
      */
-    public function getHeaderText() {
-
+    public function getHeaderText()
+    {
         $bxHelperData = Mage::helper('boxalino_intelligence');
         if (!$this->fallback && $bxHelperData->getAdapter()->areResultsCorrected()) {
             return $this->__("Corrected search results for '%s'", $bxHelperData->getAdapter()->getCorrectedQuery());
         }
         return parent::getHeaderText();
     }
-    
+
     /**
      * @return string
      */
-    public function getProductListHtml() {
-
+    public function getProductListHtml()
+    {
         if ($this->fallback) {
             return parent::getProductListHtml();
         }
@@ -160,8 +185,8 @@ class Boxalino_Intelligence_Block_Result extends Mage_CatalogSearch_Block_Result
     /**
      * @return int
      */
-    public function getSubPhrasesResultCount() {
-
+    public function getSubPhrasesResultCount()
+    {
         return sizeof($this->queries);
     }
 
@@ -169,8 +194,8 @@ class Boxalino_Intelligence_Block_Result extends Mage_CatalogSearch_Block_Result
      * @param $index
      * @return string
      */
-    public function getSubPhrasesResultText($index) {
-
+    public function getSubPhrasesResultText($index)
+    {
         $query = $this->queries[$index];
         return $this->__("Search result for: '%s'", $query);
     }
@@ -178,8 +203,8 @@ class Boxalino_Intelligence_Block_Result extends Mage_CatalogSearch_Block_Result
     /**
      * @return bool
      */
-    protected function hasNoResult() {
-
+    protected function hasNoResult()
+    {
         try{
             $bxHelperData = Mage::helper('boxalino_intelligence');
             return (boolean) !count($bxHelperData->getAdapter()->getEntitiesIds());
@@ -188,6 +213,36 @@ class Boxalino_Intelligence_Block_Result extends Mage_CatalogSearch_Block_Result
             $this->fallback = true;
             Mage::logException($e);
         }
+    }
+
+    /**
+     * Before rewriting globally, check if the plugin is to be used
+     * @return bool
+     */
+    public function checkIfPluginToBeUsed()
+    {
+        $boxalinoGlobalPluginStatus = Mage::helper('core')->isModuleOutputEnabled('Boxalino_Intelligence');
+        if($boxalinoGlobalPluginStatus)
+        {
+            if(Mage::helper('boxalino_intelligence')->isPluginEnabled())
+            {
+
+                return true;
+            }
+        }
+
+        $this->fallback = true;
+        return false;
+    }
+
+    public function getBxRewriteAllowed()
+    {
+        if(is_null($this->bxRewriteAllowed))
+        {
+            $this->bxRewriteAllowed = $this->checkIfPluginToBeUsed();
+        }
+
+        return $this->bxRewriteAllowed;
     }
 
 }

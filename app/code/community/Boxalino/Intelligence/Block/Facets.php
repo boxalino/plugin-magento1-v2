@@ -3,7 +3,8 @@
 /**
  * Class Boxalino_Intelligence_Block_Facets
  */
-class Boxalino_Intelligence_Block_Facets extends Mage_Core_Block_Template{
+class Boxalino_Intelligence_Block_Facets extends Boxalino_Intelligence_Block_PluginConfig
+{
 
     /**
      * @var null
@@ -69,4 +70,10 @@ class Boxalino_Intelligence_Block_Facets extends Mage_Core_Block_Template{
         }
         return $this->_layer;
     }
+
+    public function isPluginActive()
+    {
+        return $this->getBxRewriteAllowed();
+    }
+
 }

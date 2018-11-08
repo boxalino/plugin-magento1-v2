@@ -3,7 +3,12 @@
 /**
  * Class Boxalino_Intelligence_Block_Recommendation
  */
-class Boxalino_Intelligence_Block_Recommendation extends Mage_Catalog_Block_Product_Abstract{
+class Boxalino_Intelligence_Block_Recommendation extends Mage_Catalog_Block_Product_Abstract
+{
+    /**
+     * @var null
+     */
+    protected $bxRewriteAllowed = null;
 
     /**
      * @var
@@ -18,33 +23,37 @@ class Boxalino_Intelligence_Block_Recommendation extends Mage_Catalog_Block_Prod
     /*
      *
      */
-    public function _construct(){
-
-        $this->bxHelperData = Mage::helper('boxalino_intelligence');
-        $this->_data = array();
-        if($this->bxHelperData->isSetup() && $this->bxHelperData->isPluginEnabled()){
-            $cmsBlock = $this->bxHelperData->getCmsBlock();
-            if($cmsBlock || sizeof($this->_data) == 0){
-                $recommendationBlocks = $this->getCmsRecommendationBlocks($cmsBlock);
-                $this->prepareRecommendations($recommendationBlocks, $this->getReturnFields());
-                $this->bxHelperData->setSetup(false);
+    public function _construct()
+    {
+        if($this->getBxRewriteAllowed())
+        {
+            $this->bxHelperData = Mage::helper('boxalino_intelligence');
+            $this->_data = array();
+            if($this->bxHelperData->isSetup()){
+                $cmsBlock = $this->bxHelperData->getCmsBlock();
+                if($cmsBlock || sizeof($this->_data) == 0){
+                    $recommendationBlocks = $this->getCmsRecommendationBlocks($cmsBlock);
+                    $this->prepareRecommendations($recommendationBlocks, $this->getReturnFields());
+                    $this->bxHelperData->setSetup(false);
+                }
             }
         }
-        parent::_construct();
+
+        return parent::_construct();
     }
 
-    public function init($widget, $scenario){
-
+    public function init($widget, $scenario)
+    {
       if (is_null($this->getData('widget'))) {
         $this->setData('widget', $widget);
       }
       if (is_null($this->getData('scenario'))) {
         $this->setData('scenario', $scenario);
       }
-
     }
 
-    public function getReturnFields() {
+    public function getReturnFields()
+    {
       return array();
     }
 
@@ -52,8 +61,8 @@ class Boxalino_Intelligence_Block_Recommendation extends Mage_Catalog_Block_Prod
      * @param $content
      * @return array
      */
-    protected function getCmsRecommendationBlocks($content){
-
+    protected function getCmsRecommendationBlocks($content)
+    {
         $results = array();
         $recommendations = array();
         preg_match_all("/\{\{(.*?)\}\}/",$content, $results);
@@ -76,8 +85,8 @@ class Boxalino_Intelligence_Block_Recommendation extends Mage_Catalog_Block_Prod
      * @param $content
      * @return array
      */
-    protected function getLayoutRecommendationBlocks($content){
-
+    protected function getLayoutRecommendationBlocks($content)
+    {
         $results = array();
         $recommendations = array();
         preg_match_all("/\<block type=\"boxalino_intelligence\/recommendation\"(.*?)\<\/block\>/" ,$content,$results);
@@ -101,7 +110,8 @@ class Boxalino_Intelligence_Block_Recommendation extends Mage_Catalog_Block_Prod
      * @param array $recommendations
      * @return null
      */
-    protected function prepareRecommendations($recommendations = array(), $returnFields = array()){
+    protected function prepareRecommendations($recommendations = array(), $returnFields = array())
+    {
         if($recommendations && is_array($recommendations)){
             foreach($recommendations as $index => $widget){
 
@@ -148,8 +158,8 @@ class Boxalino_Intelligence_Block_Recommendation extends Mage_Catalog_Block_Prod
      * @param $scenario
      * @return array|mixed
      */
-    protected function getWidgetContext($scenario){
-
+    protected function getWidgetContext($scenario)
+    {
         $context = array();
         switch($scenario){
             case 'category':
@@ -188,33 +198,33 @@ class Boxalino_Intelligence_Block_Recommendation extends Mage_Catalog_Block_Prod
     /**
      * @return mixed|string
      */
-    public function getRecommendationTitle($widget){
-
+    public function getRecommendationTitle($widget)
+    {
         $title = $this->bxHelperData->getAdapter()->getSearchResultTitle($widget);
-
         return isset($title) ? $title : 'Recommendation';
     }
 
     /**
      * @return mixed
      */
-    public function getItems() {
+    public function getItems()
+    {
         return $this->_getLoadedProductCollection();
     }
     
     /**
      * @return mixed
      */
-    public function _getLoadedProductCollection(){
-
+    public function _getLoadedProductCollection()
+    {
         return $this->_getProductCollection();
     }
 
     /**
      * @return mixed
      */
-    protected function _getProductCollection(){
-
+    protected function _getProductCollection()
+    {
         if(!$this->_itemCollection && $this->bxHelperData->isPluginEnabled()){
             $this->_prepareData();
         }
@@ -224,7 +234,8 @@ class Boxalino_Intelligence_Block_Recommendation extends Mage_Catalog_Block_Prod
     /**
      * @return $this
      */
-    protected function _prepareData(){
+    protected function _prepareData()
+    {
         $widget  = $this->getData('widget');
         $context = $this->getData('context');
         $scenario = $this->getData('scenario');
@@ -277,15 +288,16 @@ class Boxalino_Intelligence_Block_Recommendation extends Mage_Catalog_Block_Prod
     /**
      * @return mixed
      */
-    public function isPluginEnabled() {
-        return $this->bxHelperData->isPluginEnabled();
+    public function isPluginEnabled()
+    {
+        return $this->getBxRewriteAllowed();
     }
 
     /**
      * @return Mage_Core_Block_Abstract
      */
-    protected function _beforeToHtml(){
-
+    protected function _beforeToHtml()
+    {
         if($this->isPluginEnabled()) {
             if ($this->bxHelperData->isSetup()) {
                 $recommendations = $this->getLayoutRecommendationBlocks($this->getLayout()->getXmlString());
@@ -296,10 +308,41 @@ class Boxalino_Intelligence_Block_Recommendation extends Mage_Catalog_Block_Prod
             }
             $this->_prepareData();
         }
+
         return parent::_beforeToHtml();
     }
 
-    public function bxRecommendationTitle() {
+    public function bxRecommendationTitle()
+    {
         return $this->getData('title');
+    }
+
+    /**
+     * Before rewriting globally, check if the plugin is to be used
+     * @return bool
+     */
+    public function checkIfPluginToBeUsed()
+    {
+        $boxalinoGlobalPluginStatus = Mage::helper('core')->isModuleOutputEnabled('Boxalino_Intelligence');
+        if($boxalinoGlobalPluginStatus)
+        {
+            if(Mage::helper('boxalino_intelligence')->isPluginEnabled())
+            {
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function getBxRewriteAllowed()
+    {
+        if(is_null($this->bxRewriteAllowed))
+        {
+            $this->bxRewriteAllowed = $this->checkIfPluginToBeUsed();
+        }
+
+        return $this->bxRewriteAllowed;
     }
 }

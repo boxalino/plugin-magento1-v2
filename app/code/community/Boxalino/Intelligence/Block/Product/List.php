@@ -3,7 +3,8 @@
 /**
  * Class Boxalino_Intelligence_Block_Product_List
  */
-class Boxalino_Intelligence_Block_Product_List extends Mage_Catalog_Block_Product_List{
+class Boxalino_Intelligence_Block_Product_List extends Mage_Catalog_Block_Product_List
+{
 
     /**
      * @var int
@@ -11,12 +12,22 @@ class Boxalino_Intelligence_Block_Product_List extends Mage_Catalog_Block_Produc
     public static $number = 0;
 
     protected $_subPhraseCollections = [];
+
+    /**
+     * @var null
+     */
+    protected $bxRewriteAllowed = null;
     
     /**
      * @return Mage_Eav_Model_Entity_Collection_Abstract
      */
     protected function _getProductCollection()
     {
+        if(!$this->getBxRewriteAllowed())
+        {
+            return parent::_getProductCollection();
+        }
+
         /** @var Boxalino_Intelligence_Helper_Data $bxHelperData */
         $bxHelperData = Mage::helper('boxalino_intelligence');
         $p13nHelper = $bxHelperData->getAdapter();
@@ -85,8 +96,8 @@ class Boxalino_Intelligence_Block_Product_List extends Mage_Catalog_Block_Produc
      * @param $entity_ids
      * @throws Exception
      */
-    protected function _setupCollection($entity_ids){
-
+    protected function _setupCollection($entity_ids)
+    {
         $helper = Mage::helper('boxalino_intelligence');
         $this->_productCollection = $helper->prepareProductCollection($entity_ids);
         $this->_productCollection
@@ -125,7 +136,12 @@ class Boxalino_Intelligence_Block_Product_List extends Mage_Catalog_Block_Produc
             ->load();
     }
 
-    protected function _beforeToHtml(){
+    protected function _beforeToHtml()
+    {
+        if(!$this->getBxRewriteAllowed())
+        {
+            return parent::_beforeToHtml();
+        }
 
         if(!is_null(Mage::registry('current_category')) && Mage::helper('boxalino_intelligence')->isEnabledOnLayer($this->getLayer()) &&
                 Mage::helper('boxalino_intelligence')->isNavigationSortEnabled())
@@ -137,5 +153,34 @@ class Boxalino_Intelligence_Block_Product_List extends Mage_Catalog_Block_Produc
             $toolbar->setDefaultOrder('relevance');
         }
         return parent::_beforeToHtml();
+    }
+
+    /**
+     * Before rewriting globally, check if the plugin is to be used
+     * @return bool
+     */
+    public function checkIfPluginToBeUsed()
+    {
+        $boxalinoGlobalPluginStatus = Mage::helper('core')->isModuleOutputEnabled('Boxalino_Intelligence');
+        if($boxalinoGlobalPluginStatus)
+        {
+            if(Mage::helper('boxalino_intelligence')->isPluginEnabled())
+            {
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function getBxRewriteAllowed()
+    {
+        if(is_null($this->bxRewriteAllowed))
+        {
+            $this->bxRewriteAllowed = $this->checkIfPluginToBeUsed();
+        }
+
+        return $this->bxRewriteAllowed;
     }
 }

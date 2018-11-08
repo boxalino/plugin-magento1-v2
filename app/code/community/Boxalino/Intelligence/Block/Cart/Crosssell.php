@@ -18,7 +18,13 @@ class Boxalino_Intelligence_Block_Cart_Crosssell extends Mage_Checkout_Block_Car
      * @param bool $execute
      * @return array|null
      */
-    public function getItems($execute = true){
+    public function getItems($execute = true)
+    {
+        if(!$this->checkIfPluginToBeUsed())
+        {
+            return parent::getItems();
+        }
+
         $bxHelperData = Mage::helper('boxalino_intelligence');
         if($bxHelperData->isPluginEnabled() && $bxHelperData->isCrosssellEnabled()){
             try{
@@ -85,5 +91,24 @@ class Boxalino_Intelligence_Block_Cart_Crosssell extends Mage_Checkout_Block_Car
 
     public function bxRecommendationTitle() {
         return $this->getData('title');
+    }
+
+    /**
+     * Before rewriting globally, check if the plugin is to be used
+     * @return bool
+     */
+    public function checkIfPluginToBeUsed()
+    {
+        $boxalinoGlobalPluginStatus = Mage::helper('core')->isModuleOutputEnabled('Boxalino_Intelligence');
+        if($boxalinoGlobalPluginStatus)
+        {
+            if(Mage::helper('boxalino_intelligence')->isPluginEnabled())
+            {
+
+                return true;
+            }
+        }
+
+        return false;
     }
 }

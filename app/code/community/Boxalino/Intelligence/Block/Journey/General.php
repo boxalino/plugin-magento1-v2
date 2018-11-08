@@ -3,7 +3,7 @@
 /**
  * Class Boxalino_Intelligence_Block_Journey_General
  */
-Class Boxalino_Intelligence_Block_Journey_General extends Mage_Core_Block_Template
+class Boxalino_Intelligence_Block_Journey_General extends Mage_Core_Block_Template
     implements Boxalino_Intelligence_Block_Journey_CPOJourney
 {
 

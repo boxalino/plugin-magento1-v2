@@ -3,7 +3,7 @@
 /**
  * Class Boxalino_Intelligence_Block_Layer_Filter_Attribute
  */
-class Boxalino_Intelligence_Block_Layer_Filter_Attribute extends Mage_Catalog_Block_Layer_Filter_Abstract{
+class Boxalino_Intelligence_Block_Layer_Filter_Attribute extends Mage_Catalog_Block_Layer_Filter_Abstract {
 
     /**
      * Boxalino_Intelligence_Block_Layer_Filter_Attribute constructor.

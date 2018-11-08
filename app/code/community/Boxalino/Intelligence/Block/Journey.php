@@ -83,11 +83,6 @@ Class Boxalino_Intelligence_Block_Journey extends Mage_Core_Block_Template
         return $values;
     }
 
-
-
-
-
-
     public function renderDependencies()
     {
         $html = '';

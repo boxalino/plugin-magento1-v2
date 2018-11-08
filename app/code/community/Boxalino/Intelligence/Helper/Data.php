@@ -248,7 +248,7 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
      */
     public function getWidgetConfig($widgetName)
     {
-        if($widgetName == Mage::getStoreConfig('bxRecommendations/upsell/widget')) {
+        if($widgetName == Mage::getStoreConfig('bxRecommendations/upsell/widget')){
             return array(
                 'widget' => $widgetName,
                 'scenario' => 'product',
@@ -294,32 +294,29 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
         return $widgetConfig;
     }
 
-    public function getCmsRecommendationBlocks($widgetName) {
+    public function getCmsRecommendationBlocks($widgetName)
+    {
+        $recs = array();
+        $recs[] = array(
+            'widget' => Mage::getStoreConfig('bxRecommendations/blog/widget'),
+            'scenario' => 'blog',
+            'min' => Mage::getStoreConfig('bxRecommendations/blog/min'),
+            'max' => Mage::getStoreConfig('bxRecommendations/blog/max')
+        );
 
-      $recs = array();
-      $recs[] = array(
-          'widget' => Mage::getStoreConfig('bxRecommendations/blog/widget'),
-          'scenario' => 'blog',
-          'min' => Mage::getStoreConfig('bxRecommendations/blog/min'),
-          'max' => Mage::getStoreConfig('bxRecommendations/blog/max')
-      );
+        return $recs;
+    }
 
-      return $recs;
+    public function prepareProductCollection($ids) {
+        $productCollection = Mage::getResourceModel('catalog/product_collection');
+        $productCollection->addFieldToFilter('entity_id', $ids)->getSelect()
+            ->order(new Zend_Db_Expr('FIELD(e.entity_id,' . implode(',', $ids).')'));
+        return $productCollection;
+    }
 
-  }
-
-  public function prepareProductCollection($ids) {
-      $productCollection = Mage::getResourceModel('catalog/product_collection');
-      $productCollection->addFieldToFilter('entity_id', $ids)->getSelect()
-          ->order(new Zend_Db_Expr('FIELD(e.entity_id,' . implode(',', $ids).')'));
-      return $productCollection;
-  }
-
-  public function isBlogRecommendationActive(){
-
-    return $this->isPluginEnabled() && Mage::getStoreConfig('bxRecommendations/blog/status');
-
-  }
+    public function isBlogRecommendationActive(){
+        return $this->isPluginEnabled() && Mage::getStoreConfig('bxRecommendations/blog/status');
+    }
 
     public function getBlogReturnFields() {
         $fields = array(
@@ -334,63 +331,55 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
         return array_merge($fields, $extraFields);
     }
 
-  public function getBlogArticleWidget(){
-    return Mage::getStoreConfig('bxRecommendations/blog/widget');
+    public function getBlogArticleWidget(){
+        return Mage::getStoreConfig('bxRecommendations/blog/widget');
 
-  }
-  public function getExcerptFieldName(){
+    }
+    public function getExcerptFieldName(){
 
-    return Mage::getStoreConfig('bxRecommendations/blog/excerptFieldName');
+        return Mage::getStoreConfig('bxRecommendations/blog/excerptFieldName');
 
-  }
-  public function getLinkFieldName(){
-
-    return Mage::getStoreConfig('bxRecommendations/blog/linkFieldName');
-
-  }
-  public function getMediaUrlFieldName(){
-
-    return Mage::getStoreConfig('bxRecommendations/blog/mediaUrlFieldName');
-
-  }
-  public function getDateFieldName(){
-
-    return Mage::getStoreConfig('bxRecommendations/blog/dateFieldName');
-
-  }
-  public function getExtraFieldNames(){
-
-    $fieldNames = Mage::getStoreConfig('bxRecommendations/blog/extraFieldNames');
-
-    if (isset($fieldNames)) {
-      return explode(',', $fieldNames);
+    }
+    public function getLinkFieldName(){
+        return Mage::getStoreConfig('bxRecommendations/blog/linkFieldName');
     }
 
-    return array();
-
-  }
-  public function getBlogArticleImageWidth(){
-
-    $imageWidth = Mage::getStoreConfig('bxRecommendations/blog/blogArticleImageHeight');
-
-    if (!is_null($imageWidth)) {
-      $imageWidth = '100%';
+    public function getMediaUrlFieldName(){
+        return Mage::getStoreConfig('bxRecommendations/blog/mediaUrlFieldName');
     }
 
-    return $imageWidth;
+    public function getDateFieldName(){
+        return Mage::getStoreConfig('bxRecommendations/blog/dateFieldName');
+    }
 
-  }
-  public function getBlogArticleImageHeight(){
+    public function getExtraFieldNames(){
+        $fieldNames = Mage::getStoreConfig('bxRecommendations/blog/extraFieldNames');
 
-    return Mage::getStoreConfig('bxRecommendations/blog/blogArticleImageWidth');
+        if (isset($fieldNames)) {
+            return explode(',', $fieldNames);
+        }
 
-  }
+        return array();
+    }
+
+    public function getBlogArticleImageWidth(){
+        $imageWidth = Mage::getStoreConfig('bxRecommendations/blog/blogArticleImageHeight');
+
+        if (!is_null($imageWidth)) {
+            $imageWidth = '100%';
+        }
+
+        return $imageWidth;
+    }
+
+    public function getBlogArticleImageHeight(){
+        return Mage::getStoreConfig('bxRecommendations/blog/blogArticleImageWidth');
+    }
 
     /**
      * @return Mage_Catalog_Model_Resource_Product_Attribute_Collection
      */
     protected function _getFilterableAttributes(){
-
         $collection = Mage::getResourceModel('catalog/product_attribute_collection');
         $collection->setItemObjectClass('catalog/resource_eav_attribute')
             ->addStoreLabel(Mage::app()->getStore()->getId())
@@ -403,7 +392,6 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
      * @return array
      */
     public function getFilterProductAttributes($context = 'search'){
-
         $attributes = array();
         $attributeCollection = $this->_getFilterableAttributes();
 
@@ -458,7 +446,6 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
      * @return string
      */
     public function getLanguage() {
-
         return substr(Mage::getStoreConfig('general/locale/code'), 0, 2);
     }
 
@@ -475,7 +462,6 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
      * @return array
      */
     public function getCmsBlock(){
-
         return $this->cmsBlock;
     }
 
@@ -483,7 +469,6 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
      * @return bool
      */
     public function isSetup(){
-
         return $this->setup;
     }
 
@@ -491,7 +476,6 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
      * @param $setup
      */
     public function setSetup($setup){
-
         $this->setup = $setup;
     }
 
@@ -541,7 +525,15 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
      */
     public function isPluginEnabled()
     {
-        return Mage::getStoreConfigFlag('bxGeneral/general/enabled') && !$this->fallback;
+        return Mage::helper('core')->isModuleOutputEnabled('Boxalino_Intelligence') && Mage::getStoreConfigFlag('bxGeneral/general/enabled') && !$this->fallback;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isExporterEnabled()
+    {
+        return $this->isPluginEnabled() && Mage::getStoreConfigFlag('bxExporter/exporter/enabled');
     }
 
     /**
@@ -649,7 +641,6 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
      * @return array
      */
     public function useValuesAsKeys($array){
-
         return array_combine(array_keys(array_flip($array)),$array);
     }
 
@@ -726,27 +717,27 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
     }
 
     public function getSEOPageTitle($choice = null){
-      if ($this->isPluginEnabled()) {
-        $seoPageTitle = $this->getExtraInfoWithKey('bx-page-title', $choice);
-        return $seoPageTitle;
-      }
-      return;
+        if ($this->isPluginEnabled()) {
+            $seoPageTitle = $this->getExtraInfoWithKey('bx-page-title', $choice);
+            return $seoPageTitle;
+        }
+        return;
     }
 
     public function getSEOMetaTitle($choice = null){
-      if ($this->isPluginEnabled()) {
-        $seoMetaTitle = $this->getExtraInfoWithKey('bx-html-meta-title', $choice);
-        return $seoMetaTitle;
-      }
-      return;
+        if ($this->isPluginEnabled()) {
+            $seoMetaTitle = $this->getExtraInfoWithKey('bx-html-meta-title', $choice);
+            return $seoMetaTitle;
+        }
+        return;
     }
 
     public function getSEOMetaDescription($choice = null){
-      if ($this->isPluginEnabled()) {
-        $seoMetaDescription = $this->getExtraInfoWithKey('bx-html-meta-description', $choice);
-        return $seoMetaDescription;
-      }
-      return;
+        if ($this->isPluginEnabled()) {
+            $seoMetaDescription = $this->getExtraInfoWithKey('bx-html-meta-description', $choice);
+            return $seoMetaDescription;
+        }
+        return;
     }
 
     public function getExtraInfoWithKey($key, $choice = null){

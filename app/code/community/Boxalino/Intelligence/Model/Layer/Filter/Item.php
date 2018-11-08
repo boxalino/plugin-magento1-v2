@@ -3,10 +3,25 @@
 /**
  * Class Boxalino_Intelligence_Model_Layer_Filter_Attribute
  */
-class Boxalino_Intelligence_Model_Layer_Filter_Item extends Mage_Catalog_Model_Layer_Filter_Item {
+class Boxalino_Intelligence_Model_Layer_Filter_Item extends Mage_Catalog_Model_Layer_Filter_Item
+{
 
-    public function getRemoveUrl() {
+    /**
+     * Check the module is enabled on store before main action
+     * @return string
+     */
+    public function getRemoveUrl()
+    {
+        if($this->checkIfPluginToBeUsed())
+        {
+            return $this->getBxRemoveUrl();
+        }
 
+        return parent::getRemoveUrl();
+    }
+
+    protected function getBxRemoveUrl()
+    {
         $bxHelperData = Mage::helper('boxalino_intelligence');
         if($bxHelperData->isEnabledOnLayer($this->getFilter()->getLayer())){
 
@@ -23,9 +38,9 @@ class Boxalino_Intelligence_Model_Layer_Filter_Item extends Mage_Catalog_Model_L
                 $query[$remove] = null;
             }
             foreach ($addParams as $param => $add) {
-                    if($requestVar != $param){
-                        $query = array_merge($query, [$param => is_array($add) ? implode($bxHelperData->getSeparator(), $add) : $add]);
-                    }
+                if($requestVar != $param){
+                    $query = array_merge($query, [$param => is_array($add) ? implode($bxHelperData->getSeparator(), $add) : $add]);
+                }
             }
             $params['_current']     = true;
             $params['_use_rewrite'] = true;
@@ -33,11 +48,24 @@ class Boxalino_Intelligence_Model_Layer_Filter_Item extends Mage_Catalog_Model_L
             $params['_escape']      = true;
             return Mage::getUrl('*/*/*', $params);
         }
-        return parent::getRemoveUrl();
     }
 
-    public function getUrl(){
+    /**
+     * Check the module is enabled on store before main action
+     * @return string
+     */
+    public function getUrl()
+    {
+        if($this->checkIfPluginToBeUsed())
+        {
+            return $this->getBxUrl();
+        }
 
+        return parent::getUrl();
+    }
+
+    protected function getBxUrl()
+    {
         $bxHelperData = Mage::helper('boxalino_intelligence');
         if($bxHelperData->isEnabledOnLayer($this->getFilter()->getLayer())){
 
@@ -60,5 +88,23 @@ class Boxalino_Intelligence_Model_Layer_Filter_Item extends Mage_Catalog_Model_L
             return Mage::getUrl('*/*/*', array('_current'=>true, '_use_rewrite'=>true, '_query'=>$query));
         }
         return parent::getUrl();
+    }
+
+    /**
+     * Before rewriting globally, check if the plugin is to be used
+     * @return bool
+     */
+    public function checkIfPluginToBeUsed()
+    {
+        $boxalinoGlobalPluginStatus = Mage::helper('core')->isModuleOutputEnabled('Boxalino_Intelligence');
+        if($boxalinoGlobalPluginStatus)
+        {
+            if(Mage::helper('boxalino_intelligence')->isPluginEnabled())
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

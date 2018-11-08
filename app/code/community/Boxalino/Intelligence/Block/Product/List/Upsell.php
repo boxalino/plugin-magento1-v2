@@ -18,7 +18,12 @@ class Boxalino_Intelligence_Block_Product_List_Upsell extends Mage_Catalog_Block
      * @param bool $execute
      * @return $this|null
      */
-    protected function _prepareData($execute = true){
+    protected function _prepareData($execute = true)
+    {
+        if(!$this->checkIfPluginToBeUsed())
+        {
+            return parent::_prepareData();
+        }
 
         $bxHelperData = Mage::helper('boxalino_intelligence');
         if($bxHelperData->isPluginEnabled() && $bxHelperData->isUpsellEnabled()){
@@ -78,5 +83,24 @@ class Boxalino_Intelligence_Block_Product_List_Upsell extends Mage_Catalog_Block
 
     public function bxRecommendationTitle() {
         return $this->getData('title');
+    }
+
+    /**
+     * Before rewriting globally, check if the plugin is to be used
+     * @return bool
+     */
+    public function checkIfPluginToBeUsed()
+    {
+        $boxalinoGlobalPluginStatus = Mage::helper('core')->isModuleOutputEnabled('Boxalino_Intelligence');
+        if($boxalinoGlobalPluginStatus)
+        {
+            if(Mage::helper('boxalino_intelligence')->isPluginEnabled())
+            {
+
+                return true;
+            }
+        }
+
+        return false;
     }
 }

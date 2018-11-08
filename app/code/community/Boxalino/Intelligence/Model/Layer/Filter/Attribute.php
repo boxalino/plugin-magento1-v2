@@ -34,7 +34,7 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
     public function getFacets(){
         return $this->bxFacets;
     }
-    
+
     /**
      * @param $fieldName
      */
@@ -68,10 +68,34 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
         return $this->locale;
     }
 
+    public function checkIfPluginToBeUsed()
+    {
+        $boxalinoGlobalPluginStatus = Mage::helper('core')->isModuleOutputEnabled('Boxalino_Intelligence');
+        if($boxalinoGlobalPluginStatus)
+        {
+            if(Mage::helper('boxalino_intelligence')->isPluginEnabled())
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /**
      * @return $this
      */
     public function _initItems(){
+        if($this->checkIfPluginToBeUsed())
+        {
+            return $this->_customInitItems();
+        }
+
+        return parent::_initItems();
+    }
+
+    protected function _customInitItems()
+    {
         $bxHelperData =  Mage::helper('boxalino_intelligence');
         if(!$bxHelperData->getAdapter()->areThereSubPhrases()){
             $data = $this->_getItemsData();
@@ -108,15 +132,19 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
      * @return mixed
      */
     public function _createItem($label, $value, $count = 0, $selected = null, $type = null, $hidden = null, $bxValue = null){
-        return Mage::getModel('catalog/layer_filter_item')
-            ->setFilter($this)
-            ->setLabel($label)
-            ->setValue($value)
-            ->setCount($count)
-            ->setSelected($selected)
-            ->setType($type)
-            ->setHidden($hidden)
-            ->setBxValue($bxValue);
+        if($this->checkIfPluginToBeUsed()) {
+            return Mage::getModel('catalog/layer_filter_item')
+                ->setFilter($this)
+                ->setLabel($label)
+                ->setValue($value)
+                ->setCount($count)
+                ->setSelected($selected)
+                ->setType($type)
+                ->setHidden($hidden)
+                ->setBxValue($bxValue);
+        }
+
+        return parent::_createItem($label, $value, $count = 0, $selected = null, $type = null, $hidden = null, $bxValue = null);
     }
 
     /**
@@ -138,6 +166,16 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
      * @return array
      */
     protected function _getItemsData(){
+        if($this->checkIfPluginToBeUsed())
+        {
+            return $this->_customGetItemsData();
+        }
+
+        return parent::_getItemsData();
+    }
+
+    protected function _customGetItemsData()
+    {
         $fieldName = $this->fieldName;
         $bxFacets = $this->bxFacets;
         $data = [];
@@ -236,7 +274,7 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
                             'type' => 'flat',
                             'hidden' => $bxFacets->isFacetValueHidden($fieldName, $facetValue),
                             'bx_value' => $this->getParamValue($isSystemFilter, $bxFacets, $fieldName, $facetValue, $attributeModel, $selectedValues, false, $isMultiValued)
-                    );
+                        );
                     }
                 }
             } else {

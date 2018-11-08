@@ -17,10 +17,21 @@ class Boxalino_Intelligence_Block_Layer extends Mage_CatalogSearch_Block_Layer
     protected $bxFacets = null;
 
     /**
+     * @var null
+     */
+    protected $bxRewriteAllowed = null;
+
+    /**
      * @param string $template
      * @return $this
      */
-    public function setTemplate($template){
+    public function setTemplate($template)
+    {
+        if(!$this->getBxRewriteAllowed())
+        {
+            return parent::setTemplate($template);
+        }
+
         if(!Mage::helper('boxalino_intelligence')->isEnabledOnLayer($this->getLayer())){
             return parent::setTemplate($template);
         }
@@ -31,7 +42,8 @@ class Boxalino_Intelligence_Block_Layer extends Mage_CatalogSearch_Block_Layer
     /**
      * @return $this
      */
-    protected function _prepareFilters(){
+    protected function _prepareFilters()
+    {
         $facetModel = Mage::getSingleton('boxalino_intelligence/facet');
         $facets = $this->getBxFacets();
         $filters = array();
@@ -55,7 +67,13 @@ class Boxalino_Intelligence_Block_Layer extends Mage_CatalogSearch_Block_Layer
     /**
      * @return array
      */
-    public function getFilters(){
+    public function getFilters()
+    {
+        if(!$this->getBxRewriteAllowed())
+        {
+            return parent::getFilters();
+        }
+
         $bxHelperData = Mage::helper('boxalino_intelligence');
         if($bxHelperData->isEnabledOnLayer($this->getLayer())){
             if(is_null($this->bxFilters)){
@@ -63,24 +81,33 @@ class Boxalino_Intelligence_Block_Layer extends Mage_CatalogSearch_Block_Layer
             }
             return $this->bxFilters;
         }
+
         return parent::getFilters();
     }
 
     /**
      * @return com\boxalino\bxclient\v1\BxFacets
      */
-    public function getBxFacets(){
+    public function getBxFacets()
+    {
         if(is_null($this->bxFacets)) {
             $bxHelperData = Mage::helper('boxalino_intelligence');
             $this->bxFacets = $bxHelperData->getAdapter()->getFacets();
         }
+
         return $this->bxFacets;
     }
 
     /**
      * @return bool
      */
-    public function canShowBlock(){
+    public function canShowBlock()
+    {
+        if(!$this->getBxRewriteAllowed())
+        {
+            return parent::canShowBlock();
+        }
+
         $bxHelperData = Mage::helper('boxalino_intelligence');
         if($bxHelperData->isEnabledOnLayer($this->getLayer())){
             if(!$bxHelperData->getAdapter()->areThereSubPhrases() && sizeof($this->getFilters()) > 0) {
@@ -89,5 +116,34 @@ class Boxalino_Intelligence_Block_Layer extends Mage_CatalogSearch_Block_Layer
             return false;
         }
         return parent::canShowBlock();
+    }
+
+    /**
+     * Before rewriting globally, check if the plugin is to be used
+     * @return bool
+     */
+    public function checkIfPluginToBeUsed()
+    {
+        $boxalinoGlobalPluginStatus = Mage::helper('core')->isModuleOutputEnabled('Boxalino_Intelligence');
+        if($boxalinoGlobalPluginStatus)
+        {
+            if(Mage::helper('boxalino_intelligence')->isPluginEnabled())
+            {
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function getBxRewriteAllowed()
+    {
+        if(is_null($this->bxRewriteAllowed))
+        {
+            $this->bxRewriteAllowed = $this->checkIfPluginToBeUsed();
+        }
+
+        return $this->bxRewriteAllowed;
     }
 }

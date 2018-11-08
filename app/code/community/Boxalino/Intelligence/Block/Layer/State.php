@@ -3,7 +3,10 @@
 /**
  * Class Boxalino_Intelligence_Block_Layer_State
  */
-class Boxalino_Intelligence_Block_Layer_State extends Mage_Catalog_Block_Layer_State{
+class Boxalino_Intelligence_Block_Layer_State extends Mage_Catalog_Block_Layer_State
+{
+
+    protected $bxRewriteAllowed = null;
 
     /**
      * @param string $template
@@ -11,6 +14,11 @@ class Boxalino_Intelligence_Block_Layer_State extends Mage_Catalog_Block_Layer_S
      */
     public function setTemplate($template)
     {
+        if(!$this->getBxRewriteAllowed())
+        {
+            return parent::setTemplate($template);
+        }
+
         $bxHelperData = Mage::helper('boxalino_intelligence');
         try{
             if($bxHelperData->isEnabledOnLayer($this->getLayer())) {
@@ -28,6 +36,11 @@ class Boxalino_Intelligence_Block_Layer_State extends Mage_Catalog_Block_Layer_S
 
     public function getClearUrl()
     {
+        if(!$this->getBxRewriteAllowed())
+        {
+            return parent::getClearUrl();
+        }
+
         $bxHelperData = Mage::helper('boxalino_intelligence');
         if($bxHelperData->isEnabledOnLayer($this->getLayer())) {
             $filterState = array();
@@ -47,7 +60,8 @@ class Boxalino_Intelligence_Block_Layer_State extends Mage_Catalog_Block_Layer_S
         return parent::getClearUrl();
     }
 
-    public function getBxFacets(){
+    public function getBxFacets()
+    {
         $bxHelperData = Mage::helper('boxalino_intelligence');
         return $bxHelperData->getAdapter()->getFacets();
     }
@@ -55,7 +69,13 @@ class Boxalino_Intelligence_Block_Layer_State extends Mage_Catalog_Block_Layer_S
     /**
      * @return array
      */
-    public function getActiveFilters(){
+    public function getActiveFilters()
+    {
+        if(!$this->getBxRewriteAllowed())
+        {
+            return parent::getActiveFilters();
+        }
+
         $facetModel = Mage::getSingleton('boxalino_intelligence/facet');
         $bxHelperData = Mage::helper('boxalino_intelligence');
         if ($bxHelperData->isEnabledOnLayer($this->getLayer()) && !$bxHelperData->getAdapter()->areThereSubPhrases()) {
@@ -104,5 +124,34 @@ class Boxalino_Intelligence_Block_Layer_State extends Mage_Catalog_Block_Layer_S
             }
         }
         return parent::getActiveFilters();
+    }
+
+    /**
+     * Before rewriting globally, check if the plugin is to be used
+     * @return bool
+     */
+    public function checkIfPluginToBeUsed()
+    {
+        $boxalinoGlobalPluginStatus = Mage::helper('core')->isModuleOutputEnabled('Boxalino_Intelligence');
+        if($boxalinoGlobalPluginStatus)
+        {
+            if(Mage::helper('boxalino_intelligence')->isPluginEnabled())
+            {
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function getBxRewriteAllowed()
+    {
+        if(is_null($this->bxRewriteAllowed))
+        {
+            $this->bxRewriteAllowed = $this->checkIfPluginToBeUsed();
+        }
+
+        return $this->bxRewriteAllowed;
     }
 }

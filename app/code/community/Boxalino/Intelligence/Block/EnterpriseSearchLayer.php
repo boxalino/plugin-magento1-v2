@@ -3,7 +3,10 @@
 /**
  * Class Boxalino_Intelligence_Block_EnterpriseSearchLayer
  */
-class Boxalino_Intelligence_Block_EnterpriseSearchLayer extends Enterprise_Search_Block_Catalogsearch_Layer{
+class Boxalino_Intelligence_Block_EnterpriseSearchLayer extends Enterprise_Search_Block_Catalogsearch_Layer
+{
+
+    protected $bxRewriteAllowed = null;
 
     /**
      * @var array Collection of Boxalino_Intelligence_Block_Layer_Filter_Attribute
@@ -19,7 +22,13 @@ class Boxalino_Intelligence_Block_EnterpriseSearchLayer extends Enterprise_Searc
      * @param string $template
      * @return $this
      */
-    public function setTemplate($template){
+    public function setTemplate($template)
+    {
+        if(!$this->getBxRewriteAllowed())
+        {
+            return parent::setTemplate($template);
+        }
+
         if(!Mage::helper('boxalino_intelligence')->isEnabledOnLayer($this->getLayer())){
             return parent::setTemplate($template);
         }
@@ -30,7 +39,8 @@ class Boxalino_Intelligence_Block_EnterpriseSearchLayer extends Enterprise_Searc
     /**
      * @return $this
      */
-    protected function _prepareFilters(){
+    protected function _prepareFilters()
+    {
         $facetModel = Mage::getSingleton('boxalino_intelligence/facet');
         $facets = $this->getBxFacets();
         $filters = array();
@@ -54,7 +64,13 @@ class Boxalino_Intelligence_Block_EnterpriseSearchLayer extends Enterprise_Searc
     /**
      * @return array
      */
-    public function getFilters(){
+    public function getFilters()
+    {
+        if(!$this->getBxRewriteAllowed())
+        {
+            return parent::getFilters();
+        }
+
         $bxHelperData = Mage::helper('boxalino_intelligence');
         if($bxHelperData->isEnabledOnLayer($this->getLayer())){
             if(is_null($this->bxFilters)){
@@ -68,7 +84,8 @@ class Boxalino_Intelligence_Block_EnterpriseSearchLayer extends Enterprise_Searc
     /**
      * @return com\boxalino\bxclient\v1\BxFacets
      */
-    public function getBxFacets(){
+    public function getBxFacets()
+    {
         if(is_null($this->bxFacets)) {
             $bxHelperData = Mage::helper('boxalino_intelligence');
             $this->bxFacets = $bxHelperData->getAdapter()->getFacets();
@@ -79,7 +96,13 @@ class Boxalino_Intelligence_Block_EnterpriseSearchLayer extends Enterprise_Searc
     /**
      * @return bool
      */
-    public function canShowBlock(){
+    public function canShowBlock()
+    {
+        if(!$this->getBxRewriteAllowed())
+        {
+            return parent::canShowBlock();
+        }
+
         $bxHelperData = Mage::helper('boxalino_intelligence');
         if($bxHelperData->isEnabledOnLayer($this->getLayer())){
             if(!$bxHelperData->getAdapter()->areThereSubPhrases() && sizeof($this->getFilters()) > 0) {
@@ -90,7 +113,13 @@ class Boxalino_Intelligence_Block_EnterpriseSearchLayer extends Enterprise_Searc
         return parent::canShowBlock();
     }
 
-    public function getClearUrl() {
+    public function getClearUrl()
+    {
+        if(!$this->getBxRewriteAllowed())
+        {
+            return parent::getClearUrl();
+        }
+
         $bxHelperData = Mage::helper('boxalino_intelligence');
         if($bxHelperData->getChangeQuery() && $bxHelperData->isEnabledOnLayer($this->getLayer())){
             $params['_current']     = true;
@@ -101,4 +130,34 @@ class Boxalino_Intelligence_Block_EnterpriseSearchLayer extends Enterprise_Searc
         }
         return parent::getClearUrl();
     }
+
+    /**
+     * Before rewriting globally, check if the plugin is to be used
+     * @return bool
+     */
+    public function checkIfPluginToBeUsed()
+    {
+        $boxalinoGlobalPluginStatus = Mage::helper('core')->isModuleOutputEnabled('Boxalino_Intelligence');
+        if($boxalinoGlobalPluginStatus)
+        {
+            if(Mage::helper('boxalino_intelligence')->isPluginEnabled())
+            {
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function getBxRewriteAllowed()
+    {
+        if(is_null($this->bxRewriteAllowed))
+        {
+            $this->bxRewriteAllowed = $this->checkIfPluginToBeUsed();
+        }
+
+        return $this->bxRewriteAllowed;
+    }
+
 }

@@ -9,6 +9,11 @@ class Boxalino_Intelligence_Block_Autocomplete extends Mage_CatalogSearch_Block_
      */
     protected function _toHtml()
     {
+        if(!$this->checkIfPluginToBeUsed())
+        {
+            return parent::_toHtml();
+        }
+
         if(!Mage::helper('boxalino_intelligence')->isAutocompleteEnabled()){
             return parent::_toHtml();
         }
@@ -86,5 +91,23 @@ class Boxalino_Intelligence_Block_Autocomplete extends Mage_CatalogSearch_Block_
         }
         $html .= '</a></li>';
         return $html;
+    }
+
+    /**
+     * Before rewriting globally, check if the plugin is to be used
+     * @return bool
+     */
+    public function checkIfPluginToBeUsed()
+    {
+        $boxalinoGlobalPluginStatus = Mage::helper('core')->isModuleOutputEnabled('Boxalino_Intelligence');
+        if($boxalinoGlobalPluginStatus)
+        {
+            if(Mage::helper('boxalino_intelligence')->isPluginEnabled())
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

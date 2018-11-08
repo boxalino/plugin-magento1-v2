@@ -29,7 +29,7 @@ class Boxalino_Intelligence_Helper_BxIndexConfig extends Mage_Core_Helper_Abstra
         foreach($websites  as $website) {
             foreach ($website->getGroups(true) as $group) {
                 foreach ($group->getStores() as $store) {
-                    $enabled = $store->getConfig('bxExporter/exporter/enabled');
+                    $enabled = $store->getConfig('bxExporter/exporter/enabled') && $store->getConfig("bxGeneral/general/enabled");
                     if($enabled == '1') {
                         $account = $store->getConfig('bxGeneral/general/account_name');
 

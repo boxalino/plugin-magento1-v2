@@ -1,26 +1,15 @@
 <?php
 
 /**
- * Class Boxalino_Intelligence_Model_Template_Filter
+ * Class Boxalino_Intelligence_Block_PluginConfig
  */
-class Boxalino_Intelligence_Model_Template_Filter extends Mage_Widget_Model_Template_Filter{
+class Boxalino_Intelligence_Block_PluginConfig extends Mage_Core_Block_Template
+{
 
     /**
-     * @param string $value
-     * @return string
+     * @var null
      */
-    public function filter($value)
-    {
-        if($this->checkIfPluginToBeUsed())
-        {
-            if(strpos($value,'boxalino_intelligence/recommendation')){
-                Mage::helper('boxalino_intelligence')->setCmsBlock($value);
-            }
-
-        }
-
-        return parent::filter($value);
-    }
+    protected $bxRewriteAllowed = null;
 
     /**
      * Before rewriting globally, check if the plugin is to be used
@@ -33,10 +22,21 @@ class Boxalino_Intelligence_Model_Template_Filter extends Mage_Widget_Model_Temp
         {
             if(Mage::helper('boxalino_intelligence')->isPluginEnabled())
             {
+
                 return true;
             }
         }
 
         return false;
+    }
+
+    public function getBxRewriteAllowed()
+    {
+        if(is_null($this->bxRewriteAllowed))
+        {
+            $this->bxRewriteAllowed = $this->checkIfPluginToBeUsed();
+        }
+
+        return $this->bxRewriteAllowed;
     }
 }

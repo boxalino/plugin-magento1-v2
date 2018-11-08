@@ -67,11 +67,29 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
      */
     protected function exportStores()
     {
+        if(!Mage::helper('core')->isModuleOutputEnabled('Boxalino_Intelligence'))
+        {
+            Mage::log("bxLog: the Boxalino module output is disabled. Exporter cancelled.", Zend_Log::INFO, self::BOXALINO_LOG_FILE);
+            return;
+        }
+
         $this->_helperExporter = Mage::helper('boxalino_intelligence');
-        Mage::log("bxLog: starting {$this->indexType} Boxalino export", Zend_Log::INFO, self::BOXALINO_LOG_FILE);
+        if(!$this->_helperExporter->isPluginEnabled() || !$this->_helperExporter->isExporterEnabled())
+        {
+            Mage::log("bxLog: the plugin/exporter is disabled. Process cancelled.", Zend_Log::INFO, self::BOXALINO_LOG_FILE);
+            return;
+        }
 
         $this->config = Mage::helper('boxalino_intelligence/bxIndexConfig');
-        Mage::log("bxLog: retrieved index config: " . $this->config->toString(), Zend_Log::INFO, self::BOXALINO_LOG_FILE);
+        $configurations = $this->config->toString();
+        if(empty($configurations))
+        {
+            Mage::log("bxLog: no active configurations found on either of the stores. Process cancelled.", Zend_Log::INFO, self::BOXALINO_LOG_FILE);
+            return;
+        }
+
+        Mage::log("bxLog: starting {$this->indexType} Boxalino export", Zend_Log::INFO, self::BOXALINO_LOG_FILE);
+        Mage::log("bxLog: retrieved index config: " . $configurations, Zend_Log::INFO, self::BOXALINO_LOG_FILE);
         try {
             foreach ($this->config->getAccounts() as $account) {
                 Mage::log("bxLog: initialize files on account: " . $account, Zend_Log::INFO, self::BOXALINO_LOG_FILE);
