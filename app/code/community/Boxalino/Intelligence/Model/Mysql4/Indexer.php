@@ -74,12 +74,6 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
         }
 
         $this->_helperExporter = Mage::helper('boxalino_intelligence');
-        if(!$this->_helperExporter->isPluginEnabled() || !$this->_helperExporter->isExporterEnabled())
-        {
-            Mage::log("bxLog: the plugin/exporter is disabled. Process cancelled.", Zend_Log::INFO, self::BOXALINO_LOG_FILE);
-            return;
-        }
-
         $this->config = Mage::helper('boxalino_intelligence/bxIndexConfig');
         $configurations = $this->config->toString();
         if(empty($configurations))
