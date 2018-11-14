@@ -11,6 +11,7 @@ skin/frontend/base/default/css/boxalino.css skin/frontend/base/default/css/boxal
 skin/frontend/base/default/css/nouislider.css skin/frontend/base/default/css/nouislider.css
 skin/frontend/base/default/js/boxalinoAutocomplete.js skin/frontend/base/default/js/boxalinoAutocomplete.js
 skin/frontend/base/default/js/boxalinoFacets.js skin/frontend/base/default/js/boxalinoFacets.js
+skin/frontend/base/default/js/boxalinoProfiler.js skin/frontend/base/default/js/boxalinoProfiler.js
 skin/frontend/base/default/js/jquery-1.10.2.min.js skin/frontend/base/default/js/jquery-1.10.2.min.js
 skin/frontend/base/default/js/jquery-noConflict.js skin/frontend/base/default/js/jquery-noConflict.js
 skin/frontend/base/default/js/jssor-26.1.5.min.js skin/frontend/base/default/js/jssor-26.1.5.min.js

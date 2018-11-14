@@ -1,0 +1,19 @@
+this is a question from the profiler
+<div id="bx-profiler-question-<?php echo $this->getElementIndex();?>">
+    <?php if($this->getData("title")) :?>
+        <?php echo $this->getData("title");?>
+    <?php endif;?>
+    <span class="bx-question"><?php echo $this->getLocalizedQuestionText();?></span>
+    //input fields: textarea, slider-range, date-picker, true/false, multiselect,
+</div>
+
+
+<?php
+$html = $this->getData();
+//get sub-renderings of this view element
+echo $this->renderElements();
+$subRenderings = $this->getSubRenderings();
+foreach ($subRenderings as $subRendering) {
+    echo $this->renderVisualElement($subRendering['visualElement']);
+}
+?>

@@ -183,5 +183,4 @@ Class Boxalino_Intelligence_Block_Journey extends Mage_Core_Block_Template
         }
         return $this->createBlock($type, $name, $data, $arguments, $children);
     }
-
 }

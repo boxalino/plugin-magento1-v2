@@ -38,4 +38,13 @@ class Boxalino_Intelligence_Block_Journey_General extends Mage_Core_Block_Templa
     {
         return $this->p13nHelper->getResponse()->getLocalizedValue($values);
     }
+
+    /**
+     * The localized questions must be retrieved for the given store view (en, de, fr, it, etc)
+     *
+     * @return bool|string
+     */
+    public function getLocale() {
+        return substr(Mage::getStoreConfig('general/locale/code'), 0, 2);
+    }
 }
