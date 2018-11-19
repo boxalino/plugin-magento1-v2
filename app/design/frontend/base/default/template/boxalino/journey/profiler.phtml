@@ -1,14 +1,9 @@
 <div class="bx-journey-profiler">
     <div class="bx-journey-profiler-wrapper">
         <div class="bx-journey-profiler">
-            <form class="bx-journey-profiler-form" id="bx-journey-profiler-form" action="<?php echo $this->getProfilerActionUrl()?>" method="post">
+            <form class="bx-journey-profiler-form" id="bx-journey-profiler-form" action="<?php echo $this->getLoadUrl()?>" method="post">
                 <input type="hidden" name="form_key" id="form_key" value="<?php echo Mage::getSingleton('core/session')->getFormKey(); ?>"/>
-                <?php
-                    $subRenderings = $this->getSubRenderings();
-                    foreach ($subRenderings as $index=>$subRendering):
-                        echo $this->renderVisualElement($subRendering['visualElement'], ['bx_index'=>$index]);
-                    endforeach;
-                ?>
+                    //region to insert each question, one by one
                 <div class="bx-profiler-button-skip-wrapper"></div>
                 <div class="bx-profiler-button-continue-wrapper"></div>
             </form>
@@ -17,6 +12,12 @@
     </div>
 </div>
 <script type="text/javascript">
-    console.log("boxalino profiler");
-    var profiler = new BxProfiler('<?php echo $this->getProfilerActionUrl()?>', '<?php echo $this->getQuestionsJson()?>');
+    var profiler = new BxProfiler(
+        '<?php echo $this->getLoadUrl()?>',
+        '<?php echo $this->getSubmitUrl()?>',
+        '<?php echo $this->getSubmitEventLoggedCustomer()?>',
+        '<?php echo $this->getSubmitEventVisitor()?>',
+        '<?php echo $this->displayProgress()?>',
+        '<?php echo $this->getQuestions()?>'
+    );
 </script>

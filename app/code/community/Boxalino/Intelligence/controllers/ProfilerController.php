@@ -5,7 +5,8 @@
  * Boxalino Profiler controller - can be extended
  *
  * When using ajax to load the content, the data on customer is only being saved once the customer authenticates
- * The customer authentication is expected to happen at the end of the cycle or at the begining, per configuration
+ * The customer authentication is expected to happen at the end of the cycle or at the beginning, per configuration
+ * The triggered events are being configured (for logged in/non-logged in user)
  *
  * @author Dana Negrescu <dana.negrescu@boxalino.com>
  */
@@ -13,8 +14,7 @@ class Boxalino_Intelligence_ProfilerController extends Mage_Core_Controller_Fron
 {
 
     /**
-     * On each user select/move to next question, the profiler data is being refreshed
-     * Data returned onSave is a profilerContext:: index, profilerData and next step
+     * When the last question is answered, the data is being saved/set
      *
      * @return bool
      */
@@ -45,24 +45,31 @@ class Boxalino_Intelligence_ProfilerController extends Mage_Core_Controller_Fron
         $this->getResponse()->setBody(Mage::helper('core')->jsonEncode($response));
     }
 
-    protected function setNextQuestionResponse($profiler)
+    /**
+     * @param $profiler
+     * @return array
+     */
+    public function loadQuestionAction()
     {
-        $response = array();
-        $nextIndexId = $profiler->getBxIndex() + 1;
+        if (!$this->getRequest()->isAjax()) {
+            $this->_forward('no-route');
+            return false;
+        }
 
-        $response['bx_profiler'] = $this->getLayout()
-            ->createBlock('evozon_blog/post_view_comments_list')
-            ->setBxIndex($nextIndexId)
-            ->setChild(
-                'evozon_blog_post_comments_reply',
-                Mage::getBlockSingleton('evozon_blog/post_view_comments_reply')->setBxIndex($nextIndexId)
-            )
-            ->toHtml();
+        $response = array();
+        $profiler = $this->getRequest()->getPost();
+        $response['active_question'] = Mage::getModel("boxalino_intelligence/visualElement_renderer")->createVisualElement(
+            $profiler->getVisualElement(),
+            ['bx_index' => $profiler->getNextIndex(), 'is_ajax'=>true]
+        )->toHtml();
 
         return $response;
     }
 
 
+    /**
+     * If there is a login form, before submiting the data, the customer email validation must take place
+     */
     public function isCustomerAction()
     {
         $profilerData = $this->getRequest()->getPost();
@@ -72,10 +79,8 @@ class Boxalino_Intelligence_ProfilerController extends Mage_Core_Controller_Fron
             return false;
         }
 
-        $url = Mage::getUrl('customer/account/login');
         $response = array();
         $response['is_customer'] = true;
-        $response['message'] = $this->__('This email address is already registered in our system. Please <a href="%s">login</a> if you want to update your subscription preferences', $url);
         $email = $profilerData['email'];
 
         $customer = Mage::getModel('customer/customer')

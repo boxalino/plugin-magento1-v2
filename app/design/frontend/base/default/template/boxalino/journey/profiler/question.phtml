@@ -1,19 +1,22 @@
+<?php
+$fields = $this->getFields();
+?>
 this is a question from the profiler
-<div id="bx-profiler-question-<?php echo $this->getElementIndex();?>">
+<div class="bx-profiler-question" id="bx-profiler-question-<?php echo $this->getElementIndex();?>">
     <?php if($this->getData("title")) :?>
         <?php echo $this->getData("title");?>
     <?php endif;?>
-    <span class="bx-question"><?php echo $this->getLocalizedQuestionText();?></span>
-    //input fields: textarea, slider-range, date-picker, true/false, multiselect,
+    <span class="bx-question"><?php echo $this->getQuestion();?></span>
+    <?php if($this->hasFields()):?>
+        <?php foreach($fields as $name => $content):?>
+            <div class="bx-question-field" id="bx-question-field-<?php echo $name;?>">
+                //input fields: textarea, slider-range, date-picker, true/false, multiselect, etc
+                <?php echo $this->getLayout()->createBlock('core/template')->setData($content)->setAjax(true)->setTemplate()->toHtml(); ?>
+            </div>
+        <?php endforeach;?>
+    <?php endif;?>
+    <div class="bx-question-error" id="bx-question-error-<?php echo $this->getAttributeCode();?>"></div>
 </div>
 
 
-<?php
-$html = $this->getData();
-//get sub-renderings of this view element
-echo $this->renderElements();
-$subRenderings = $this->getSubRenderings();
-foreach ($subRenderings as $subRendering) {
-    echo $this->renderVisualElement($subRendering['visualElement']);
-}
-?>
+

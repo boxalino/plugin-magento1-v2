@@ -12,47 +12,74 @@ class Boxalino_Intelligence_Block_Journey_Profiler extends Boxalino_Intelligence
 
     protected $bxAdapter = null;
 
-    public function getQuestionsJson()
-    {
-
-    }
-
-    public function getProgress()
-    {
-
-    }
-
-    public function setProgress($progress)
-    {
-
-    }
-
-    public function getCurrentQuestion()
-    {
-
-    }
-
     /**
-     * connection to the boxalino server
-     *
-     * @return null
+     * If the questions are to be rendered via ajax - they should not be decoded
+     * If the questions are to be rendered server-side - they should be decoded
      */
-    public function getBxAdapter(){
-        if(is_null($this->bxAdapter))
+    public function getQuestions()
+    {
+        if($this->getData('bx_p_use_ajax') === true)
         {
-            $dataHelper = Mage::helper('boxalino_intelligence');
-            $this->bxAdapter = $dataHelper->getAdapter();
+           return json_encode($this->getSubRenderings());
         }
 
-        return $this->bxAdapter;
+        return $this->getSubRenderings();
     }
 
     /**
+     * Setting if the progress to be displayed or not
+     * @return mixed
+     */
+    public function displayProgress()
+    {
+        return $this->getData("bx_p_show_progress");
+    }
+
+    /**
+     * Action used to load each question via ajax
+     *
      * @return string
      */
-    public function getProfilerActionUrl()
+    public function getLoadUrl()
     {
-        return Mage::getBaseUrl() . $this->getData('profiler_url');
+        if($this->getData("bx_p_load_url"))
+        {
+            return Mage::getBaseUrl() . $this->getData('bx_p_load_url');
+        }
+
+        return $this->getUrl("*/profiler/loadQuestion");
+    }
+
+    /**
+     * Action used to save all the information
+     *
+     * @return string
+     */
+    public function getSubmitUrl()
+    {
+        if($this->getData("bx_p_onSave_action"))
+        {
+            return Mage::getBaseUrl() . $this->getData('bx_p_onSave_action');
+        }
+
+        return $this->getUrl("*/profiler/save");
+    }
+
+    /**
+     * When the profiler data is to be saved, a hook is to be created for the event
+     * Since there can be multiple profiler implementations in the system, this feature is configurable
+     */
+    public function getSubmitEventLoggedCustomer()
+    {
+        return "bx_profiler_customer_update";
+    }
+
+    /**
+     * Dispatched event when a visitor submits information (this means that a secondary action/validation must take place)
+     */
+    public function getSubmitEventVisitor()
+    {
+        return "bx_profiler_customer_login";
     }
 
 
@@ -87,6 +114,5 @@ class Boxalino_Intelligence_Block_Journey_Profiler extends Boxalino_Intelligence
 
         return false;
     }
-
 
 }

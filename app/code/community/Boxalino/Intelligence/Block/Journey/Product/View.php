@@ -7,8 +7,7 @@ class Boxalino_Intelligence_Block_Journey_Product_View extends Mage_Catalog_Bloc
     implements Boxalino_Intelligence_Block_Journey_CPOJourney
 {
 
-    protected $bxJourney;
-
+    protected $renderer;
     protected $bxHelperData;
     protected $p13nHelper;
     protected $bxResourceManager;
@@ -18,24 +17,19 @@ class Boxalino_Intelligence_Block_Journey_Product_View extends Mage_Catalog_Bloc
         $this->bxHelperData = Mage::helper('boxalino_intelligence');
         $this->bxResourceManager = Mage::helper('boxalino_intelligence/resourceManager');
         $this->p13nHelper = $this->bxHelperData->getAdapter();
-        $this->bxJourney = Mage::getBlockSingleton('boxalino_intelligence/journey');
+        $this->renderer = Mage::getSingleton('boxalino_intelligence/visualElement_renderer');
         parent::_construct();
     }
 
 
     public function getSubRenderings()
     {
-        $elements = array();
-        $element = $this->getData('bxVisualElement');
-        if(isset($element['subRenderings'][0]['rendering']['visualElements'])) {
-            $elements = $element['subRenderings'][0]['rendering']['visualElements'];
-        }
-        return $elements;
+        return $this->renderer->getSubRenderingsByVisualElement($this->getData('bxVisualElement'));
     }
 
     public function renderVisualElement($element, $additional_parameter = null)
     {
-        return $this->bxJourney->createVisualElement($element, $additional_parameter)->toHtml();
+        return $this->renderer->createVisualElement($element, $additional_parameter)->toHtml();
     }
 
     public function getLocalizedValue($values) {
@@ -47,7 +41,6 @@ class Boxalino_Intelligence_Block_Journey_Product_View extends Mage_Catalog_Bloc
     }
 
     public function getProduct() {
-    
         return $this->bxGetProduct();
     }
 
