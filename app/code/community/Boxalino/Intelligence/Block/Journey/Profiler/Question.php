@@ -20,12 +20,11 @@ class Boxalino_Intelligence_Block_Journey_Profiler_Question extends Boxalino_Int
         return $this->getData('bx_q_attribute_code');
     }
 
-
-    public function getType()
-    {
-
-    }
-
+    /**
+     * Getting fields and definition
+     *
+     * @return array
+     */
     public function getFields()
     {
         return [];
@@ -37,11 +36,13 @@ class Boxalino_Intelligence_Block_Journey_Profiler_Question extends Boxalino_Int
      */
     public function isSkipAllowed()
     {
-        $value =  $this->getData('bx_q_optional');
+        $value = $this->getData('bx_q_optional');
         if(empty($value))
         {
-            return false;
+            return 0;
         }
+
+        return 1;
     }
 
     /**
@@ -52,8 +53,10 @@ class Boxalino_Intelligence_Block_Journey_Profiler_Question extends Boxalino_Int
         $value =  $this->getData('bx_q_multiselect');
         if(empty($value))
         {
-            return false;
+            return 0;
         }
+
+        return 1;
     }
 
     /**
@@ -61,35 +64,27 @@ class Boxalino_Intelligence_Block_Journey_Profiler_Question extends Boxalino_Int
      * (recommended for checkboxes)
      * @return mixed
      */
-    public function isAutoResponseAllowed()
+    public function isAutoLoadeAllowed()
     {
         if($this->isMultiselect())
         {
-            return false;
+            return 0;
         }
 
-        return $this->getData('bx_q_auto_response');
+        return (int)$this->getData('bx_q_auto_response');
     }
 
-    public function getDispatchedEvent()
+    /**
+     * When values are set for a question, if it is not a submit event (when all data gets validated for logged in/non-logged in customer),
+     * a different action can be triggered (ex: validation) before moving to the next question/step
+     * The action must be created in an extension, capable of processing ajax request
+     *
+     * @see Boxalino_Intelligence_ProfilerController::isCustomerAction()
+     * @return mixed
+     */
+    public function getDispatchedAction()
     {
         return $this->getData('bx_q_event');
-    }
-
-    /**
-     * The question is localized (even for single store views)
-     */
-    public function getQuestion()
-    {
-
-    }
-
-    /**
-     * The retrieved options are localized (even for single store views)
-     */
-    public function getOptions()
-    {
-
     }
 
     /**
@@ -100,6 +95,16 @@ class Boxalino_Intelligence_Block_Journey_Profiler_Question extends Boxalino_Int
      */
     public function getElementIndex() {
         return $this->getData('bx_index');
+    }
+
+    /**
+     * When a question triggers the submit event, the submit button will be displayed
+     *
+     * @return mixed
+     */
+    public function isSubmit()
+    {
+        return (int) $this->getData('bx_q_submit');
     }
 
 
@@ -115,6 +120,11 @@ class Boxalino_Intelligence_Block_Journey_Profiler_Question extends Boxalino_Int
      * @param string $template | phtml template to load the content
      */
     public function addField($name, $tag="input", $type="text", $values=array(), $properties=array(), $placeholder="", $template="")
+    {
+
+    }
+
+    public function getType()
     {
 
     }

@@ -47,7 +47,7 @@ class Boxalino_Intelligence_Block_Journey_Profiler extends Boxalino_Intelligence
             return Mage::getBaseUrl() . $this->getData('bx_p_load_url');
         }
 
-        return $this->getUrl("*/profiler/loadQuestion");
+        return $this->getUrl("boxalinointelligence/profiler/loadQuestion");
     }
 
     /**
@@ -62,7 +62,7 @@ class Boxalino_Intelligence_Block_Journey_Profiler extends Boxalino_Intelligence
             return Mage::getBaseUrl() . $this->getData('bx_p_onSave_action');
         }
 
-        return $this->getUrl("*/profiler/save");
+        return $this->getUrl("boxalinointelligence/profiler/save");
     }
 
     /**

@@ -14,29 +14,28 @@ class Boxalino_Intelligence_ProfilerController extends Mage_Core_Controller_Fron
 {
 
     /**
-     * When the last question is answered, the data is being saved/set
+     * Triggered on submit
      *
      * @return bool
      */
     public function saveAction()
     {
-        $profilerData = $this->getRequest()->getPost();
         if (!$this->getRequest()->isAjax()) {
             $this->_forward('no-route');
             return false;
         }
 
-        $profiler = new Varien_Object($profilerData);
+        $profiler = $this->getRequest()->getPost();
         try {
             if (Mage::getSingleton('customer/session')->isLoggedIn()) {
-                $customerId = Mage::getSingleton("customer/session")->getId();
-                $profiler->setProfileId($customerId);
-                Mage::dispatchEvent("bx_profiler_customer_update", array("bx_profiler"=>$profiler));
+                $profiler['profile_id'] = Mage::getSingleton("customer/session")->getId();
+                Mage::dispatchEvent($profiler['customer_event'], array("bx_profiler"=>$profiler));
             } else {
-                Mage::dispatchEvent("bx_profiler_customer_login", array("bx_profiler"=>$profiler));
+                Mage::dispatchEvent($profiler['visitor_event'], array("bx_profiler"=>$profiler));
             }
 
-            $response = $this->setNextQuestionResponse($profiler);
+            $response['question'] = $this->_getQuestionBlock($profiler['visualElement'], $profiler['bxNextIndex']);
+            $response['step'] = $profiler['bxNextIndex'];
         } catch (Exception $ex) {
             $response['error']['form_key'] = $ex->getMessage();
             Mage::logException($ex);
@@ -58,26 +57,32 @@ class Boxalino_Intelligence_ProfilerController extends Mage_Core_Controller_Fron
 
         $response = array();
         $profiler = $this->getRequest()->getPost();
-        $response['active_question'] = Mage::getModel("boxalino_intelligence/visualElement_renderer")->createVisualElement(
-            $profiler->getVisualElement(),
-            ['bx_index' => $profiler->getNextIndex(), 'is_ajax'=>true]
-        )->toHtml();
+        $response['question'] = $this->_getQuestionBlock($profiler['visualElement'], $profiler['bxIndex']);
 
-        return $response;
+        $this->getResponse()->setBody(Mage::helper('core')->jsonEncode($response));
+    }
+
+    protected function _getQuestionBlock($visualElement, $index)
+    {
+        return Mage::getModel("boxalino_intelligence/visualElement_renderer")->createVisualElement(
+            $visualElement,
+            ['bx_index' => $index]
+        )->toHtml();
     }
 
 
     /**
      * If there is a login form, before submiting the data, the customer email validation must take place
+     * This is an example of a function that can be used as a dispatched event on a question
      */
     public function isCustomerAction()
     {
-        $profilerData = $this->getRequest()->getPost();
-
         if (!$this->getRequest()->isAjax()) {
             $this->_forward('no-route');
             return false;
         }
+
+        $profilerData = $this->getRequest()->getPost();
 
         $response = array();
         $response['is_customer'] = true;

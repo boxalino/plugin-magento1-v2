@@ -43,7 +43,8 @@ class Boxalino_Intelligence_Model_VisualElement_Renderer extends Varien_Object
             return $this->createBlockElement($visualElement, $additional_parameter);
         }
 
-        return $this->createBlockElement(json_decode($visualElement), $additional_parameter);
+        $element = json_decode($visualElement, true);
+        return $this->createBlockElement($element['visualElement'], $additional_parameter);
 
     }
 
@@ -57,7 +58,7 @@ class Boxalino_Intelligence_Model_VisualElement_Renderer extends Varien_Object
     {
         if(!is_array($visualElement))
         {
-            $visualElement = json_decode($visualElement);
+            $visualElement = json_decode($visualElement, true)['visualElement'];
         }
 
         if(isset($visualElement['subRenderings'][0]['rendering']['visualElements'])) {

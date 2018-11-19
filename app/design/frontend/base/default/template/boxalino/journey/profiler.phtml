@@ -1,18 +1,23 @@
+<?php
+/**
+ * @see Boxalino_Intelligence_Block_Journey_Profiler
+ */
+?>
 <div class="bx-journey-profiler">
     <div class="bx-journey-profiler-wrapper">
         <div class="bx-journey-profiler">
             <form class="bx-journey-profiler-form" id="bx-journey-profiler-form" action="<?php echo $this->getLoadUrl()?>" method="post">
                 <input type="hidden" name="form_key" id="form_key" value="<?php echo Mage::getSingleton('core/session')->getFormKey(); ?>"/>
-                    //region to insert each question, one by one
-                <div class="bx-profiler-button-skip-wrapper"></div>
+                    <div id="bx-profiler-question">question content</div>
                 <div class="bx-profiler-button-continue-wrapper"></div>
             </form>
         </div>
-        <div class="bx-profiler-progress-wrapper"></div>
+        <div id="bx-profiler-progress-wrapper" style="display:none;"><p>progress: 1/6</p></div>
+        <div id="bx-profiler-error"></div>
     </div>
 </div>
 <script type="text/javascript">
-    var profiler = new BxProfiler(
+    var bxProfiler = new BxProfiler(
         '<?php echo $this->getLoadUrl()?>',
         '<?php echo $this->getSubmitUrl()?>',
         '<?php echo $this->getSubmitEventLoggedCustomer()?>',

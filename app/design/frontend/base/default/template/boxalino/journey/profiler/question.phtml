@@ -1,21 +1,27 @@
 <?php
+/**
+ * @see Boxalino_Intelligence_Block_Journey_Profiler
+ */
+
 $fields = $this->getFields();
 ?>
 this is a question from the profiler
-<div class="bx-profiler-question" id="bx-profiler-question-<?php echo $this->getElementIndex();?>">
-    <?php if($this->getData("title")) :?>
-        <?php echo $this->getData("title");?>
-    <?php endif;?>
+<div id="bx-profiler-question-<?php echo $this->getElementIndex();?>" data-attribute-code="<?php echo $this->getAttributeCode();?>"
+     data-skip="<?php echo $this->isSkipAllowed();?>" data-skip="<?php echo $this->isSkipAllowed();?>" data-auto-load="<?php echo $this->isAutoLoadeAllowed();?>"
+     data-is-submit="<?php echo $this->isSubmit();?>" data-dispatched-action="<?php echo $this->getDispatchedAction()?>">
     <span class="bx-question"><?php echo $this->getQuestion();?></span>
     <?php if($this->hasFields()):?>
         <?php foreach($fields as $name => $content):?>
             <div class="bx-question-field" id="bx-question-field-<?php echo $name;?>">
-                //input fields: textarea, slider-range, date-picker, true/false, multiselect, etc
                 <?php echo $this->getLayout()->createBlock('core/template')->setData($content)->setAjax(true)->setTemplate()->toHtml(); ?>
             </div>
         <?php endforeach;?>
     <?php endif;?>
-    <div class="bx-question-error" id="bx-question-error-<?php echo $this->getAttributeCode();?>"></div>
+    <div class="bx-question-skip" id="bx-question-button-skip-<?php echo $this->getElementIndex();?>" style="display:none;"
+         onclick="bxProfiler.skipQuestion(<?php echo $this->getElementIndex();?>, '<?php echo $this->getAttributeCode();?>')">
+         <p>Skip</p>
+    </div>
+    <div class="bx-question-error" id="bx-question-error-<?php echo $this->getElementIndex();?>"></div>
 </div>
 
 
