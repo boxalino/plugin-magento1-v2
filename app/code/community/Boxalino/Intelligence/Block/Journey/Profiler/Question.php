@@ -52,7 +52,7 @@ class Boxalino_Intelligence_Block_Journey_Profiler_Question extends Boxalino_Int
      */
     public function isSkipAllowed()
     {
-        $value = $this->getData('bx_q_optional');
+        return (int) $this->getData('bx_q_optional');
         if(empty($value))
         {
             return 0;
@@ -66,7 +66,7 @@ class Boxalino_Intelligence_Block_Journey_Profiler_Question extends Boxalino_Int
      */
     public function isMultiselect()
     {
-        $value =  $this->getData('bx_q_multiselect');
+        return (int) $this->getData('bx_q_multiselect');
         if(empty($value))
         {
             return 0;
@@ -130,7 +130,14 @@ class Boxalino_Intelligence_Block_Journey_Profiler_Question extends Boxalino_Int
      */
     public function getQuestion()
     {
-        return $this->getData('bx_q_question');
+        $questionData =  $this->getData('bx_q_question');
+        if(is_array($questionData))
+        {
+            $locale = $this->renderer->getLocale();
+            return $questionData[$locale];
+        }
+
+        return $questionData;
     }
 
     /**

@@ -1,4 +1,3 @@
-radio
 <?php
 $element = $this->getElement();
 $type = $element->getType();
@@ -8,8 +7,8 @@ $name= $element->getName();
 <div class="bx-q-<?php echo $type;?>">
     <label for="<?php echo $option['value']?>"><?php echo $option['label'];?></label>
     <input type="<?php echo $type;?>" name="<?php echo $name?>" value="<?php echo $option["value"]?>"/>
-    <?php if(isset($option['icon'])):?>
-        <img src="<?php echo $option['icon'];?>" alt="<?php echo $option['label'];?>"/>
+    <?php if(isset($option['icon']) && !empty($option["icon"])):?>
+        <img src="<?php echo $option['icon'];?>" alt="<?php echo strip_tags($option['label']);?>"/>
     <?php endif;?>
 </div>
 <?php endforeach;?>
