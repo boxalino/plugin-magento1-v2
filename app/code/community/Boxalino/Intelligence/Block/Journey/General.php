@@ -31,6 +31,6 @@ class Boxalino_Intelligence_Block_Journey_General extends Mage_Core_Block_Templa
 
     public function getLocalizedValue($values)
     {
-        return $this->p13nHelper->getResponse()->getLocalizedValue($values);
+        return $this->renderer->getLocalizedValue($values);
     }
 }

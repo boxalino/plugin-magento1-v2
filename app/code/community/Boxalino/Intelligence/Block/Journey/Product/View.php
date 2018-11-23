@@ -33,7 +33,7 @@ class Boxalino_Intelligence_Block_Journey_Product_View extends Mage_Catalog_Bloc
     }
 
     public function getLocalizedValue($values) {
-        return $this->p13nHelper->getResponse()->getLocalizedValue($values);
+        return $this->renderer->getLocalizedValue($values);
     }
 
     public function getElementIndex() {

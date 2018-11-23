@@ -129,7 +129,7 @@ class Boxalino_Intelligence_Model_VisualElement_Renderer extends Varien_Object
             }
         }
 
-        return $this->getLocaleValuesForParameter($arguments);
+        return $this->getLocaleValuesArray($arguments);
     }
 
 
@@ -138,7 +138,7 @@ class Boxalino_Intelligence_Model_VisualElement_Renderer extends Varien_Object
      * @param $parameters
      * @return array
      */
-    protected function getLocaleValuesForParameter($parameters)
+    public function getLocaleValuesArray($parameters)
     {
         $localizedParameters = array();
         $locale = $this->getLocale();
@@ -152,11 +152,35 @@ class Boxalino_Intelligence_Model_VisualElement_Renderer extends Varien_Object
                     $localizedParameters[$field]=$values[$locale];
                     continue;
                 }
-                $localizedParameters[$field] = $this->getLocaleValuesForParameter($values);
+                $localizedParameters[$field] = $this->getLocaleValuesArray($values);
             }
         }
 
         return $localizedParameters;
+    }
+
+    /**
+     * Returning localized value for a field
+     *
+     * @param $values
+     * @param null $key
+     * @return string
+     */
+    public function getLocalizedValue($values, $key = null) {
+        if(is_array($values)) {
+            $locale = $this->getLocale();
+            if(is_null($key) && isset($values[$language])) {
+                return $values[$language];
+            }
+            if(isset($values[$key])) {
+                foreach ($values[$key] as $lang => $val) {
+                    if($lang == $language) {
+                        return $val;
+                    }
+                }
+            }
+        }
+        return $values;
     }
 
 
