@@ -86,13 +86,10 @@ BxProfiler.prototype = {
         this.currentQuestion = question;
     },
     addSelect: function(id) {
-        console.log("add select");
     },
     removeSelect: function() {
-        console.log("remove select");
     },
     getCurrentSelects: function() {
-        console.log("get current selects");
         return this.selectedOptions;
     },
     saveAnswer: function() {
