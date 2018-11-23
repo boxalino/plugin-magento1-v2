@@ -14,8 +14,8 @@ $fields = $this->getFields();
             <?php echo $this->getLayout()->createBlock($content->getBlockType())->setTemplate($content->getTemplate())->setData("element", $content)->toHtml(); ?>
         </div>
     <?php endforeach;?>
-    <div class="bx-question-skip" id="bx-question-button-skip-<?php echo $this->getElementIndex();?>" style="display:none;"
-         onclick="bxProfiler.skipQuestion(<?php echo $this->getElementIndex();?>, '<?php echo $this->getAttributeCode();?>')">
+    <div id="bx-question-skip" style="display:none;"
+         onclick="bxProfiler.skipQuestion(<?php echo $this->getElementIndex();?>)">
          <p>Continue</p>
     </div>
     <div class="bx-question-error" id="bx-question-error-<?php echo $this->getElementIndex();?>"></div>

@@ -9,8 +9,8 @@ var BxProfiler = Class.create();
 
 BxProfiler.prototype = {
     initialize: function (loadUrl, submitUrl,loggedCustomerEvent, visitorEvent, showProgress, questions) {
-        this.selectedOptions = new Array();
-        this.profilerQuestions = JSON.parse(questions);
+        this.selectedOptions = [];
+        this.profilerQuestions = questions;
         this.loadUrl = loadUrl;
         this.submitUrl = submitUrl;
         this.customerEvent = loggedCustomerEvent;
@@ -18,45 +18,45 @@ BxProfiler.prototype = {
         this.isProgressEnabled = showProgress;
         this.totalQuestions = this.profilerQuestions.length;
         this.currentStep = 0;
+        this.order = 0;
         this.currentQuestion = null;
+        this.formId = 'bx-journey-profiler-form';
+        this.progressBlockId = 'bx-profiler-progress-wrapper';
+        this.skipBlockId = 'bx-question-skip';
+        this.profilerQuestionBlockId = 'bx-profiler-question';
 
-        console.log(this.profilerQuestions);
         if(this.showProgress()) {
-            this.showOrHideBlock("bx-profiler-progress-wrapper");
+            this.showOrHideBlock(this.progressBlockId);
         }
 
-        this.loadQuestion(this.profilerQuestions[this.currentStep], this.currentStep);
-
+        this.loadQuestion(this.profilerQuestions[this.order], this.order);
+        this.initProfilerEvents();
     },
     getQuestions: function() {
         return this.profilerQuestions;
     },
-    loadQuestion: function(question, step) {
-        console.log(question);
-
+    initProfilerEvents: function() {
+    },
+    loadQuestion: function(question, order) {
         this.showOrHideBlock('bx-profiler-error');
 
         new Ajax.Request(this.loadUrl, {
             method: 'post',
             parameters: {
                 'visualElement': JSON.stringify(question),
-                'bxIndex' : step
+                'bxIndex' : order
             },
             onSuccess: function (transport) {
                 if (transport.responseText.isJSON() === true) {
                     var response = transport.responseText.evalJSON();
                     if (response.question) {
                         this.setCurrentQuestion(question);
-                        $('bx-profiler-question').insert(response.question);
-                        var skipAllowed = $('bx-profiler-question-'+step).dataset.skip;
-                        if(skipAllowed === true) {
-                            this.showOrHideBlock('bx-question-button-skip-'+step);
+                        if(order>0) {
+                            this.hidePreviousQuestion(order);
                         }
-                        this.showOrHideBlock('bx-profiler-error');
-                        this.setProgress(step);
-                        if(this.showProgress()){
-                            //update step
-                        }
+                        this.getQuestionBlock().insert(response.question);
+                        this.prepareSkipFlow(order);
+                        this.prepareProgressFlow(order);
                     }
 
                     if (response.error) {
@@ -78,14 +78,12 @@ BxProfiler.prototype = {
             }.bind(this)
         });
     },
+    hidePreviousQuestion: function(id) {
+        let prevId = id-1;
+        $('bx-profiler-question-'+ prevId).remove();
+    },
     setCurrentQuestion: function(question) {
         this.currentQuestion = question;
-    },
-    getQuestionOptions: function() {
-        console.log("get question options");
-    },
-    isSelected: function() {
-        console.log("is selected");
     },
     addSelect: function(id) {
         console.log("add select");
@@ -99,34 +97,28 @@ BxProfiler.prototype = {
     },
     saveAnswer: function() {
         this.showOrHideBlock('bx-profiler-error');
-        var step = this.getProgress(),
-            nextStep = step + 1,
-            visualElement = this.getQuestionByStep(nextStep);
+        let order = this.order,
+            nextOrder = this.getProgress(),
+            visualElement = this.getQuestionByStep(nextOrder);
         new Ajax.Request(this.submitUrl, {
             method: 'post',
             parameters: {
-                'bxIndex' : step,
-                'bxNextIndex': nextStep,
+                'bxIndex' : order,
+                'bxNextIndex': nextOrder,
                 'visualElement': JSON.stringify(visualElement),
                 'customer_event': this.customerEvent,
                 'visitor_event': this.visitorEvent,
-                'data': this.selectedOptions
+                'data': this.getCurrentSelects()
             },
             onSuccess: function (transport) {
                 if (transport.responseText.isJSON() === true) {
                     var response = transport.responseText.evalJSON();
                     if (response.question) {
                         this.setCurrentQuestion(visualElement);
-                        $('bx-profiler-question').insert(response.question);
-                        var skipAllowed = $('bx-profiler-question-'+ response.step).dataset.skip;
-                        if(skipAllowed === true) {
-                            this.showOrHideBlock('bx-question-button-skip-'+ response.step);
-                        }
-                        this.showOrHideBlock('bx-profiler-error');
-                        this.setProgress(response.step);
-                        if(this.showProgress()){
-                            //update step
-                        }
+                        this.hidePreviousQuestion(order);
+                        this.getQuestionBlock().insert(response.question);
+                        this.prepareSkipFlow(response.order);
+                        this.prepareProgressFlow(response.order);
                     }
 
                     if (response.error) {
@@ -148,30 +140,84 @@ BxProfiler.prototype = {
             }.bind(this)
         });
     },
-    addSkipButton: function(html) {
-        $('bx-question-button-skip-'+ this.getProgress()).insert(html);
-    },
-    skipQuestion: function(id, attributeCode) {
-        //set empty value for the attributeCode
-        this.showOrHideBlock('bx-question-button-skip-'+ id);
-        this.loadQuestion(this.getQuestionByStep(id+1), id+1)
-    },
     getQuestionByStep: function(id) {
-        if(parseInt(id, 10)<=this.totalQuestions) {
+        if(parseInt(id, 10)<=this.getTotalQuestion()) {
             return this.getQuestions()[id];
         }
     },
     addFieldListener: function() {
-
+        //on option select
+        //on continue click
+        //on submit
+        //on updating progress bar
+    },
+    getTotalQuestion: function() {
+        return this.totalQuestions;
+    },
+    addProgressBlockContent: function(html) {
+        this.getProgressBlock().insert(html);
+    },
+    setProgressBlockId: function(blockId)
+    {
+        this.progressBlockId = blockId;
+        if(this.showProgress()) {
+            this.showOrHideBlock(this.progressBlockId());
+        }
+    },
+    getProgressBlock: function() {
+        return $(this.progressBlockId);
     },
     getProgress: function() {
         return this.currentStep;
     },
     setProgress: function(value) {
-        this.currentStep = value;
+        this.currentStep = value+1;
     },
     showProgress: function() {
         return this.isProgressEnabled;
+    },
+    prepareProgressFlow: function(order) {
+        this.setProgress(order);
+        if(this.showProgress()){
+            this.getProgressBlock().update();
+            this.getProgressBlock().insert("progress " + this.getProgress() + " of " + this.getTotalQuestion());
+        }
+    },
+    addSkipButtonContent: function(html) {
+        console.log(this.getSkipBlock());
+        this.getSkipBlock().insert(html);
+    },
+    setSkipBlockId: function(blockId)
+    {
+        this.skipBlockId = blockId;
+        if(this.showProgress()) {
+            this.showOrHideBlock(this.skipBlockId());
+        }
+    },
+    getSkipBlock: function() {
+        return $(this.skipBlockId);
+    },
+    skipQuestion: function(id) {
+        this.showOrHideBlock(this.skipBlockId);
+        this.loadQuestion(this.getQuestionByStep(this.getProgress()), this.getProgress())
+    },
+    prepareSkipFlow: function(order) {
+        let skipAllowed = $('bx-profiler-question-'+ order).dataset.skip;
+        if(skipAllowed) {
+            this.showOrHideBlock(this.skipBlockId);
+        }
+    },
+    setFormId: function(formId) {
+        this.formId = formId;
+    },
+    getFormBlock: function() {
+        return $(this.formId);
+    },
+    setQuestionBlockId: function (id) {
+        this.profilerQuestionBlockId = id;
+    },
+    getQuestionBlock: function() {
+        return $(this.profilerQuestionBlockId);
     },
     showOrHideBlock: function (block) {
         $(block).toggle();

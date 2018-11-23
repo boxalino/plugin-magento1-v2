@@ -35,7 +35,7 @@ class Boxalino_Intelligence_ProfilerController extends Mage_Core_Controller_Fron
             }
 
             $response['question'] = $this->_getQuestionBlock($profiler['visualElement'], $profiler['bxNextIndex']);
-            $response['step'] = $profiler['bxNextIndex'];
+            $response['order'] = $profiler['bxNextIndex'];
         } catch (Exception $ex) {
             $response['error']['form_key'] = $ex->getMessage();
             Mage::logException($ex);
@@ -58,6 +58,7 @@ class Boxalino_Intelligence_ProfilerController extends Mage_Core_Controller_Fron
         $response = array();
         $profiler = $this->getRequest()->getPost();
         $response['question'] = $this->_getQuestionBlock($profiler['visualElement'], $profiler['bxIndex']);
+        $response['order'] = $profiler['bxIndex'];
 
         $this->getResponse()->setBody(Mage::helper('core')->jsonEncode($response));
     }

@@ -52,27 +52,7 @@ class Boxalino_Intelligence_Block_Journey_Profiler_Question extends Boxalino_Int
      */
     public function isSkipAllowed()
     {
-        return (int) $this->getData('bx_q_optional');
-        if(empty($value))
-        {
-            return 0;
-        }
-
-        return 1;
-    }
-
-    /**
-     * If it is a multi-select question - skipping to next question can not be done automatically
-     */
-    public function isMultiselect()
-    {
-        return (int) $this->getData('bx_q_multiselect');
-        if(empty($value))
-        {
-            return 0;
-        }
-
-        return 1;
+        return $this->getData('bx_q_optional');
     }
 
     /**
@@ -82,12 +62,12 @@ class Boxalino_Intelligence_Block_Journey_Profiler_Question extends Boxalino_Int
      */
     public function isAutoloadAllowed()
     {
-        if($this->isMultiselect())
+        if($this->isSubmit())
         {
             return 0;
         }
 
-        return (int)$this->getData('bx_q_auto_response');
+        return $this->getData('bx_q_auto_response');
     }
 
     /**
@@ -159,6 +139,7 @@ class Boxalino_Intelligence_Block_Journey_Profiler_Question extends Boxalino_Int
 
     /**
      * Skeleton for a field object
+     *
      * @data name | attribute code, field input name
      * @data type | text, password, submit, reset, radio, checkbox, color, date, email, range, datetime-local, hidden
      * @data array $options | values for the field/input (array for checkboxes,

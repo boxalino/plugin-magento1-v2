@@ -74,6 +74,13 @@ class Boxalino_Intelligence_Model_VisualElement_Renderer extends Varien_Object
         return array();
     }
 
+    /**
+     * Creates a block entity from the given parameters of the narrative
+     *
+     * @param $visualElement array
+     * @param null $additional_parameter
+     * @return mixed
+     */
     protected function createBlockElement($visualElement, $additional_parameter = null)
     {
         $parameters = $visualElement['parameters'];
@@ -168,7 +175,7 @@ class Boxalino_Intelligence_Model_VisualElement_Renderer extends Varien_Object
      */
     public function getLocalizedValue($values, $key = null) {
         if(is_array($values)) {
-            $locale = $this->getLocale();
+            $language = $this->getLocale();
             if(is_null($key) && isset($values[$language])) {
                 return $values[$language];
             }
@@ -251,6 +258,13 @@ class Boxalino_Intelligence_Model_VisualElement_Renderer extends Varien_Object
         return $block;
     }
 
+    /**
+     * Creates children blocks according to the definition in the narrative/visual element content
+     *
+     * @param $visualElements
+     * @param $childNames
+     * @return array
+     */
     protected function createChildrenBlocks($visualElements, $childNames)
     {
         $children = array();
@@ -263,6 +277,38 @@ class Boxalino_Intelligence_Model_VisualElement_Renderer extends Varien_Object
             }
         }
         return $children;
+    }
+
+    /**
+     * If given a value, get the value if the parameter exists
+     * If no value is given, validate if the visual element has the key defined
+     *
+     * @param $visualElement
+     * @param $key
+     * @param $value
+     * @return bool
+     */
+    public function fetchVisualElementParam($visualElement, $key, $value=null)
+    {
+        $parameters = $visualElement['parameters'];
+        foreach ($parameters as $parameter) {
+            if($parameter['name'] == $key){
+                if(is_null($value))
+                {
+                    return reset($parameter['values']);
+                }
+                if(in_array($value, $parameter['values'])) {
+                    return true;
+                }
+            }
+        }
+
+        if(is_null($value))
+        {
+            return 0;
+        }
+
+        return false;
     }
 
     /**
