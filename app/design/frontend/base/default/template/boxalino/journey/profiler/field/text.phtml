@@ -1,0 +1,8 @@
+radio
+<?php
+$element = $this->getElement();
+?>
+<div class="bx-q-<?php echo $element->getType();?>">
+    <label for="<?php echo $element->getType()?>"><?php echo $element->getLabel();?></label>
+    <input type="<?php echo $element->getType();?>" name="<?php echo $element->getName()?>" placeholder="<?php $element->getPlaceholder();?>" <?php echo $this->getAttributes();?>/>
+</div>

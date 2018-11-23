@@ -2,32 +2,48 @@
 
 /**
  * The question block is being generated via ajax by setting properties based on the request
- * Required properties are:
- * 1. block type
- * 2. block name
- * 3. data (made of: attribute code. is question to be skipped, is multiselect, is auto response enabled,
- * 4. multiple fields
+ * All questions fields are defined as subrenderings on the main element
  */
 class Boxalino_Intelligence_Block_Journey_Profiler_Question extends Boxalino_Intelligence_Block_Journey_General
 {
 
-    /**
-     * Attribute code is also the input name
-     * @return mixed
-     */
-    public function getAttributeCode()
-    {
-        return $this->getData('bx_q_attribute_code');
-    }
+    protected $fields = array();
 
     /**
      * Getting fields and definition
+     * Fields are set as subrenderings on a question narrative
      *
-     * @return array
+     * @return array(Varien_Object())
      */
     public function getFields()
     {
-        return [];
+        foreach($this->getSubRenderings() as $field)
+        {
+            $fieldObject = $this->prepareFieldDefinitionBySubrendering($field);
+            $this->addField($fieldObject->getName(), $fieldObject);
+        }
+
+        return $this->fields;
+    }
+
+
+    /**
+     * Using a subrendering (array) - a field object is created
+     * To be left until the narrative is rendered as object
+     *
+     * @param array $subrendering
+     * @return Varien_Object
+     */
+    protected function prepareFieldDefinitionBySubrendering($subrendering)
+    {
+        $field = $this->getDefaultFieldByDefinition();
+        $parameters = array();
+        if(is_array($subrendering) && isset($subrendering["visualElement"]))
+        {
+            $parameters = $this->renderer->getVisualElementParameters($subrendering['visualElement']['parameters']);
+        }
+
+        return $field->addData($parameters);
     }
 
     /**
@@ -64,7 +80,7 @@ class Boxalino_Intelligence_Block_Journey_Profiler_Question extends Boxalino_Int
      * (recommended for checkboxes)
      * @return mixed
      */
-    public function isAutoLoadeAllowed()
+    public function isAutoloadAllowed()
     {
         if($this->isMultiselect())
         {
@@ -107,31 +123,60 @@ class Boxalino_Intelligence_Block_Journey_Profiler_Question extends Boxalino_Int
         return (int) $this->getData('bx_q_submit');
     }
 
+    /**
+     * Getting question value based on locale
+     *
+     * @return mixed
+     */
+    public function getQuestion()
+    {
+        return $this->getData('bx_q_question');
+    }
 
     /**
      * Dynamically adds fields to the template
-     *
-     * @param $name | attribute code
-     * @param string $tag | input, textarea, select, button
-     * @param string $type | text, password, submit, reset, radio, checkbox, color, date, email, range, datetime-local, hidden
-     * @param array $values | values for the field/input (array for checkboxes,
-     * @param array $properties | other field properties -- they`re going to be rendered inline in the tag
-     * @param string $placeholder | applies for textarea and text fields
-     * @param string $template | phtml template to load the content
+     * @param $code string => attribute code
+     * @param  Varien_Object $field
+     * @return Boxalino_Intelligence_Block_Journey_Profiler_Question
      */
-    public function addField($name, $tag="input", $type="text", $values=array(), $properties=array(), $placeholder="", $template="")
+    public function addField($code, $field)
     {
+        if(isset($this->fields[$code]))
+        {
+            return $this;
+        }
 
+        $this->fields[$code] = $field;
+        return $this;
     }
 
-    public function getType()
+    /**
+     * Skeleton for a field object
+     * @data name | attribute code, field input name
+     * @data type | text, password, submit, reset, radio, checkbox, color, date, email, range, datetime-local, hidden
+     * @data array $options | values for the field/input (array for checkboxes,
+     * @data string $attributes | other field properties -- they`re going to be rendered inline in the tag
+     * @data string $placeholder | applies for textarea and text fields
+     * @data string $template | phtml template to load the content
+     * @data string $block_type | block type
+     * @data string $block_name | block name in case it is referenced in layout/phtml
+     * @return Varien_Object
+     */
+    public function getDefaultFieldByDefinition()
     {
-
-    }
-
-    public function getCustomTemplate()
-    {
-        return $this->getData("bx_q_custom_template");
+        return new Varien_Object(
+            [
+                "name"=>'',
+                "type"=>'',
+                'options'=> array(),
+                "placeholder"=> "",
+                "template"=> 'boxalino/journey/profiler/field/text.phtml',
+                "block_type"=> 'core/template',
+                "block_name" => "",
+                "label" => "",
+                "attributes" => ""
+            ]
+        );
     }
 
 }

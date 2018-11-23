@@ -69,9 +69,9 @@ class Boxalino_Intelligence_Block_Journey_Profiler extends Boxalino_Intelligence
      * When the profiler data is to be saved, a hook is to be created for the event
      * Since there can be multiple profiler implementations in the system, this feature is configurable
      */
-    public function getSubmitEventLoggedCustomer()
+    public function getSubmitEventCustomer()
     {
-        return "bx_profiler_customer_update";
+        return "bx_p_event_customer";
     }
 
     /**
@@ -79,7 +79,7 @@ class Boxalino_Intelligence_Block_Journey_Profiler extends Boxalino_Intelligence
      */
     public function getSubmitEventVisitor()
     {
-        return "bx_profiler_customer_login";
+        return "bx_p_event_visitor";
     }
 
 
