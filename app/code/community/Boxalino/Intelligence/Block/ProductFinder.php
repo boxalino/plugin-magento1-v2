@@ -9,7 +9,7 @@ class Boxalino_Intelligence_Block_ProductFinder extends Mage_Core_Block_Template
      * @return array|mixed
      */
     public function getFieldNames() {
-        return $this->getBxFacets()->getFacetExtraInfoFacets('finderFacet', 'true', false, false);
+        return $this->getBxFacets()->getFacetExtraInfoFacets('finderFacet', 'true', false, false, true);
     }
 
     /**
