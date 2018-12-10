@@ -23,6 +23,7 @@ BxProfiler.prototype = {
         this.formId = 'bx-journey-profiler-form';
         this.progressBlockId = 'bx-profiler-progress-wrapper';
         this.skipBlockId = 'bx-question-skip';
+        this.backBlockId = 'bx-question-back';
         this.profilerQuestionBlockId = 'bx-profiler-question';
 
         if(this.showProgress()) {
@@ -36,6 +37,33 @@ BxProfiler.prototype = {
         return this.profilerQuestions;
     },
     initProfilerEvents: function() {
+        $(this.formId).addEventListener("load", this, false);
+        $(this.formId).addEventListener("change", this, false);
+        $(this.formId).addEventListener("submit", this, false);
+    },
+    handleEvent:function(event) {
+        switch(event.type) {
+            case "load":
+                console.log("load");
+                break;
+            case "change":
+                this.addSelect(event.target.name, event.target.value);
+                break;
+            case "submit":
+                event.preventDefault();
+                this.saveAnswer();
+                break;
+            case "click":
+                if(event.path[1].id == this.skipBlockId){
+                    this.skipQuestion();
+                }
+                if(event.path[1].id == this.backBlockId){
+                    this.backQuestion();
+                }
+                break;
+            default:
+                return;
+        }
     },
     loadQuestion: function(question, order) {
         this.showOrHideBlock('bx-profiler-error');
@@ -53,6 +81,7 @@ BxProfiler.prototype = {
                         this.setCurrentQuestion(question);
                         if(order>0) {
                             this.hidePreviousQuestion(order);
+                            //this.prepareBackFlow(order);
                         }
                         this.getQuestionBlock().insert(response.question);
                         this.prepareSkipFlow(order);
@@ -78,6 +107,8 @@ BxProfiler.prototype = {
             }.bind(this)
         });
     },
+    addListener: function(id, options) {
+    },
     hidePreviousQuestion: function(id) {
         let prevId = id-1;
         $('bx-profiler-question-'+ prevId).remove();
@@ -85,9 +116,8 @@ BxProfiler.prototype = {
     setCurrentQuestion: function(question) {
         this.currentQuestion = question;
     },
-    addSelect: function(id) {
-    },
-    removeSelect: function() {
+    addSelect: function(name, value) {
+        this.selectedOptions[name] = value;
     },
     getCurrentSelects: function() {
         return this.selectedOptions;
@@ -98,7 +128,7 @@ BxProfiler.prototype = {
             nextOrder = this.getProgress(),
             visualElement = this.getQuestionByStep(nextOrder);
         new Ajax.Request(this.submitUrl, {
-            method: 'post',
+            method: 'POST',
             parameters: {
                 'bxIndex' : order,
                 'bxNextIndex': nextOrder,
@@ -111,8 +141,10 @@ BxProfiler.prototype = {
                 if (transport.responseText.isJSON() === true) {
                     var response = transport.responseText.evalJSON();
                     if (response.question) {
-                        this.setCurrentQuestion(visualElement);
-                        this.hidePreviousQuestion(order);
+                        this.setCurrentQuestion(response.question);
+                        if(response.order>0) {
+                            this.hidePreviousQuestion(response.order);
+                        }
                         this.getQuestionBlock().insert(response.question);
                         this.prepareSkipFlow(response.order);
                         this.prepareProgressFlow(response.order);
@@ -141,12 +173,6 @@ BxProfiler.prototype = {
         if(parseInt(id, 10)<=this.getTotalQuestion()) {
             return this.getQuestions()[id];
         }
-    },
-    addFieldListener: function() {
-        //on option select
-        //on continue click
-        //on submit
-        //on updating progress bar
     },
     getTotalQuestion: function() {
         return this.totalQuestions;
@@ -181,7 +207,6 @@ BxProfiler.prototype = {
         }
     },
     addSkipButtonContent: function(html) {
-        console.log(this.getSkipBlock());
         this.getSkipBlock().insert(html);
     },
     setSkipBlockId: function(blockId)
@@ -194,15 +219,24 @@ BxProfiler.prototype = {
     getSkipBlock: function() {
         return $(this.skipBlockId);
     },
-    skipQuestion: function(id) {
+    skipQuestion: function() {
         this.showOrHideBlock(this.skipBlockId);
         this.loadQuestion(this.getQuestionByStep(this.getProgress()), this.getProgress())
+    },
+    backQuestion: function() {
+        this.showOrHideBlock(this.backBlockId);
+        this.loadQuestion(this.getQuestionByStep(this.getProgress()-1), this.getProgress()-1)
     },
     prepareSkipFlow: function(order) {
         let skipAllowed = $('bx-profiler-question-'+ order).dataset.skip;
         if(skipAllowed) {
             this.showOrHideBlock(this.skipBlockId);
+            $(this.skipBlockId).addEventListener("click", this, false);
         }
+    },
+    prepareBackFlow: function(order) {
+        this.showOrHideBlock(this.backBlockId);
+        $(this.backBlockId).addEventListener("click", this, false);
     },
     setFormId: function(formId) {
         this.formId = formId;

@@ -20,6 +20,8 @@ class Boxalino_Intelligence_ProfilerController extends Mage_Core_Controller_Fron
      */
     public function saveAction()
     {
+        $isAjax = $this->getRequest()->isAjax();
+
         if (!$this->getRequest()->isAjax()) {
             $this->_forward('no-route');
             return false;
@@ -59,6 +61,8 @@ class Boxalino_Intelligence_ProfilerController extends Mage_Core_Controller_Fron
         $profiler = $this->getRequest()->getPost();
         $response['question'] = $this->_getQuestionBlock($profiler['visualElement'], $profiler['bxIndex']);
         $response['order'] = $profiler['bxIndex'];
+
+        Mage::dispatchEvent("bx_profiler_load_question", array("bx_profiler_response"=>$response));
 
         $this->getResponse()->setBody(Mage::helper('core')->jsonEncode($response));
     }
