@@ -6,12 +6,12 @@
 $fields = $this->getFields();
 ?>
 <div id="bx-profiler-question-<?php echo $this->getElementIndex();?>"
-     data-skip="<?php echo $this->isSkipAllowed();?>" data-auto-load="<?php echo $this->isAutoloadAllowed();?>"
-     data-is-submit="<?php echo $this->isSubmit();?>" data-dispatched-action="<?php echo $this->getDispatchedAction()?>">
+     data-skip="<?php echo $this->isSkipAllowed();?>" data-auto="<?php echo $this->isAutoloadAllowed();?>"
+     data-submit="<?php echo $this->isSubmit();?>" data-dispatched-action="<?php echo $this->getDispatchedAction()?>">
     <span class="bx-question"><?php echo $this->getQuestion();?></span>
     <?php foreach($fields as $name => $content):?>
         <div class="bx-question-field" id="bx-question-field-<?php echo $name;?>">
-            <?php echo $this->getLayout()->createBlock($content->getBlockType())->setTemplate($content->getTemplate())->setData("element", $content)->toHtml(); ?>
+            <?php echo $this->getLayout()->createBlock($content->getBlockType())->setTemplate($content->getTemplate())->setData("element", $content)->setRequired($this->isSkipAllowed())->toHtml(); ?>
         </div>
     <?php endforeach;?>
     <div id="bx-question-back" style="display:none;">
@@ -22,6 +22,3 @@ $fields = $this->getFields();
     </div>
     <div class="bx-question-error" id="bx-question-error-<?php echo $this->getElementIndex();?>"></div>
 </div>
-
-
-

@@ -18,12 +18,7 @@ class Boxalino_Intelligence_Block_Journey_Profiler extends Boxalino_Intelligence
      */
     public function getQuestions()
     {
-        if($this->getData('bx_p_use_ajax') === true)
-        {
-           return json_encode($this->getSubRenderings());
-        }
-
-        return $this->getSubRenderings();
+       return json_encode($this->getSubRenderings());
     }
 
     /**
@@ -42,12 +37,13 @@ class Boxalino_Intelligence_Block_Journey_Profiler extends Boxalino_Intelligence
      */
     public function getLoadUrl()
     {
-        if($this->getData("bx_p_load_url"))
+        $customUrl = $this->getData("bx_p_load_url");
+        if(empty($customUrl))
         {
-            return Mage::getBaseUrl() . $this->getData('bx_p_load_url');
+            return $this->getUrl("boxalinointelligence/profiler/loadQuestion");
         }
 
-        return $this->getUrl("boxalinointelligence/profiler/loadQuestion");
+        return $this->getUrl($customUrl);
     }
 
     /**
@@ -57,9 +53,9 @@ class Boxalino_Intelligence_Block_Journey_Profiler extends Boxalino_Intelligence
      */
     public function getSubmitUrl()
     {
-        if($this->getData("bx_p_onSave_action"))
+        if($this->getData("bx_p_submit_url"))
         {
-            return Mage::getBaseUrl() . $this->getData('bx_p_onSave_action');
+            return Mage::getBaseUrl() . $this->getData('bx_p_submit_url');
         }
 
         return $this->getUrl("boxalinointelligence/profiler/save");
@@ -71,7 +67,13 @@ class Boxalino_Intelligence_Block_Journey_Profiler extends Boxalino_Intelligence
      */
     public function getSubmitEventCustomer()
     {
-        return "bx_p_event_customer";
+        $customEvent = $this->getData("bx_p_event_customer");
+        if(empty($customEvent))
+        {
+            return "bx_p_event_customer";
+        }
+
+        return $customEvent;
     }
 
     /**
@@ -79,10 +81,12 @@ class Boxalino_Intelligence_Block_Journey_Profiler extends Boxalino_Intelligence
      */
     public function getSubmitEventVisitor()
     {
-        return "bx_p_event_visitor";
+        $customEvent = $this->getData("bx_p_event_visitor");
+        if(empty($customEvent))
+        {
+            return "bx_p_event_visitor";
+        }
+
+        return $customEvent;
     }
-
-
-
-
 }

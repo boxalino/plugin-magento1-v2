@@ -20,8 +20,6 @@ class Boxalino_Intelligence_ProfilerController extends Mage_Core_Controller_Fron
      */
     public function saveAction()
     {
-        $isAjax = $this->getRequest()->isAjax();
-
         if (!$this->getRequest()->isAjax()) {
             $this->_forward('no-route');
             return false;
@@ -67,6 +65,13 @@ class Boxalino_Intelligence_ProfilerController extends Mage_Core_Controller_Fron
         $this->getResponse()->setBody(Mage::helper('core')->jsonEncode($response));
     }
 
+    /**
+     * Generic question block rendering via model
+     *
+     * @param $visualElement
+     * @param $index
+     * @return mixed
+     */
     protected function _getQuestionBlock($visualElement, $index)
     {
         return Mage::getModel("boxalino_intelligence/visualElement_renderer")->createVisualElement(

@@ -25,6 +25,7 @@ BxProfiler.prototype = {
         this.skipBlockId = 'bx-question-skip';
         this.backBlockId = 'bx-question-back';
         this.profilerQuestionBlockId = 'bx-profiler-question';
+        this.hasCustomProgress = false;
 
         if(this.showProgress()) {
             this.showOrHideBlock(this.progressBlockId);
@@ -43,9 +44,6 @@ BxProfiler.prototype = {
     },
     handleEvent:function(event) {
         switch(event.type) {
-            case "load":
-                console.log("load");
-                break;
             case "change":
                 this.addSelect(event.target.name, event.target.value);
                 break;
@@ -78,14 +76,14 @@ BxProfiler.prototype = {
                 if (transport.responseText.isJSON() === true) {
                     var response = transport.responseText.evalJSON();
                     if (response.question) {
-                        this.setCurrentQuestion(question);
-                        if(order>0) {
-                            this.hidePreviousQuestion(order);
-                            //this.prepareBackFlow(order);
+                        this.order = response.order;
+                        this.setCurrentQuestion(response.question);
+                        if(this.order>0) {
+                            this.hidePreviousQuestion();
                         }
                         this.getQuestionBlock().insert(response.question);
-                        this.prepareSkipFlow(order);
-                        this.prepareProgressFlow(order);
+                        this.prepareProgressFlow();
+                        this.prepareSkipFlow();
                     }
 
                     if (response.error) {
@@ -109,8 +107,8 @@ BxProfiler.prototype = {
     },
     addListener: function(id, options) {
     },
-    hidePreviousQuestion: function(id) {
-        let prevId = id-1;
+    hidePreviousQuestion: function() {
+        let prevId = +this.order - 1;
         $('bx-profiler-question-'+ prevId).remove();
     },
     setCurrentQuestion: function(question) {
@@ -141,13 +139,14 @@ BxProfiler.prototype = {
                 if (transport.responseText.isJSON() === true) {
                     var response = transport.responseText.evalJSON();
                     if (response.question) {
+                        this.order = response.order;
                         this.setCurrentQuestion(response.question);
-                        if(response.order>0) {
-                            this.hidePreviousQuestion(response.order);
+                        if(this.order>0) {
+                            this.hidePreviousQuestion();
                         }
                         this.getQuestionBlock().insert(response.question);
-                        this.prepareSkipFlow(response.order);
-                        this.prepareProgressFlow(response.order);
+                        this.prepareProgressFlow();
+                        this.prepareSkipFlow();
                     }
 
                     if (response.error) {
@@ -170,18 +169,18 @@ BxProfiler.prototype = {
         });
     },
     getQuestionByStep: function(id) {
-        if(parseInt(id, 10)<=this.getTotalQuestion()) {
+        if(parseInt(id, 10)<=this.getTotalQuestions()) {
             return this.getQuestions()[id];
         }
     },
-    getTotalQuestion: function() {
+    getTotalQuestions: function() {
         return this.totalQuestions;
     },
     addProgressBlockContent: function(html) {
+        this.hasCustomProgress = true;
         this.getProgressBlock().insert(html);
     },
-    setProgressBlockId: function(blockId)
-    {
+    setProgressBlockId: function(blockId) {
         this.progressBlockId = blockId;
         if(this.showProgress()) {
             this.showOrHideBlock(this.progressBlockId());
@@ -194,16 +193,16 @@ BxProfiler.prototype = {
         return this.currentStep;
     },
     setProgress: function(value) {
-        this.currentStep = value+1;
+        this.currentStep = +value + 1;
     },
     showProgress: function() {
         return this.isProgressEnabled;
     },
-    prepareProgressFlow: function(order) {
-        this.setProgress(order);
-        if(this.showProgress()){
+    prepareProgressFlow: function() {
+        this.setProgress(this.order);
+        if(this.showProgress() && this.hasCustomProgress === false){
             this.getProgressBlock().update();
-            this.getProgressBlock().insert("progress " + this.getProgress() + " of " + this.getTotalQuestion());
+            this.getProgressBlock().insert("Question " + this.getProgress() + " of " + this.getTotalQuestions());
         }
     },
     addSkipButtonContent: function(html) {
@@ -221,20 +220,24 @@ BxProfiler.prototype = {
     },
     skipQuestion: function() {
         this.showOrHideBlock(this.skipBlockId);
-        this.loadQuestion(this.getQuestionByStep(this.getProgress()), this.getProgress())
+        if($('bx-profiler-question-'+ this.order).dataset.submit) {
+            this.saveAnswer();
+        } else {
+            this.loadQuestion(this.getQuestionByStep(this.getProgress()), this.getProgress())
+        }
     },
     backQuestion: function() {
         this.showOrHideBlock(this.backBlockId);
         this.loadQuestion(this.getQuestionByStep(this.getProgress()-1), this.getProgress()-1)
     },
-    prepareSkipFlow: function(order) {
-        let skipAllowed = $('bx-profiler-question-'+ order).dataset.skip;
-        if(skipAllowed) {
+    prepareSkipFlow: function() {
+        let skipAllowed = $('bx-profiler-question-'+ this.order).dataset.skip;
+        if(skipAllowed && (this.currentStep!=this.totalQuestions)) {
             this.showOrHideBlock(this.skipBlockId);
             $(this.skipBlockId).addEventListener("click", this, false);
         }
     },
-    prepareBackFlow: function(order) {
+    prepareBackFlow: function() {
         this.showOrHideBlock(this.backBlockId);
         $(this.backBlockId).addEventListener("click", this, false);
     },
