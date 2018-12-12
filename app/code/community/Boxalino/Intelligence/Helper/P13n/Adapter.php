@@ -45,8 +45,8 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
     /**
      * Boxalino_Intelligence_Helper_P13n_Adapter constructor.
      */
-    public function __construct(){
-
+    public function __construct()
+    {
         $this->bxHelperData = Mage::helper('boxalino_intelligence');
         $libPath = Mage::getModuleDir('','Boxalino_Intelligence') . DIRECTORY_SEPARATOR . 'lib';
         require_once($libPath . DIRECTORY_SEPARATOR . 'BxClient.php');
@@ -58,7 +58,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
                 self::$bxClient->setTestMode(true);
             }
         }
-    }
+        }
 
     /**
      * Initialize BxClient
@@ -350,11 +350,14 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
     }
 
     /**
-     * @param $soft_facets
      * @param $prefix
+     * @param array $requestParams
      */
-    protected function setPrefixContextParameter($prefix){
-        $requestParams = Mage::app()->getRequest()->getParams();
+    protected function setPrefixContextParameter($prefix, $requestParams = array()){
+        if(empty($requestParams))
+        {
+            $requestParams = Mage::app()->getRequest()->getParams();
+        }
         foreach ($requestParams as $key => $value) {
             if(strpos($key, $prefix) == 0) {
                 self::$bxClient->addRequestContextParameter($key, $value);
@@ -876,4 +879,19 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
         }
         return;
     }
+
+    /**
+     * Creating a request with params to boxalino server
+     *
+     * @param $choice
+     * @param array $params
+     */
+    public function sendRequestWithParams($choice, $params=array())
+    {
+        $bxRequest = new \com\boxalino\bxclient\v1\BxParametrizedRequest($this->bxHelperData->getLanguage(), $choice);
+        $this->prefixContextParameter = $bxRequest->getRequestWeightedParametersPrefix();
+        $this->setPrefixContextParameter($this->prefixContextParameter, $params);
+        self::$bxClient->addRequest($bxRequest);
+    }
+
 }

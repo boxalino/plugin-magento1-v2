@@ -68,6 +68,8 @@ Class Boxalino_Intelligence_Block_Journey extends Mage_Core_Block_Template
                 try {
                     $block = $this->renderer->createVisualElement($visualElement['visualElement']);
                     if ($block) {
+                        $block->setChoice($this->getData('choice'));
+                        $block->setAdditionalChoice($this->getData('additional_choices'));
                         $html .= $block->toHtml();
                     }
                 } catch (\Exception $e) {

@@ -20,9 +20,11 @@
     var bxProfiler = new BxProfiler(
         '<?php echo $this->getLoadUrl()?>',
         '<?php echo $this->getSubmitUrl()?>',
+        '<?php echo $this->getSendProfilerRequestUrl()?>',
         '<?php echo $this->getSubmitEventCustomer()?>',
         '<?php echo $this->getSubmitEventVisitor()?>',
         '<?php echo $this->displayProgress()?>',
+        '<?php echo $this->getData("choice")?>',
         <?php echo $this->getQuestions()?>
     );
 </script>
