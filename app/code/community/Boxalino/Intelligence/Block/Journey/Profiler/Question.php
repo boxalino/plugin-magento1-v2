@@ -52,6 +52,11 @@ class Boxalino_Intelligence_Block_Journey_Profiler_Question extends Boxalino_Int
      */
     public function isSkipAllowed()
     {
+        if($this->isSubmit())
+        {
+            return 0;
+        }
+
         return $this->getData('bx_q_optional');
     }
 

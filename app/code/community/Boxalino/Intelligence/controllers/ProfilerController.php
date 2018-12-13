@@ -25,22 +25,17 @@ class Boxalino_Intelligence_ProfilerController extends Mage_Core_Controller_Fron
 
         $profiler = $this->getRequest()->getPost();
         $response = array();
-        $response['profile_id'] = 0;
         try {
             if (Mage::getSingleton('customer/session')->isLoggedIn()) {
-                Mage::dispatchEvent($profiler['customer_event'], array("bx_profiler"=>json_decode($profiler['data'])));
+                Mage::dispatchEvent($profiler['customer_event'], array("bx_profiler"=>json_decode($profiler['data'], true)));
             } else {
-                Mage::dispatchEvent($profiler['visitor_event'], array("bx_profiler"=>json_decode($profiler['data'])));
-            }
-
-            if (Mage::getSingleton('customer/session')->isLoggedIn()) {
-                $response['profile_id'] = Mage::getSingleton("customer/session")->getId();
+                Mage::dispatchEvent($profiler['visitor_event'], array("bx_profiler"=>json_decode($profiler['data'], true)));
             }
 
             $response['question'] = $this->_getQuestionBlock($profiler['visualElement'], $profiler['bxNextIndex']);
             $response['order'] = $profiler['bxNextIndex'];
         } catch (\Exception $ex) {
-            $response['error']['form_key'] = $ex->getMessage();
+            $response['error'][] = $ex->getMessage();
             Mage::logException($ex);
         }
 
@@ -87,24 +82,45 @@ class Boxalino_Intelligence_ProfilerController extends Mage_Core_Controller_Fron
 
     /**
      * Callback function that sends profiler information to Boxalino as well
-     * If the call is not done via ajax, the profile_id and choice params are required for making the request
      */
     public function bxrequestAction()
     {
+        $customerId = $this->_getCustomerId();
+        if(!$customerId)
+        {
+            return false;
+        }
+
         if ($this->getRequest()->isAjax()) {
             $params = $this->getRequest()->getPost();
-            $this->_bxrequest($params['choice'], json_decode($params['bxData']));
+            $params = array_merge(array("profile_id"=>$customerId), json_decode($params['bxData'], true));
+
+            $this->_bxrequest($params['choice'], $params);
             $this->getResponse()->setBody(Mage::helper('core')->jsonEncode(true));
         }
 
         $choice = $this->getRequest()->getParam("choice", false);
-        $profileId = $this->getRequest()->getParam("profile_id", false);
-        if($choice && $profileId)
+        if($choice)
         {
             return $this->_bxrequest($choice);
         }
 
-        return true;
+        return false;
+    }
+
+    /**
+     * The customer ID should not be visible in the form;
+     * It is added via controller
+     *
+     * @return int|mixed
+     */
+    protected function _getCustomerId()
+    {
+        if (Mage::getSingleton('customer/session')->isLoggedIn()) {
+            return Mage::getSingleton("customer/session")->getId();
+        }
+
+        return 0;
     }
 
     /**

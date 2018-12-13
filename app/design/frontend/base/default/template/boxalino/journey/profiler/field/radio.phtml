@@ -6,7 +6,7 @@ $name= $element->getName();
 <?php foreach($element->getOptions() as $option) :?>
 <div class="bx-q-<?php echo $type;?>">
     <label for="<?php echo $option['value']?>"><?php echo $option['label'];?></label>
-    <input type="<?php echo $type;?>" name="<?php echo $name?>" value="<?php echo $option["value"]?>" id="<?php echo $name?>"/>
+    <input type="<?php echo $type;?>" name="<?php echo $name?>" value="<?php echo $option["value"]?>" id="<?php echo $name?>" data-bxname="<?php echo $element->getBxName()?>"/>
     <?php if(isset($option['icon']) && !empty($option["icon"])):?>
         <img src="<?php echo $option['icon'];?>" alt="<?php echo strip_tags($option['label']);?>"/>
     <?php endif;?>

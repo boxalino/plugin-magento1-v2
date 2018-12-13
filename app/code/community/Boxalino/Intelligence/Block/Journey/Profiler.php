@@ -13,6 +13,8 @@ class Boxalino_Intelligence_Block_Journey_Profiler extends Boxalino_Intelligence
     implements Boxalino_Intelligence_Block_Journey_CPOJourney
 {
 
+    CONST BX_P_PROFILER_ID  = "profile_id";
+
     /**
      * Profiler content is set to the js as a json element;
      * The questions are to be encoded to match the channel
@@ -111,5 +113,22 @@ class Boxalino_Intelligence_Block_Journey_Profiler extends Boxalino_Intelligence
     public function getSendProfilerRequestUrl()
     {
         return $this->getUrl("boxalinointelligence/profiler/bxrequest");
+    }
+
+    /**
+     * Profile ID field to match the logged in customer
+     *
+     * @deprecated it is used in controller
+     * @return mixed|string
+     */
+    public function getProfilerIdBxField()
+    {
+        $profileField = $this->getData("bx_p_profile_id");
+        if(empty($profileField))
+        {
+            return self::BX_P_PROFILER_ID;
+        }
+
+        return $profileField;
     }
 }
