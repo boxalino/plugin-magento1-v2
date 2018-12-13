@@ -168,8 +168,15 @@ BxProfiler.prototype = {
             parameters: {
                 'choice': this.choice,
                 'bxData': JSON.stringify(this.bxData),
+                'final' : this.isFinalQuestion()
             }
         });
+    },
+    isFinalQuestion: function() {
+        if(this.currentStep >= this.totalQuestions-1) {
+            return true;
+        }
+        return false;
     },
     getQuestionByStep: function(id) {
         if(parseInt(id, 10)<=this.getTotalQuestions()) {

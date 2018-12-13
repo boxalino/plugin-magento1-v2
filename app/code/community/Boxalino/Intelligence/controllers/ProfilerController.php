@@ -93,14 +93,15 @@ class Boxalino_Intelligence_ProfilerController extends Mage_Core_Controller_Fron
 
         if ($this->getRequest()->isAjax()) {
             $params = $this->getRequest()->getPost();
-            $params = array_merge(array("profile_id"=>$customerId), json_decode($params['bxData'], true));
+            $requestParams = array_merge(array("profile_id"=>$customerId), json_decode($params['bxData'], true));
 
-            $this->_bxrequest($params['choice'], $params);
+            $this->_bxrequest($params['choice'], $requestParams, $params['final']);
             $this->getResponse()->setBody(Mage::helper('core')->jsonEncode(true));
+            return true;
         }
 
         $choice = $this->getRequest()->getParam("choice", false);
-        if($choice)
+        if($choice && $this->_getCustomerId())
         {
             return $this->_bxrequest($choice);
         }
@@ -126,11 +127,11 @@ class Boxalino_Intelligence_ProfilerController extends Mage_Core_Controller_Fron
     /**
      * Callback function that sends profiler information to Boxalino as well
      */
-    protected function _bxrequest($choice, $params = array())
+    protected function _bxrequest($choice, $params = array(), $final=false)
     {
         try {
             $bxAdapter = Mage::helper('boxalino_intelligence')->getAdapter();
-            $bxAdapter->sendRequestWithParams($choice, $params);
+            $bxAdapter->sendRequestWithParams($choice, $params, $final);
         } catch (\Exception $ex) {
             Mage::logException($ex);
         }

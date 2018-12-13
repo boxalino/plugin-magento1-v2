@@ -108,5 +108,4 @@ class Boxalino_Intelligence_Model_Observer
             }
         }
     }
-
 }
