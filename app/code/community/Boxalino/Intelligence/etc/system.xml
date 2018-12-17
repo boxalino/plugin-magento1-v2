@@ -236,6 +236,17 @@
                                 Optional: Keeping connection open to DI server in order to wait for processing the archive for any errors. Default set to 3000(sec).
                             </comment>
                         </timeout>
+                        <local_tmp translate="label">
+                            <label>Local Temporary Archive Path</label>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>2</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <comment>
+                                If set, the exported archive will be temporary stored in that path; If empty, the archive will be created in the directory PHP stores temporary files by default. You can find out which one is it via sys_get_temp_dir().
+                            </comment>
+                        </local_tmp>
                     </fields>
                 </exporter>
                 <products>
