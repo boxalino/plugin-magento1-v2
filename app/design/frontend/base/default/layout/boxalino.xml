@@ -48,6 +48,7 @@
             <block type="boxalino_intelligence/facets" name="top_filter" as="search_top_filter" before="-" template="boxalino/top_filter.phtml" />
         </reference>
     </catalogsearch_result_index>
+
     <!--Navigation-->
     <catalog_category_layered>
         <reference name="head">
@@ -65,6 +66,7 @@
             <block type="boxalino_intelligence/facets" name="top_filter" before="listing_top_filter" template="boxalino/top_filter.phtml" />
         </reference>
     </catalog_category_layered>
+
     <!--Product Detail Page-->
     <catalog_product_view>
         <reference name="head">

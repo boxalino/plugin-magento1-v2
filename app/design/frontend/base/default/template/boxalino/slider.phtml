@@ -7,29 +7,18 @@ $sliderValues = $this->getSliderValues();
         var sliderMin = <?php echo isset($sliderValues[2]) ? $sliderValues[2] : "0"; ?>;
         var sliderMax = <?php echo isset($sliderValues[3]) ? $sliderValues[3] : "0"; ?>;
         noUiSlider.create(slider, {
-            start: [<?php echo isset($sliderValues[0]) ? $sliderValues[0] : null ?>,
-                <?php echo isset($sliderValues[1]) ? $sliderValues[1] : null; ?>],
+            start: [<?php echo isset($sliderValues[0]) ? $sliderValues[0] : null ?>, <?php echo isset($sliderValues[1]) ? $sliderValues[1] : null; ?>],
             connect: true,
             step: 1,
-            range: {
-                'min': sliderMin ,
-                'max': sliderMax
-            }
+            range: {'min': sliderMin ,'max': sliderMax}
         });
 
-        var snapElements = [
-            document.getElementById('slider-snap-value-lower'),
-            document.getElementById('slider-snap-value-upper')
-        ];
-
-        var snapValues = [
-            <?php echo isset($sliderValues[0]) ? $sliderValues[0] : "0" ?>,
-            <?php echo isset($sliderValues[1]) ? $sliderValues[1] : "0" ?>
-        ];
+        var snapElements = [document.getElementById('slider-snap-value-lower'),document.getElementById('slider-snap-value-upper')];
+        var snapValues = [<?php echo isset($sliderValues[0]) ? $sliderValues[0] : "0" ?>, <?php echo isset($sliderValues[1]) ? $sliderValues[1] : "0" ?>];
 
         slider.noUiSlider.on('update', function (values, handle) {
             var handlename = handle == 1 ? " " + "<?php /* @escapeNotVerified */ echo __('to') ?>" + " " :
-            "<?php /* @escapeNotVerified */ echo __('from') ?>" + " ";
+                "<?php /* @escapeNotVerified */ echo __('from') ?>" + " ";
             snapElements[handle].innerHTML = handlename + "<strong>" + values[handle] + "</strong>";
         });
 

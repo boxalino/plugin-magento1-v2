@@ -1,6 +1,6 @@
 <?php if($this->isPluginEnabled()) :?>
     <?php $widget = $this->getData('widget'); ?>
-    <h1>Recommendation for <?php echo $this->getData('title');?></h1>
+    <h1><?php /* @escapeNotVerified */ echo __('Recommendation for %s', $this->getData('title'))?></h1>
     <?php $_productCollection = $this->_getLoadedProductCollection(); ?>
     <?php if($_productCollection->count()): ?>
         <div class="box-collateral box-up-sell">
