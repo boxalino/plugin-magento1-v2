@@ -1430,6 +1430,9 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                     'customer_id',
                     'base_subtotal',
                     'shipping_amount',
+                    'order_currency_code',
+                    'customer_email',
+                    'customer_is_guest'
                 )
             )
             ->joinLeft(
@@ -1448,7 +1451,7 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                 array('guest' => $sales_order_address),
                 'order.billing_address_id = guest.entity_id',
                 array(
-                    'guest_id' => 'IF(guest.email IS NOT NULL, SHA1(CONCAT(guest.email, ' . $salt . ')), NULL)'
+                    'guest_id' => 'IF(guest.customer_address_id IS NULL, SHA1(CONCAT(guest.email, ' . $salt . ')), NULL)'
                 )
             );
 
@@ -1536,9 +1539,11 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                         'order_id' => $transaction['entity_id'],
                         'entity_id' => $transaction['product_id'],
                         'customer_id' => $transaction['customer_id'],
+                        'email' => $transaction['customer_email'],
                         'guest_id' => $transaction['guest_id'],
                         'price' => $transaction['original_price'],
                         'discounted_price' => $transaction['price'],
+                        'currency' => $transaction['order_currency_code'],
                         'quantity' => $transaction['qty_ordered'],
                         'total_order_value' => ($transaction['base_subtotal'] + $transaction['shipping_amount']),
                         'shipping_costs' => $transaction['shipping_amount'],
@@ -1583,7 +1588,7 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
             $result = null;
             $page++;
         }
-        $sourceKey = $this->bxData->setCSVTransactionFile($files->getPath('transactions.csv'), 'order_id', 'entity_id', 'customer_id', 'order_date', 'total_order_value', 'price', 'discounted_price');
+        $sourceKey = $this->bxData->setCSVTransactionFile($files->getPath('transactions.csv'), 'order_id', 'entity_id', 'customer_id', 'order_date', 'total_order_value', 'price', 'discounted_price', 'currency', 'email');
         $this->bxData->addSourceCustomerGuestProperty($sourceKey,'guest_id');
 
         Mage::log("bxLog: Transactions - exporting additional tables for account: {$account}", Zend_Log::INFO, self::BOXALINO_LOG_FILE);

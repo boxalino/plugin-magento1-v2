@@ -115,8 +115,8 @@ class BxData
         return $this->addSourceFile($filePath, $sourceId, $container, 'resource', 'CSV', $params);
     }
 
-    public function setCSVTransactionFile($filePath, $orderIdColumn, $productIdColumn, $customerIdColumn, $orderDateIdColumn, $totalOrderValueColumn, $productListPriceColumn, $productDiscountedPriceColumn, $productIdField='bx_item_id', $customerIdField='bx_customer_id', $productsContainer = 'products', $customersContainer = 'customers', $format = 'CSV', $encoding = 'UTF-8', $delimiter = ',', $enclosure = '"', $escape = "\\\\", $lineSeparator = "\\n",$container = 'transactions', $sourceId = 'transactions', $validate=true) {
-
+    public function setCSVTransactionFile($filePath, $orderIdColumn, $productIdColumn, $customerIdColumn, $orderDateIdColumn, $totalOrderValueColumn, $productListPriceColumn, $productDiscountedPriceColumn, $currencyColumn, $emailColumn, $productIdField='bx_item_id', $customerIdField='bx_customer_id', $productsContainer = 'products', $customersContainer = 'customers', $format = 'CSV', $encoding = 'UTF-8', $delimiter = ',', $enclosure = '"', $escape = "\\\\", $lineSeparator = "\\n",$container = 'transactions', $sourceId = 'transactions', $validate=true)
+    {
         $params = array('encoding'=>$encoding, 'delimiter'=>$delimiter, 'enclosure'=>$enclosure, 'escape'=>$escape, 'lineSeparator'=>$lineSeparator);
 
         $params['file'] = $this->getFileNameFromPath($filePath);
@@ -129,6 +129,8 @@ class BxData
         $params['productDiscountedPriceColumn'] = $productDiscountedPriceColumn;
         $params['totalOrderValueColumn'] = $totalOrderValueColumn;
         $params['orderReceptionDateColumn'] = $orderDateIdColumn;
+        $params['currencyColumn'] = $currencyColumn;
+        $params['emailColumn'] = $emailColumn;
 
         return $this->addSourceFile($filePath, $sourceId, $container, 'transactions', $format, $params, $validate);
     }
@@ -178,16 +180,16 @@ class BxData
         }
         return null;
     }
-	
-	private $globalValidate = true;
-	public function setGlobalValidate($globalValidate) {
-		$this->globalValidate = $globalValidate;
-	}
+
+    private $globalValidate = true;
+    public function setGlobalValidate($globalValidate) {
+        $this->globalValidate = $globalValidate;
+    }
 
     public function validateSource($container, $sourceId) {
-		if(!$this->globalValidate) {
-			return;
-		}
+        if(!$this->globalValidate) {
+            return;
+        }
         $source = $this->sources[$container][$sourceId];
         if($source['format'] == 'CSV') {
             if(isset($source['itemIdColumn'])) {
@@ -197,9 +199,9 @@ class BxData
     }
 
     public function validateColumnExistance($container, $sourceId, $col) {
-		if(!$this->globalValidate) {
-			return;
-		}
+        if(!$this->globalValidate) {
+            return;
+        }
         $row = $this->getSourceCSVRow($container, $sourceId, 0);
         if($row !== null && !in_array($col, $row)) {
             throw new \Exception("the source '$sourceId' in the container '$container' declares an column '$col' which is not present in the header row of the provided CSV file: " . implode(',', $row));
@@ -288,6 +290,16 @@ class BxData
         $this->addSourceParameter($sourceKey, "guest_property_id", $parameterValue);
     }
 
+    public function addSourceEmailProperty($sourceKey, $parameterValue)
+    {
+        $this->addSourceParameter($sourceKey, 'emailColumn', $parameterValue);
+    }
+
+    public function addSourceCurrencyProperty($sourceKey, $parameterValue)
+    {
+        $this->addSourceParameter($sourceKey, 'currencyColumn', $parameterValue);
+    }
+
     public function addSourceParameter($sourceKey, $parameterName, $parameterValue) {
         list($container, $sourceId) = $this->decodeSourceKey($sourceKey);
         if(!isset($this->sources[$container][$sourceId])) {
@@ -338,10 +350,10 @@ class BxData
         list($container, $sourceId) = $this->decodeSourceKey($sourceKey);
         $this->ftpSources[$sourceId] = $params;
     }
-	
-    private $httpSources = array();
-    public function setHttpSource($sourceKey, $webDirectory, $user=null, $password=null, $header='User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:41.0) Gecko/20100101 Firefox/41.0') {
 
+    private $httpSources = array();
+    public function setHttpSource($sourceKey, $webDirectory, $user=null, $password=null, $header='User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:41.0) Gecko/20100101 Firefox/41.0')
+    {
         if($user===null){
             $user = $this->bxClient->getAccount(false);
         }
@@ -359,8 +371,8 @@ class BxData
         $this->httpSources[$sourceId] = $params;
     }
 
-    public function getXML() {
-
+    public function getXML()
+    {
         $xml = new \SimpleXMLElement('<root/>');
 
         //languages
@@ -373,7 +385,6 @@ class BxData
         //containers
         $containers = $xml->addChild('containers');
         foreach($this->sources as $containerName => $containerSources) {
-
             $container = $containers->addChild('container');
             $container->addAttribute('id', $containerName);
             $container->addAttribute('type', $containerName);
@@ -382,8 +393,8 @@ class BxData
             $properties = $container->addChild('properties');
 
             //foreach source
-            foreach($containerSources as $sourceId => $sourceValues) {
-
+            foreach($containerSources as $sourceId => $sourceValues)
+            {
                 $source = $sources->addChild('source');
                 $source->addAttribute('id', $sourceId);
                 $source->addAttribute('type', $sourceValues['type']);
@@ -604,8 +615,8 @@ class BxData
         return $value;
     }
 
-    public function pushDataSpecifications($ignoreDeltaException=false) {
-
+    public function pushDataSpecifications($ignoreDeltaException=false)
+    {
         if(!$ignoreDeltaException && $this->isDelta) {
             throw new \Exception("You should not push specifications when you are pushing a delta file. Only do it when you are preparing full files. Set method parameter ignoreDeltaException to true to ignore this exception and publish anyway.");
         }
