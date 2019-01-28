@@ -238,6 +238,7 @@
             </noresults>
             <advanced>
                 <search_sub_phrases_limit>3</search_sub_phrases_limit>
+                <search_sub_phrases_toolbar>0</search_sub_phrases_toolbar>
                 <parameter_separator>,</parameter_separator>
             </advanced>
         </bxSearch>

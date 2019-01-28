@@ -3,7 +3,8 @@
 /**
  * Class Boxalino_Intelligence_Model_Facet
  */
-class Boxalino_Intelligence_Model_Facet extends Varien_Object{
+class Boxalino_Intelligence_Model_Facet extends Varien_Object
+{
 
     /**
      * @var array

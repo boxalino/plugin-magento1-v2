@@ -6,6 +6,12 @@
 Class Boxalino_Intelligence_Block_Journey extends Mage_Core_Block_Template
 {
 
+    CONST BX_NARRATIVE_CHOICE_VAR = "choice";
+    CONST BX_NARRATIVE_ADDITIONAL_CHOICE_VAR = "additional_choices";
+    CONST BX_NARRATIVE_MAIN_VAR = "replace_main";
+    CONST BX_NARRATIVE_EVENT_VAR = "narrative_call";
+    CONST BX_NARRATIVE_EXTENDED_REQUEST_VAR = "extended_request";
+
     protected $bxHelperData;
     protected $p13nHelper;
     protected $renderer;
@@ -17,17 +23,32 @@ Class Boxalino_Intelligence_Block_Journey extends Mage_Core_Block_Template
         $this->p13nHelper = $this->bxHelperData->getAdapter();
 
         parent::_construct();
-        if(!is_null($this->getData('choice'))) {
-            $replaceMain = is_null($this->getData('replace_main')) ? true : $this->getData('replace_main');
-            $this->p13nHelper->getNarratives($this->getData('choice'), $this->getData('additional_choices'), $replaceMain, false);
+
+        $choice = $this->getData(self::BX_NARRATIVE_CHOICE_VAR);
+        $additionalChoice = $this->getData(self::BX_NARRATIVE_ADDITIONAL_CHOICE_VAR);
+        $isMain = is_null($this->getData(self::BX_NARRATIVE_MAIN_VAR)) ? true : $this->getData(self::BX_NARRATIVE_MAIN_VAR);
+        $extended = is_null($this->getData(self::BX_NARRATIVE_EXTENDED_REQUEST_VAR)) ? false : $this->getData(self::BX_NARRATIVE_EXTENDED_REQUEST_VAR);
+
+        if($extended)
+        {
+            $narrativeInfo = new Varien_Object(array('choice' => $choice, 'additional'=> $additionalChoice, 'context'=>""));
+            Mage::dispatchEvent('boxalino_block_narrative_construct', array('request' => $narrativeInfo));
+        }
+
+        if(!is_null($choice)) {
+            $replaceMain = is_null($isMain) ? true : $isMain;
+            $this->p13nHelper->getNarratives($choice, $additionalChoice, $replaceMain, false, $extended);
+            $this->setReplaceMain($replaceMain);
+            $this->setAdditionalChoices($additionalChoice);
+            $this->setExtended($extended);
+            $this->setChoice($choice);
         }
     }
 
     public function renderDependencies()
     {
         $html = '';
-        $replaceMain = is_null($this->getData('replace_main')) ? true : $this->getData('replace_main');
-        $dependencies = $this->p13nHelper->getNarrativeDependencies($this->getData('choice'), $this->getData('additional_choices'), $replaceMain);
+        $dependencies = $this->p13nHelper->getNarrativeDependencies($this->getChoice(), $this->getAdditionalChoices(), $this->getReplaceMain());
         if(isset($dependencies['js'])) {
             foreach ($dependencies['js'] as $js) {
                 $url = $js;
@@ -61,15 +82,14 @@ Class Boxalino_Intelligence_Block_Journey extends Mage_Core_Block_Template
     {
         $html = '';
         $position = $this->getData('position');
-        $replaceMain = is_null($this->getData('replace_main')) ? true : $this->getData('replace_main');
-        $narratives = $this->p13nHelper->getNarratives($this->getData('choice'), $this->getData('additional_choices'), $replaceMain);
+        $narratives = $this->p13nHelper->getNarratives($this->getChoice(), $this->getAdditionalChoices(), $this->getReplaceMain());
         foreach ($narratives as $visualElement) {
             if($this->checkVisualElementForParameter($visualElement['visualElement'], 'position', $position)) {
                 try {
                     $block = $this->renderer->createVisualElement($visualElement['visualElement']);
                     if ($block) {
-                        $block->setChoice($this->getData('choice'));
-                        $block->setAdditionalChoice($this->getData('additional_choices'));
+                        $block->setChoice($this->getChoice());
+                        $block->setAdditionalChoice($this->getAdditionalChoices());
                         $html .= $block->toHtml();
                     }
                 } catch (\Exception $e) {

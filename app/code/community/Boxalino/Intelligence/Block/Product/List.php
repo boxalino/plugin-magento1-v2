@@ -11,12 +11,30 @@ class Boxalino_Intelligence_Block_Product_List extends Mage_Catalog_Block_Produc
      */
     public static $number = 0;
 
+    /**
+     * @var array
+     */
     protected $_subPhraseCollections = [];
 
     /**
      * @var null
      */
     protected $bxRewriteAllowed = null;
+
+    /**
+     * @var null
+     */
+    protected $hasSubPhrases = null;
+
+    /**
+     * @var null | Boxalino_Intelligence_Helper_P13n_Adapter
+     */
+    protected $p13nAdapter = null;
+
+    /**
+     * @var bool
+     */
+    protected $showToolbar = false;
     
     /**
      * @return Mage_Eav_Model_Entity_Collection_Abstract
@@ -30,7 +48,7 @@ class Boxalino_Intelligence_Block_Product_List extends Mage_Catalog_Block_Produc
 
         /** @var Boxalino_Intelligence_Helper_Data $bxHelperData */
         $bxHelperData = Mage::helper('boxalino_intelligence');
-        $p13nHelper = $bxHelperData->getAdapter();
+        $p13nHelper = $this->getP13nAdapter();
         $layer = $this->getLayer();
         if (null === $this->_productCollection && !(isset($this->_subPhraseCollections[self::$number]))) {
             try {
@@ -38,7 +56,6 @@ class Boxalino_Intelligence_Block_Product_List extends Mage_Catalog_Block_Produc
                    
                     if ($bxHelperData->layerCheck($layer, 'Mage_Catalog_Model_Layer')) {
                         // We skip boxalino processing if category is static cms block only.
-
                         if (Mage::registry('current_category')
                             && Mage::getBlockSingleton('catalog/category_view')->getCurrentCategory()
                             && Mage::getBlockSingleton('catalog/category_view')->isContentMode()
@@ -46,11 +63,11 @@ class Boxalino_Intelligence_Block_Product_List extends Mage_Catalog_Block_Produc
                             return parent::_getProductCollection();
                         }
                     }
-
-                    if ($p13nHelper->areThereSubPhrases()) {
+                    $queries = array();
+                    if ($this->hasSubPhrases) {
                         $queries = $p13nHelper->getSubPhrasesQueries();
                         $entity_ids = $p13nHelper->getSubPhraseEntitiesIds($queries[self::$number]);
-                        $entity_ids = array_slice($entity_ids, 0, $bxHelperData->getSubPhrasesLimit());
+                        $entity_ids = array_slice($entity_ids, 0, $this->getLimitForProductCollection());
                     } else {
                         $entity_ids = $p13nHelper->getEntitiesIds();
                     }
@@ -58,9 +75,9 @@ class Boxalino_Intelligence_Block_Product_List extends Mage_Catalog_Block_Produc
                     if (count($entity_ids) == 0) {
                         $entity_ids = array(0);
                     }
-                    $this->_setupCollection($entity_ids);
+                    $this->_setupCollection($entity_ids, $queries);
                     // Soft cache subphrases to prevent multiple requests.
-                    if ($p13nHelper->areThereSubPhrases()) {
+                    if ($this->hasSubPhrases) {
                         $this->_subPhraseCollections[self::$number] = $this->_productCollection;
                         $this->_productCollection = null;
                     }
@@ -78,13 +95,22 @@ class Boxalino_Intelligence_Block_Product_List extends Mage_Catalog_Block_Produc
     }
 
     /**
+     * Setter if is a relaxation recommendations case
+     */
+    public function setHasSubphrases($value)
+    {
+        $this->hasSubPhrases = $value;
+        return $this;
+    }
+
+    /**
      * @param $id
      * @param $field
      * @return string
      */
     public function getHitValueForField($id, $field) {
         $bxHelperData = Mage::helper('boxalino_intelligence');
-        $p13nHelper = $bxHelperData->getAdapter();
+        $p13nHelper = $this->getP13nAdapter();
         $value = '';
         if($bxHelperData->isEnabledOnLayer($this->getLayer())){
             $value = $p13nHelper->getHitVariable($id, $field);
@@ -96,7 +122,7 @@ class Boxalino_Intelligence_Block_Product_List extends Mage_Catalog_Block_Produc
      * @param $entity_ids
      * @throws Exception
      */
-    protected function _setupCollection($entity_ids)
+    protected function _setupCollection($entity_ids, $queries=array())
     {
         $helper = Mage::helper('boxalino_intelligence');
         $this->_productCollection = $helper->prepareProductCollection($entity_ids);
@@ -113,15 +139,13 @@ class Boxalino_Intelligence_Block_Product_List extends Mage_Catalog_Block_Produc
         Mage::getSingleton('catalog/product_visibility')->addVisibleInSearchFilterToCollection($this->_productCollection);
 
         $this->_productCollection->setCurBxPage($this->getToolbarBlock()->getCurrentPage());
-        $limit = $this->getRequest()->getParam('limit') ? $this->getRequest()->getParam('limit') : $this->getToolbarBlock()->getLimit();
+        $limit = $this->getLimitForProductCollection();
 
         try{
-            $p13nHelper = Mage::helper('boxalino_intelligence')->getAdapter();
-            if ($p13nHelper->areThereSubPhrases()) {
-                $queries = $p13nHelper->getSubPhrasesQueries();
-                $totalHitCount = $p13nHelper->getSubPhraseTotalHitCount($queries[self::$number]);
+            if ($this->hasSubPhrases) {
+                $totalHitCount = $this->getP13nAdapter()->getSubPhraseTotalHitCount($queries[self::$number]);
             } else {
-                $totalHitCount = $p13nHelper->getTotalHitCount();
+                $totalHitCount = $this->getP13nAdapter()->getTotalHitCount();
             }
         }catch(\Exception $e){
             Mage::logException($e);
@@ -143,6 +167,18 @@ class Boxalino_Intelligence_Block_Product_List extends Mage_Catalog_Block_Produc
             return parent::_beforeToHtml();
         }
 
+        if($this->getBxRewriteAllowed() && Mage::helper('boxalino_intelligence')->isEnabledOnLayer($this->getLayer()))
+        {
+            $this->setHasSubphrases($this->getP13nAdapter()->areThereSubPhrases());
+            parent::_beforeToHtml();
+            if($this->hasSubPhrases) {
+                $this->setChild('toolbar' . self::$number, $this->getToolbarBlock());
+                $this->_getProductCollection()->load();
+            }
+
+            return $this;
+        }
+
         if(!is_null(Mage::registry('current_category')) && Mage::helper('boxalino_intelligence')->isEnabledOnLayer($this->getLayer()) &&
                 Mage::helper('boxalino_intelligence')->isNavigationSortEnabled())
         {
@@ -152,7 +188,70 @@ class Boxalino_Intelligence_Block_Product_List extends Mage_Catalog_Block_Produc
             $toolbar->setAvailableOrders($orders);
             $toolbar->setDefaultOrder('relevance');
         }
+
         return parent::_beforeToHtml();
+    }
+
+    /**
+     * overwritten to display correct number of products on toolbar
+     *
+     * @return string
+     */
+    public function getMode()
+    {
+        if($this->hasSubPhrases)
+        {
+            return $this->getChild('toolbar' . self::$number)->getCurrentMode();
+        }
+
+        return $this->getChild('toolbar')->getCurrentMode();
+    }
+
+    /**
+     * overwritten to display correct number of products on toolbar
+     *
+     * @return string
+     */
+    public function getToolbarHtml()
+    {
+        if($this->hasSubPhrases)
+        {
+            if(Mage::helper('boxalino_intelligence')->getSubPhrasesToolbar())
+            {
+                return $this->getChildHtml('toolbar' . self::$number);
+            }
+
+            return '';
+        }
+
+        return parent::getToolbarHtml();
+    }
+
+
+    public function getP13nAdapter()
+    {
+        if(is_null($this->p13nAdapter))
+        {
+            $this->p13nAdapter = $p13nHelper = Mage::helper('boxalino_intelligence')->getAdapter();
+        }
+
+        return $this->p13nAdapter;
+    }
+
+    /**
+     * Get toolbar limit to be used
+     *
+     * @return mixed|string
+     * @throws Exception
+     */
+    protected function getLimitForProductCollection()
+    {
+        if(Mage::helper('boxalino_intelligence')->getSubPhrasesLimit())
+        {
+            return Mage::helper('boxalino_intelligence')->getSubPhrasesLimit();
+        }
+
+        return $this->getRequest()->getParam('limit') ? $this->getRequest()->getParam('limit') : $this->getToolbarBlock()->getLimit();
     }
 
     /**
@@ -183,4 +282,5 @@ class Boxalino_Intelligence_Block_Product_List extends Mage_Catalog_Block_Produc
 
         return $this->bxRewriteAllowed;
     }
+
 }

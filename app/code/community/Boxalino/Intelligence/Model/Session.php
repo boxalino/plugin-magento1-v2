@@ -3,7 +3,8 @@
 /**
  * Class Boxalino_Intelligence_Model_Session
  */
-class Boxalino_Intelligence_Model_Session extends Mage_Core_Model_Session_Abstract{
+class Boxalino_Intelligence_Model_Session extends Mage_Core_Model_Session_Abstract
+{
 
     /**
      * Boxalino_Intelligence_Model_Session constructor.

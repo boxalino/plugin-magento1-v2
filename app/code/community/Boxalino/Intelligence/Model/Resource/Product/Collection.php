@@ -1,6 +1,11 @@
 <?php
 
-class Boxalino_Intelligence_Model_Resource_Product_Collection extends Mage_Catalog_Model_Resource_Product_Collection{
+/**
+ * Class Boxalino_Intelligence_Model_Resource_Product_Collection
+ * Overwrites Magento product collection
+ */
+class Boxalino_Intelligence_Model_Resource_Product_Collection extends Mage_Catalog_Model_Resource_Product_Collection
+{
     /**
      * @var int
      */
@@ -25,8 +30,8 @@ class Boxalino_Intelligence_Model_Resource_Product_Collection extends Mage_Catal
     /**
      * @param $bxCurPage
      */
-    public function setCurBxPage($bxCurPage) {
-        
+    public function setCurBxPage($bxCurPage)
+    {
         $this->bxCurPage = $bxCurPage;
         return $this;
     }
@@ -34,8 +39,8 @@ class Boxalino_Intelligence_Model_Resource_Product_Collection extends Mage_Catal
     /**
      * @param $bxLastPage
      */
-    public function setLastBxPage($bxLastPage) {
-        
+    public function setLastBxPage($bxLastPage)
+    {
         $this->bxLastPage = $bxLastPage;
         return $this;
     }
@@ -43,8 +48,8 @@ class Boxalino_Intelligence_Model_Resource_Product_Collection extends Mage_Catal
     /**
      * @param $bxTotal
      */
-    public function setBxTotal($bxTotal) {
-        
+    public function setBxTotal($bxTotal)
+    {
         $this->bxTotal = $bxTotal;
         return $this;
     }
@@ -62,8 +67,8 @@ class Boxalino_Intelligence_Model_Resource_Product_Collection extends Mage_Catal
     /**
      * @return int
      */
-    public function count(){
-
+    public function count()
+    {
         if(is_null($this->bxCount)){
             return parent::count();
         }
@@ -74,8 +79,8 @@ class Boxalino_Intelligence_Model_Resource_Product_Collection extends Mage_Catal
      * @param $count
      * @return $this
      */
-    public function setBxCount($count){
-
+    public function setBxCount($count)
+    {
         $this->bxCount = $count;
         return $this;
     }
@@ -84,8 +89,8 @@ class Boxalino_Intelligence_Model_Resource_Product_Collection extends Mage_Catal
      * @param int $displacement
      * @return int
      */
-    public function getCurPage($displacement = 0) {
-
+    public function getCurPage($displacement = 0)
+    {
         if(is_null($this->bxCurPage)){
             return parent::getCurPage();
         }
@@ -95,8 +100,8 @@ class Boxalino_Intelligence_Model_Resource_Product_Collection extends Mage_Catal
     /**
      * @return int
      */
-    public function getLastPageNumber() {
-
+    public function getLastPageNumber()
+    {
         if(is_null($this->bxLastPage)){
             return parent::getLastPageNumber();
         }

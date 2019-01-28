@@ -4,14 +4,19 @@
     <span id="slider-snap-value-upper"></span>
     <?php echo $this->getLayout()->createBlock("boxalino_intelligence/slider")->setTemplate("boxalino/slider.phtml")->toHtml();?>
 <?php else: ?>
+    <?php
+        $bxFacets = $this->getFacets();
+        $showCount = $bxFacets->showFacetValueCounters($this->getFieldName(), false);
+    ?>
     <ol>
         <?php foreach ($this->getItems() as $_item): ?>
             <?php $selected = $_item->getSelected(); ?>
+            <?php $hidden = $_item->getHidden();?>
             <li class="item <?php echo $_item->getType(); echo $selected == true ?  ' selected' : ''; ?>">
                 <?php if ($_item->getCount() > 0): ?>
                     <a href="<?php echo $this->escapeHtml($selected == true ? $_item->getRemoveUrl() : $_item->getUrl()) ?>">
                         <?php echo $_item->getLabel() ?>
-                        <?php if ($this->shouldDisplayProductCount()): ?>
+                        <?php if ($showCount): ?>
                             <span class="count">(<?php echo $_item->getCount() ?>)</span>
                         <?php endif; ?>
                     </a>
@@ -19,14 +24,14 @@
                     <?php if(!$selected) : ?>
                         <span>
                         <?php echo $_item->getLabel(); ?>
-                            <?php if ($this->shouldDisplayProductCount()): ?>
+                            <?php if ($showCount): ?>
                                 <span class="count">(<?php echo $_item->getCount() ?>)</span>
                             <?php endif; ?>
                         </span>
                     <?php else : ?>
                         <a href="<?php echo $this->escapeHtml($_item->getRemoveUrl()) ?>">
                             <?php echo $_item->getLabel() ?>
-                            <?php if ($this->shouldDisplayProductCount()): ?>
+                            <?php if ($showCount): ?>
                                 <span class="count">(<?php echo $_item->getCount() ?>)</span>
                             <?php endif; ?>
                         </a>

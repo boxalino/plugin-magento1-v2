@@ -3,7 +3,13 @@
 /**
  * Class Boxalino_Intelligence_Block_Slider
  */
-class Boxalino_Intelligence_Block_Slider extends Mage_Core_Block_Template{
+class Boxalino_Intelligence_Block_Slider extends Mage_Core_Block_Template
+{
+
+    /**
+     * @var array slider values used in template
+     */
+    protected $sliderValues = array();
 
     /**
      * @param $price
@@ -17,7 +23,12 @@ class Boxalino_Intelligence_Block_Slider extends Mage_Core_Block_Template{
     /**
      * @return array|null
      */
-    public function getSliderValues(){
+    public function getSliderValues()
+    {
+        if(!empty($this->sliderValues))
+        {
+            return $this->sliderValues;
+        }
 
         $bxHelperData = Mage::helper('boxalino_intelligence');
         $facets = $bxHelperData->getAdapter()->getFacets();
@@ -38,6 +49,40 @@ class Boxalino_Intelligence_Block_Slider extends Mage_Core_Block_Template{
             $selectedPrice[1] = $priceRange[1];
         }
 
-        return array_merge($selectedPrice, $priceRange);
+        $this->sliderValues = array_merge($selectedPrice, $priceRange);
+        return $this->sliderValues;
+    }
+
+    /**
+     * @return bool
+     */
+    public function getConnect()
+    {
+        if (empty($this->sliderValues))
+        {
+            $this->getSliderValues();
+        }
+
+        if(is_null($this->sliderValues))
+        {
+            return false;
+        }
+
+        if(isset($this->sliderValues[0]) && isset($this->sliderValues[1]))
+        {
+            return true;
+        }
+
+        if(isset($this->sliderValues[0]))
+        {
+            return "lower";
+        }
+
+        if(isset($this->sliderValues[1]))
+        {
+            return "upper";
+        }
+
+        return false;
     }
 }

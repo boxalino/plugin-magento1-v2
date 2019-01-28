@@ -2,52 +2,35 @@
 <button type="button" class="bxBlogsButton">Blog Articles</button>
 
 <div class="bxProductList">
-
   <?php echo  $this->getLayout()->createBlock('Boxalino_Intelligence_Block_Product_List')->setBlockId('productlist')->setTemplate("catalog/product/list.phtml")->toHtml(); ?>
-
 </div>
 
 <div class="bxBlogList" style="display:none">
-
   <?php echo  $this->getLayout()->createBlock('Boxalino_Intelligence_Block_BlogResult')->setBlockId('search.result.blog')->setTemplate("boxalino/catalogsearch/blogResults.phtml")->toHtml(); ?>
-
 </div>
 
 <script type="text/javascript">
-
   var $j = jQuery.noConflict();
-
   $j('.bxProductsButton').click(function(){
-
     toggleTab('product');
-
   });
 
   $j('.bxBlogsButton').click(function(){
-
     toggleTab('blog');
-
   });
 
   function toggleTab(type){
-
     var products = $j('.bxProductList');
     var blogs = $j('.bxBlogList')
 
     if (type === 'blog') {
-
       products.css('display', 'none');
       blogs.css('display', 'block');
-
     }
 
     if (type === 'product') {
-
       products.css('display', 'block');
       blogs.css('display', 'none');
-
     }
-
   }
-
 </script>
