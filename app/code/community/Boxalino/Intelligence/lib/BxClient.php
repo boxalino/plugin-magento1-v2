@@ -406,7 +406,7 @@ class BxClient
         }
 
         if(strpos($e->getMessage(), 'Bad protocol id in TCompact message') !== false) {
-            throw new \Exception('The connection to our server has worked, but your credentials were refused. Provided credentials username=' . $this->p13n_username. ', password=' . $this->p13n_password . '. Full error message=' . $e->getMessage());
+            throw new \Exception('The connection to our server has worked, but your credentials were refused. Provided credentials username=' . $this->p13n_username. ', password=' . $this->p13n_password . ', account=' . $this->account . ', host=' . $this->host . '. Full error message=' . $e->getMessage());
         }
 
         if(strpos($e->getMessage(), 'choice not found') !== false) {
@@ -526,7 +526,6 @@ class BxClient
         $choiceInquiries = array();
         $requests = $size === 0 ? $this->chooseRequests : array_slice($this->chooseRequests, -$size);
         foreach($requests as $request) {
-
             $choiceInquiry = new \com\boxalino\p13n\api\thrift\ChoiceInquiry();
             $choiceInquiry->choiceId = $request->getChoiceId();
             if(sizeof($choiceInquiries) == 0 && $this->getChoiceIdOverwrite()) {
@@ -689,6 +688,18 @@ class BxClient
             $this->autocomplete();
         }
         return $this->autocompleteResponses;
+    }
+
+    public function sendAllChooseRequests($chooseAll = false)
+    {
+        if(!empty($this->chooseRequests))
+        {
+            $this->choose($chooseAll);
+        }
+
+        $this->flushResponses();
+        $this->resetRequests();
+        $this->resetRequestContextParameter();
     }
 
     public function setTimeout($timeout) {

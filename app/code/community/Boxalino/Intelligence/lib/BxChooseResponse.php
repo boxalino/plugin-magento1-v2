@@ -682,21 +682,4 @@ class BxChooseResponse
     public function getSearchMessageDisplayType($defaultExtraInfoValue = null, $prettyPrint=false, $choice=null, $considerRelaxation=true, $count=0, $maxDistance=10, $discardIfSubPhrases = true) {
         return $this->getExtraInfo('search_message_display_type', $defaultExtraInfoValue, $choice, $considerRelaxation, $count, $maxDistance, $discardIfSubPhrases);
     }
-
-    public function getLocalizedValue($values, $key = null) {
-        if(is_array($values)) {
-            $language = $this->getLanguage();
-            if(is_null($key) && isset($values[$language])) {
-                return $values[$language];
-            }
-            if(isset($values[$key])) {
-                foreach ($values[$key] as $lang => $val) {
-                    if($lang == $language) {
-                        return $val;
-                    }
-                }
-            }
-        }
-        return $values;
-    }
 }

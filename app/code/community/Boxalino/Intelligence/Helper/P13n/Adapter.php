@@ -45,8 +45,8 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
     /**
      * Boxalino_Intelligence_Helper_P13n_Adapter constructor.
      */
-    public function __construct(){
-
+    public function __construct()
+    {
         $this->bxHelperData = Mage::helper('boxalino_intelligence');
         $libPath = Mage::getModuleDir('','Boxalino_Intelligence') . DIRECTORY_SEPARATOR . 'lib';
         require_once($libPath . DIRECTORY_SEPARATOR . 'BxClient.php');
@@ -58,7 +58,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
                 self::$bxClient->setTestMode(true);
             }
         }
-    }
+        }
 
     /**
      * Initialize BxClient
@@ -350,11 +350,14 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
     }
 
     /**
-     * @param $soft_facets
      * @param $prefix
+     * @param array $requestParams
      */
-    protected function setPrefixContextParameter($prefix){
-        $requestParams = Mage::app()->getRequest()->getParams();
+    protected function setPrefixContextParameter($prefix, $requestParams = array()){
+        if(empty($requestParams))
+        {
+            $requestParams = Mage::app()->getRequest()->getParams();
+        }
         foreach ($requestParams as $key => $value) {
             if(strpos($key, $prefix) == 0) {
                 self::$bxClient->addRequestContextParameter($key, $value);
@@ -403,7 +406,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
         $this->search($queryText, $pageOffset, $overWriteLimit, new \com\boxalino\bxclient\v1\BxSortFields($field, $dir), $categoryId, $addFinder);
     }
 
-    protected function addNarrativeRequest($choice_id = 'narrative', $choices = null, $replaceMain = true) {
+    protected function addNarrativeRequest($choice_id = 'narrative', $choices = null, $replaceMain = true, $extended = false) {
         if($replaceMain) {
             $this->currentSearchChoice = $choice_id;
             $this->isNarrative = true;
@@ -456,10 +459,10 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
     }
 
     protected $isNarrative = false;
-    public function getNarratives($choice_id = 'narrative', $choices = null, $replaceMain = true, $execute = true) {
+    public function getNarratives($choice_id = 'narrative', $choices = null, $replaceMain = true, $execute = true, $extended = false) {
 
         if(is_null(self::$bxClient->getChoiceIdRecommendationRequest($choice_id))) {
-            $this->addNarrativeRequest($choice_id, $choices, $replaceMain);
+            $this->addNarrativeRequest($choice_id, $choices, $replaceMain, $extended);
         }
         if($execute) {
             $narrative = $this->getResponse()->getNarratives($choice_id);
@@ -876,4 +879,24 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
         }
         return;
     }
+
+    /**
+     * Creating a request with params to boxalino server
+     * Used when the context params contain data needed to be synced
+     *
+     * @param $choice
+     * @param array $params
+     */
+    public function sendRequestWithParams($choice, $params=array(), $final=false, $hitCount = 0)
+    {
+        $bxRequest = new \com\boxalino\bxclient\v1\BxParametrizedRequest($this->bxHelperData->getLanguage(), $choice, $hitCount);
+        $this->prefixContextParameter = $bxRequest->getRequestWeightedParametersPrefix();
+        $this->setPrefixContextParameter($this->prefixContextParameter, $params);
+        self::$bxClient->addRequest($bxRequest);
+        if($final)
+        {
+            self::$bxClient->sendAllChooseRequests();
+        }
+    }
+
 }

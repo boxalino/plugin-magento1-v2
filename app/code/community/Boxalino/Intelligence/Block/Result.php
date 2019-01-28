@@ -42,6 +42,11 @@ class Boxalino_Intelligence_Block_Result extends Mage_CatalogSearch_Block_Result
     protected $adapter = null;
 
     /**
+     * @var null
+     */
+    protected $hasSubphrases = null;
+
+    /**
      * Boxalino_Intelligence_Block_Result constructor
      */
     public function __construct() {
@@ -73,15 +78,16 @@ class Boxalino_Intelligence_Block_Result extends Mage_CatalogSearch_Block_Result
      * @param $index
      * @return string
      */
-    public function getSearchQueryLink($index) {
-
+    public function getSearchQueryLink($index)
+    {
         return Mage::getUrl('*/*', array('_query' => 'q=' . $this->queries[$index]));
     }
 
     /**
      * @return string
      */
-    public function getCorrectedQueryLink() {
+    public function getCorrectedQueryLink()
+    {
         return Mage::getUrl('*/*', array('_query' => 'q=' . $this->correctedQuery));
     }
 
@@ -95,11 +101,15 @@ class Boxalino_Intelligence_Block_Result extends Mage_CatalogSearch_Block_Result
         }
 
         try {
-            return Mage::helper('boxalino_intelligence')->getAdapter()->areThereSubPhrases();
+            if(is_null($this->hasSubphrases))
+            {
+                $this->hasSubphrases =  Mage::helper('boxalino_intelligence')->getAdapter()->areThereSubPhrases();
+            }
         } catch (\Exception $e){
             Mage::logException($e);
         }
-        return null;
+
+        return $this->hasSubphrases;
     }
 
     /**
@@ -130,6 +140,7 @@ class Boxalino_Intelligence_Block_Result extends Mage_CatalogSearch_Block_Result
 
         return parent::setTemplate($template);
     }
+
     /**
      * Retrieve search result count
      *
@@ -140,19 +151,22 @@ class Boxalino_Intelligence_Block_Result extends Mage_CatalogSearch_Block_Result
         if ($this->fallback) {
             return parent::getResultCount();
         }
-        if (!$this->getData('result_count')) {
+        if (!$this->getData('result_count') || $this->hasSubPhrases()) {
             $bxHelperData = Mage::helper('boxalino_intelligence');
             $query = $this->_getQuery();
             $size = $this->hasSubPhrases() ?
-                $bxHelperData->getAdapter()->getSubPhraseTotalHitCount(
-                    $this->queries[Boxalino_Intelligence_Block_Product_List::$number]) :
+                $bxHelperData->getAdapter()->getSubPhraseTotalHitCount($this->queries[Boxalino_Intelligence_Block_Product_List::$number]) :
                 $bxHelperData->getAdapter()->getTotalHitCount();
             $this->setResultCount($size);
             $query->setNumResults($size);
         }
+
         return $this->getData('result_count');
     }
 
+    /**
+     * @return mixed
+     */
     public function getBlogTotalHitCount(){
       $bxHelperData = Mage::helper('boxalino_intelligence');
         return $bxHelperData->getAdapter()->getBlogTotalHitCount();

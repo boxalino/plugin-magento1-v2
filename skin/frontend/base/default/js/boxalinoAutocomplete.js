@@ -97,10 +97,8 @@ Autocompleter.Base.prototype.onHover = function (event) {
 };
 
 jQuery(document).ready(function () {
-
     jQuery('body').on('mousemove', function (e) {
         x = e.pageX;
         y = e.pageY;
     });
-
 });

@@ -437,7 +437,7 @@
                         <export_mode translate="label">
                             <label>Export mode</label>
                             <frontend_type>select</frontend_type>
-                            <source_model>boxalino_intelligence/transactionmode</source_model>
+                            <source_model>boxalino_intelligence/adminhtml_system_config_source_exporter_transactionmode</source_model>
                             <sort_order>5</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
@@ -496,7 +496,6 @@
                 </advanced>
             </groups>
         </bxExporter>
-
         <bxSearch translate="label" module="boxalino_intelligence">
             <label>Search - Navigation</label>
             <tab>boxalino</tab>
@@ -763,20 +762,32 @@
                             </comment>
                         </finder_choice_id>
                         <search_sub_phrases_limit translate="label">
-                            <label>Search limit for sub-phrases</label>
+                            <label>Search limit for subphrases</label>
                             <frontend_type>text</frontend_type>
                             <sort_order>5</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
                             <comment>
-                                Optional: default value is 3 and should normally not be changed.
+                                Optional: default value is 3 and should normally not be changed. If set to 0 - the toolbar limit will be used.
                             </comment>
                         </search_sub_phrases_limit>
+                        <search_sub_phrases_toolbar translate="label">
+                            <label>Toolbar on sub-phrases output</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>10</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <comment>
+                                Optional: default is set to no. When hidden, the products collection do not have the toolbar.
+                            </comment>
+                        </search_sub_phrases_toolbar>
                         <multiselect_fields>
                             <label>Multi-select Fields</label>
                             <frontend_type>text</frontend_type>
-                            <sort_order>6</sort_order>
+                            <sort_order>15</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
@@ -791,7 +802,7 @@
                         <parameter_separator translate="label">
                             <label>Separator for URL Parameter</label>
                             <frontend_type>text</frontend_type>
-                            <sort_order>7</sort_order>
+                            <sort_order>20</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>

@@ -1,10 +1,12 @@
 <?php
 
 /**
- * Class Boxalino_Intelligence_Model_Transactionmode
+ * Class Boxalino_Intelligence_Model_Adminhtml_System_Config_Source_Exporter_Transactionmode
+ *
+ * Exporter transaction modes options
  */
-class Boxalino_Intelligence_Model_Transactionmode{
-
+class Boxalino_Intelligence_Model_Adminhtml_System_Config_Source_Exporter_Transactionmode
+{
     /**
      * Options getter
      *

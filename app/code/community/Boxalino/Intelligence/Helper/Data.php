@@ -488,6 +488,14 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
     }
 
     /**
+     * @return mixed
+     */
+    public function getSubPhrasesToolbar()
+    {
+        return (bool) Mage::getStoreConfig('bxSearch/advanced/search_sub_phrases_toolbar');
+    }
+
+    /**
      * @return string
      */
     private function getProductAttributePrefix(){

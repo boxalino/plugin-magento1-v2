@@ -1,0 +1,7 @@
+<?php
+$element = $this->getElement();
+?>
+<div class="bx-q-<?php echo $element->getName();?>">
+    <label for="<?php echo $element->getType()?>"><?php echo $element->getLabel();?></label>
+    <input type="<?php echo $element->getType();?>" data-bxname="<?php echo $element->getBxName()?>" name="<?php echo $element->getName()?>" placeholder="<?php $element->getPlaceholder();?>" <?php echo $this->getAttributes();?> <?php if($this->getRequired()): echo " required ";endif;?>/>
+</div>

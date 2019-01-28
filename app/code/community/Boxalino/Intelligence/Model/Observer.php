@@ -1,10 +1,10 @@
 <?php
 
-class Boxalino_Intelligence_Model_Observer{
+class Boxalino_Intelligence_Model_Observer
+{
 
     public function onProductAddedToCart(Varien_Event_Observer $event)
     {
-
         try {
             $session = Mage::getSingleton('boxalino_intelligence/session');
             $script = Mage::helper('boxalino_intelligence')->reportAddToBasket(

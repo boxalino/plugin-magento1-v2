@@ -1,0 +1,43 @@
+<?php
+$element = $this->getElement();
+?>
+<div class="bx-q-<?php echo $element->getName();?>">
+    <div id="slider-<?php echo $element->getName();?>"></div>
+    <span id="<?php echo $element->getMinName();?>" data-bxname="<?php echo $element->getMinBxName()?>"></span>
+    <span id="<?php echo $element->getMaxName();?>" data-bxname="<?php echo $element->getMaxBxName()?>"></span>
+</div>
+<script type="text/javascript">
+    var slider = $('slider-<?php echo $element->getName();?>');
+    var sliderMin = <?php echo $element->getMinValue(); ?>;
+    var sliderMax = <?php echo $element->getMaxValue(); ?>;
+    noUiSlider.create(slider, {
+        start: [<?php echo $element->getStartMin(); ?>,<?php echo $element->getStartMax(); ?>],
+        connect: true,
+        step: 1,
+        range: {
+            'min': sliderMin ,
+            'max': sliderMax
+        }
+    });
+
+    var snapElements = [
+        $('<?php echo $element->getMinName();?>'),
+        $('<?php echo $element->getMaxName();?>')
+    ];
+
+    var snapValues = [<?php echo $element->getStartMin(); ?>,<?php echo $element->getStartMax(); ?>];
+
+    slider.noUiSlider.on('update', function (values, handle) {
+        var handlename = handle == 1 ? " " + "<?php echo __('to') ?>" + " " : "<?php echo __('from') ?>" + " ";
+        snapElements[handle].innerHTML = handlename + "<strong>" + values[handle] + "</strong>";
+    });
+
+    slider.noUiSlider.on('change', function (values, handle) {
+        if(snapValues[handle] == values[handle]) return null;
+        if(values[0] == values[1]) values[1]++;
+        bxProfiler.addSelect(snapElements[0].id, values[0]);
+        bxProfiler.addSelect(snapElements[1].id, parseFloat(sliderMax) === parseFloat(values[1]) ? '*' : values[1]);
+        bxProfiler.addBxSelect(snapElements[0].dataset.bxname, values[0]);
+        bxProfiler.addBxSelect(snapElements[1].dataset.bxname, parseFloat(sliderMax) === parseFloat(values[1]) ? '*' : values[1]);
+    });
+</script>

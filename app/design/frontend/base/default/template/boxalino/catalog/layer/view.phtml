@@ -11,15 +11,25 @@
             <?php if($this->canShowOptions()): ?>
                 <p class="block-subtitle"><?php echo $this->__('Shopping Options') ?></p>
                 <dl id="narrow-by-list">
-                    <?php $_filters = $this->getFilters() ?>
-                    <?php foreach ($_filters as $_filter): ?>
-                        <?php if($_filter->getItemsCount()): ?>
-                            <dt><?php echo $this->__($_filter->getName()) ?></dt>
+                    <?php
+                    $bxFacets = $this->bxFacets;
+                    $filters = $this->getFilters();
+                    ?>
+                    <?php foreach ($filters as $_filter): ?>
+                        <?php
+                             $isExpanded = (bool) $bxFacets->isFacetExpanded($_filter->getFieldName(), false);
+                             $isHidden = (bool) $bxFacets->isFacetHidden($_filter->getFieldName());
+                             $label = $bxFacets->getFacetLabel($_filter->getFieldName());
+                         ?>
+                        <?php if($_filter->getItemsCount() && !$isHidden): ?>
+                            <dt>
+                                <?php echo (!empty($label) || !is_null($label)) ? $label : $this->__($_filter->getName()) ?>
+                            </dt>
                             <dd><?php echo $_filter->getHtml() ?></dd>
                         <?php endif; ?>
                     <?php endforeach; ?>
                 </dl>
-                <script type="text/javascript">decorateDataList('narrow-by-list')</script>
+                <script type="text/javascript">decorateDataList('narrow-by-list');</script>
             <?php endif; ?>
         </div>
     </div>
