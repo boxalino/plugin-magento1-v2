@@ -162,6 +162,16 @@ class Boxalino_Intelligence_Helper_BxIndexConfig extends Mage_Core_Helper_Abstra
 
     /**
      * @param $account
+     * @return null | string
+     */
+    public function getExporterTemporaryArchivePath($account)
+    {
+        $path = $this->getFirstAccountStore($account)->getConfig('bxExporter/exporter/local_tmp');
+        return empty($path) ? null : $path;
+    }
+
+    /**
+     * @param $account
      * @return bool
      */
     public function isCustomersExportEnabled($account) {
