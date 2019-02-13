@@ -14,6 +14,7 @@ class Boxalino_Intelligence_Model_VisualElement_Renderer extends Varien_Object
     CONST NARRATIVE_RENDER_BLOCK_SET_CHILD = "magento_block_function_setChild";
     CONST NARRATIVE_RENDER_BLOCK_NAME_KEY = "magento_block_name";
     CONST NARRATIVE_RENDER_BLOCK_FUNCTION = "magento_block_function_";
+    CONST NARRATIVE_RENDER_BLOCK_TYPE_DEFAULT = "core/template";
 
     /**
      * @var false|Mage_Core_Model_Abstract
@@ -108,6 +109,11 @@ class Boxalino_Intelligence_Model_VisualElement_Renderer extends Varien_Object
         }
         if(is_array($additional_parameter)) {
             $data = array_merge($data, $additional_parameter);
+        }
+
+        if(empty($type))
+        {
+            $type = self::NARRATIVE_RENDER_BLOCK_TYPE_DEFAULT;
         }
         return $this->createBlock($type, $name, $data, $arguments, $children);
     }
