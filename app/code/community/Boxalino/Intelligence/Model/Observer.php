@@ -26,31 +26,28 @@ class Boxalino_Intelligence_Model_Observer
     public function onOrderSuccessPageView(Varien_Event_Observer $event)
     {
         try {
-            $order = Mage::registry('last_order');
-            if($order == null){
-                $orderId = Mage::getSingleton('checkout/session')->getLastOrderId();
-                $order = Mage::getModel('sales/order')->load($orderId);
-                Mage::register('last_order', $order);
-            }
-
-            $orderData = $order->getData();
-            $transactionId = $orderData['entity_id'];
-            $products = array();
-            $fullPrice = 0;
-            foreach ($order->getAllItems() as $item) {
-                if ($item->getPrice() > 0) {
-                    $products[] = array(
-                        'product' => $item->getProduct()->getId(),
-                        'quantity' => $item->getData('qty_ordered'),
-                        'price' => $item->getPrice()
-                    );
-                    $fullPrice += $item->getPrice() * $item->getData('qty_ordered');
+            $orderIds = $event->getData("order_ids");
+            foreach($orderIds as $lastOrderId) {
+                $order = Mage::getModel('sales/order')->load($lastOrderId);
+                $orderData = $order->getData();
+                $transactionId = $orderData['entity_id'];
+                $products = array();
+                $fullPrice = 0;
+                foreach ($order->getAllItems() as $item) {
+                    if ($item->getPrice() > 0) {
+                        $products[] = array(
+                            'product' => $item->getProduct()->getId(),
+                            'quantity' => $item->getData('qty_ordered'),
+                            'price' => $item->getPrice()
+                        );
+                        $fullPrice += $item->getPrice() * $item->getData('qty_ordered');
+                    }
                 }
-            }
 
-            $script = Mage::helper('boxalino_intelligence')->reportPurchase($products, $transactionId, $fullPrice, Mage::app()->getStore()->getCurrentCurrencyCode());
-            $session = Mage::getSingleton('boxalino_intelligence/session');
-            $session->addScript($script);
+                $script = Mage::helper('boxalino_intelligence')->reportPurchase($products, $transactionId, $fullPrice, Mage::app()->getStore()->getCurrentCurrencyCode());
+                $session = Mage::getSingleton('boxalino_intelligence/session');
+                $session->addScript($script);
+            }
         } catch (Exception $e) {
             if (Mage::helper('boxalino_intelligence')->isDebugEnabled()) {
                 echo($e);

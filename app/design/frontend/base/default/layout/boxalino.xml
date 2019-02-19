@@ -25,7 +25,7 @@
                 <name>js/jssor-26.1.5.min.js</name>
             </action>
         </reference>
-        <reference name="before_body_end">
+        <reference name="after_body_start">
             <block type="boxalino_intelligence/script" name="intelligence_script" template="boxalino/script.phtml"/>
             <block type="boxalino_intelligence/notification" name="intelligence_notification" template="boxalino/notification.phtml"/>
         </reference>

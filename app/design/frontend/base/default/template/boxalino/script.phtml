@@ -16,7 +16,7 @@ $scriptSource = $this->getBaScriptServerPath();
     <?php echo $this->getScripts(); ?>
 
     <?php if ($_helper->isTrackerEnabled()): ?>
-    _bxq.push(['trackPageView']);
+        _bxq.push(['trackPageView']);
     <?php endif; ?>
 
     <?php if ($this->isSearch()): ?>

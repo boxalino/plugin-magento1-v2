@@ -19,10 +19,10 @@ class Boxalino_Intelligence_Model_Session extends Mage_Core_Model_Session_Abstra
      */
     public function addScript($script)
     {
-        if (!isset($this->_data['scipts']) || !is_array($this->_data['scipts'])) {
-            $this->_data['scipts'] = array();
+        if (!isset($this->_data['scripts']) || !is_array($this->_data['scripts'])) {
+            $this->_data['scripts'] = array();
         }
-        $this->_data['scipts'][] = $script;
+        $this->_data['scripts'][] = $script;
     }
 
     /**
@@ -31,8 +31,8 @@ class Boxalino_Intelligence_Model_Session extends Mage_Core_Model_Session_Abstra
     public function getScripts()
     {
         $scripts = array();
-        if (isset($this->_data['scipts']) && is_array($this->_data['scipts'])) {
-            $scripts = $this->_data['scipts'];
+        if (isset($this->_data['scripts']) && is_array($this->_data['scripts'])) {
+            $scripts = $this->_data['scripts'];
         }
         return $scripts;
     }
@@ -42,6 +42,6 @@ class Boxalino_Intelligence_Model_Session extends Mage_Core_Model_Session_Abstra
      */
     public function clearScripts()
     {
-        $this->_data['scipts'] = array();
+        $this->_data['scripts'] = array();
     }
 }
