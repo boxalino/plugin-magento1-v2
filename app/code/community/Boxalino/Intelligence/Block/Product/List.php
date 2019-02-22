@@ -246,7 +246,7 @@ class Boxalino_Intelligence_Block_Product_List extends Mage_Catalog_Block_Produc
      */
     protected function getLimitForProductCollection()
     {
-        if(Mage::helper('boxalino_intelligence')->getSubPhrasesLimit())
+        if($this->hasSubPhrases && Mage::helper('boxalino_intelligence')->getSubPhrasesLimit())
         {
             return Mage::helper('boxalino_intelligence')->getSubPhrasesLimit();
         }
