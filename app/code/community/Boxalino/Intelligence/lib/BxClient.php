@@ -29,6 +29,7 @@ class BxClient
     private $bundleChooseRequests = array();
 
     const VISITOR_COOKIE_TIME = 31536000;
+    const BXL_UUID_REQUEST = "_system_requestid";
 
     private $_timeout = 2;
     private $curl_timeout = 2000;
@@ -84,6 +85,10 @@ class BxClient
             $this->p13n_password = "tkZ8EXfzeZc6SdXZntCU";
         }
         $this->domain = $domain;
+
+        if(function_exists("random_bytes")) {
+            $this->addRequestContextParameter(self::BXL_UUID_REQUEST, $this->uuid());
+        }
     }
 
     /**
@@ -402,11 +407,11 @@ class BxClient
 
     private function throwCorrectP13nException($e) {
         if(strpos($e->getMessage(), 'Could not connect ') !== false) {
-            throw new \Exception('The connection to our server failed even before checking your credentials. This might be typically caused by 2 possible things: wrong values in host, port, schema or uri (typical value should be host=cdn.bx-cloud.com, port=443, uri =/p13n.web/p13n and schema=https, your values are : host=' . $this->host . ', port=' . $this->port . ', schema=' . $this->schema . ', uri=' . $this->uri . '). Another possibility, is that your server environment has a problem with ssl certificate (peer certificate cannot be authenticated with given ca certificates), which you can either fix, or avoid the problem by adding the line "curl_setopt(self::$curlHandle, CURLOPT_SSL_VERIFYPEER, false);" in the file "lib\Thrift\Transport\P13nTCurlClient" after the call to curl_init in the function flush. Full error message=' . $e->getMessage());
+            throw new \Exception('The connection to our server failed even before checking your credentials. This might be typically caused by 2 possible things: wrong values in host, port, schema or uri (typical value should be host=cdn.bx-cloud.com, port=443, uri =/p13n.web/p13n and schema=https, your values are : host=' . $this->host . ', port=' . $this->port . ', schema=' . $this->schema . ', uri=' . $this->uri .  ', request: ' . $this->getRequestId() . '). Another possibility, is that your server environment has a problem with ssl certificate (peer certificate cannot be authenticated with given ca certificates), which you can either fix, or avoid the problem by adding the line "curl_setopt(self::$curlHandle, CURLOPT_SSL_VERIFYPEER, false);" in the file "lib\Thrift\Transport\P13nTCurlClient" after the call to curl_init in the function flush. Full error message=' . $e->getMessage());
         }
 
         if(strpos($e->getMessage(), 'Bad protocol id in TCompact message') !== false) {
-            throw new \Exception('The connection to our server has worked, but your credentials were refused. Provided credentials username=' . $this->p13n_username. ', password=' . $this->p13n_password . ', account=' . $this->account . ', host=' . $this->host . '. Full error message=' . $e->getMessage());
+            throw new \Exception('The connection to our server has worked, but your credentials were refused. Provided credentials username=' . $this->p13n_username. ', password=' . $this->p13n_password . ', account=' . $this->account . ', host=' . $this->host . ', request: ' . $this->getRequestId() . '. Full error message=' . $e->getMessage());
         }
 
         if(strpos($e->getMessage(), 'choice not found') !== false) {
@@ -422,11 +427,15 @@ class BxClient
             $parts = explode('undefined field', $e->getMessage());
             $pieces = explode('	at ', $parts[1]);
             $field = str_replace(':', '', trim($pieces[0]));
-            throw new \Exception("You request in your filter or facets a non-existing field of your account " . $this->getAccount() . ": field $field doesn't exist.");
+            throw new \Exception("You request in your filter or facets a non-existing field of your account " . $this->getAccount() . ": field $field doesn't exist. Request: " . $this->getRequestId());
         }
         if(strpos($e->getMessage(), 'All choice variants are excluded') !== false) {
             throw new \Exception("You have an invalid configuration for with a choice defined, but having no defined strategies. This is a quite unusual case, please contact support@boxalino.com to get support.");
         }
+
+        $message = $e->getMessage() . " BxRequest: " . $this->getRequestId();
+        $e->setMessage($message);
+
         throw $e;
     }
 
@@ -788,4 +797,24 @@ class BxClient
         return $request;
     }
 
+    protected function uuid()
+    {
+        $uuid = bin2hex(random_bytes(16));
+        $hyphen = chr(45);
+        return substr($uuid, 0, 8).$hyphen
+            .substr($uuid, 8, 4).$hyphen
+            .substr($uuid,12, 4).$hyphen
+            .substr($uuid,16, 4).$hyphen
+            .substr($uuid,20,12);
+    }
+
+    protected function getRequestId()
+    {
+        if(isset($this->requestContextParameters[self::BXL_UUID_REQUEST]))
+        {
+            return $this->requestContextParameters[self::BXL_UUID_REQUEST];
+        }
+
+        return "undefined";
+    }
 }
