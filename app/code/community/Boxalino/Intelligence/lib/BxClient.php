@@ -39,6 +39,7 @@ class BxClient
     private $profileId = null;
 
     private $requestMap = array();
+    protected $sendRequestId = false;
 
     private $socketHost = null;
     private $socketPort = null;
@@ -86,7 +87,7 @@ class BxClient
         }
         $this->domain = $domain;
 
-        if(function_exists("random_bytes")) {
+        if(function_exists("random_bytes") && $this->sendRequestId) {
             $this->addRequestContextParameter(self::BXL_UUID_REQUEST, $this->uuid());
         }
     }
@@ -795,6 +796,12 @@ class BxClient
         $request->userRecord = $userRecord;
 
         return $request;
+    }
+
+    public function setSendRequestId($value)
+    {
+        $this->sendRequestId = $value;
+        return $this;
     }
 
     protected function uuid()

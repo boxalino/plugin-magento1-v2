@@ -76,8 +76,10 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
             $apiKey = Mage::getStoreConfig('bxGeneral/general/apiKey');
             $apiSecret = Mage::getStoreConfig('bxGeneral/general/apiSecret');
             $domain = Mage::getStoreConfig('bxGeneral/general/domain');
+            $sendRequestId = Mage::getStoreConfig('bxGeneral/advanced/send_request_id');
             self::$bxClient = new \com\boxalino\bxclient\v1\BxClient($account, $password, $domain, $isDev, $host, null, null, null, $p13n_username, $p13n_password, $requestParams, $apiKey, $apiSecret);
             self::$bxClient->setTimeout(Mage::getStoreConfig('bxGeneral/advanced/thrift_timeout'));
+            self::$bxClient->setSendRequestId($sendRequestId);
         }
     }
 

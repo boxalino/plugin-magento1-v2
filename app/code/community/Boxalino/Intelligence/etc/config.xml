@@ -194,6 +194,7 @@
             </general>
             <advanced>
                 <thrift_timeout>2</thrift_timeout>
+                <send_request_id>1</send_request_id>
             </advanced>
         </bxGeneral>
         <bxExporter>
