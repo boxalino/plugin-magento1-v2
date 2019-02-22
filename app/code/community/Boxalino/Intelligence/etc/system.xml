@@ -139,7 +139,7 @@
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
-                            <comment>Sending a request UUID allows tracking on our server if the request arrived. To only be used when an issue has been identified.</comment>
+                            <comment>Sending a request UUID allows tracking on our server if the request arrived. To only be used when an issue has been identified. Constraint: only for PHP 7.0 or more.</comment>
                         </send_request_id>
                         <p13n_username>
                             <label>P13n Username</label>
