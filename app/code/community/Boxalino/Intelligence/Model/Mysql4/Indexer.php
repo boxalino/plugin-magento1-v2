@@ -149,7 +149,7 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                         $timeout = $this->getTimeoutForExporter($account);
                         $tmpPath = $this->config->getExporterTemporaryArchivePath($account);
                         $this->bxData->pushData($tmpPath, $timeout);
-                    }catch(\RuntimeException $e){
+                    }catch(\LogicException $e){
                         Mage::log('bxLog: pushing data stopped due to the configured timeout: ' . $e->getMessage(), Zend_Log::WARN, self::BOXALINO_LOG_FILE);
                     }catch(\Exception $e){
                         Mage::logException($e);
