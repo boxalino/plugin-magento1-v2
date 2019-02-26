@@ -511,10 +511,15 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                             }
                             $fetchedOptionValues = null;
                         }
+
+                        if(!$optionSelect)
+                        {
+                            unset($languagesForLabels[Mage_Core_Model_Store::ADMIN_CODE]);
+                            unset($labelColumns[Mage_Core_Model_Store::ADMIN_CODE]);
+                        }
                     }
 
-                    $select
-                        ->where('t_d.attribute_id = ?', $attributeID)
+                    $select->where('t_d.attribute_id = ?', $attributeID)
                         ->where('t_d.store_id = 0 OR t_d.store_id = ?',$storeId);
 
                     if ($attribute['attribute_code'] == 'visibility' || $attribute['attribute_code'] ==  'status') {
