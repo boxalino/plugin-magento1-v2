@@ -387,14 +387,15 @@ class BxClient
     {
         $requestContext = new \com\boxalino\p13n\api\thrift\RequestContext();
         $requestContext->parameters = $this->getBasicRequestContextParameters();
-        foreach($this->getRequestContextParameters() as $k => $v)
-        {
-            $requestContext->parameters[$k] = $v;
-        }
 
         if(function_exists("random_bytes") && $this->sendRequestId)
         {
-            $requestContext->parameters[self::BXL_UUID_REQUEST] = $this->uuid();
+            $this->addRequestContextParameter(self::BXL_UUID_REQUEST, $this->uuid());
+        }
+
+        foreach($this->getRequestContextParameters() as $k => $v)
+        {
+            $requestContext->parameters[$k] = $v;
         }
 
         if (isset($this->requestMap['p13nRequestContext']) && is_array($this->requestMap['p13nRequestContext']))
