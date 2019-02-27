@@ -40,6 +40,7 @@ class BxClient
 
     private $requestMap = array();
     protected $sendRequestId = false;
+    protected $uuid = null;
 
     private $socketHost = null;
     private $socketPort = null;
@@ -86,10 +87,6 @@ class BxClient
             $this->p13n_password = "tkZ8EXfzeZc6SdXZntCU";
         }
         $this->domain = $domain;
-
-        if(function_exists("random_bytes") && $this->sendRequestId) {
-            $this->addRequestContextParameter(self::BXL_UUID_REQUEST, $this->uuid());
-        }
     }
 
     /**
@@ -361,11 +358,9 @@ class BxClient
         $this->requestContextParameters = array();
     }
 
-
     protected function getBasicRequestContextParameters()
     {
         list($sessionid, $profileid) = $this->getSessionAndProfile();
-
         return array(
             'User-Agent'	 => array(@$_SERVER['HTTP_USER_AGENT']),
             'User-Host'	  => array($this->getIP()),
@@ -392,15 +387,19 @@ class BxClient
     {
         $requestContext = new \com\boxalino\p13n\api\thrift\RequestContext();
         $requestContext->parameters = $this->getBasicRequestContextParameters();
-        foreach($this->getRequestContextParameters() as $k => $v) {
+        foreach($this->getRequestContextParameters() as $k => $v)
+        {
             $requestContext->parameters[$k] = $v;
         }
 
-        if (isset($this->requestMap['p13nRequestContext']) && is_array($this->requestMap['p13nRequestContext'])) {
-            $requestContext->parameters = array_merge(
-                $this->requestMap['p13nRequestContext'],
-                $requestContext->parameters
-            );
+        if(function_exists("random_bytes") && $this->sendRequestId)
+        {
+            $requestContext->parameters[self::BXL_UUID_REQUEST] = $this->uuid();
+        }
+
+        if (isset($this->requestMap['p13nRequestContext']) && is_array($this->requestMap['p13nRequestContext']))
+        {
+            $requestContext->parameters = array_merge($this->requestMap['p13nRequestContext'],$requestContext->parameters);
         }
 
         return $requestContext;
@@ -808,13 +807,17 @@ class BxClient
 
     protected function uuid()
     {
-        $uuid = bin2hex(random_bytes(16));
-        $hyphen = chr(45);
-        return substr($uuid, 0, 8).$hyphen
-            .substr($uuid, 8, 4).$hyphen
-            .substr($uuid,12, 4).$hyphen
-            .substr($uuid,16, 4).$hyphen
-            .substr($uuid,20,12);
+        if (is_null($this->uuid)) {
+            $uuid = bin2hex(random_bytes(16));
+            $hyphen = chr(45);
+            $this->uuid =  substr($uuid, 0, 8).$hyphen
+                .substr($uuid, 8, 4).$hyphen
+                .substr($uuid,12, 4).$hyphen
+                .substr($uuid,16, 4).$hyphen
+                .substr($uuid,20,12);
+        }
+
+        return $this->uuid;
     }
 
     protected function getRequestId()
