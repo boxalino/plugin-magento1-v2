@@ -821,11 +821,14 @@ class BxClient
         return $this->uuid;
     }
 
+    /**
+     * @return string
+     */
     protected function getRequestId()
     {
         if(isset($this->requestContextParameters[self::BXL_UUID_REQUEST]))
         {
-            return $this->requestContextParameters[self::BXL_UUID_REQUEST];
+            return array_pop($this->requestContextParameters[self::BXL_UUID_REQUEST]);
         }
 
         return "undefined";
