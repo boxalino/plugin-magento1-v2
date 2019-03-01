@@ -282,7 +282,10 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
 
         $returnFields = array($this->getEntityIdFieldName(), 'categories', 'discountedPrice', 'products_bx_grouped_price', 'title', 'score');
         $additionalFields = explode(',', Mage::getStoreConfig('bxGeneral/advanced/additional_fields'));
-        $returnFields = array_merge($returnFields, $additionalFields);
+        if(!empty($additionalFields))
+        {
+            $returnFields = array_merge($returnFields, $additionalFields);
+        }
         $hitCount = $overwriteHitCount;
 
         self::$bxClient->forwardRequestMapAsContextParameters();
