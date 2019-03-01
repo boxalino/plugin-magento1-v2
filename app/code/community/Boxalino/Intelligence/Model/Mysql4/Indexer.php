@@ -404,6 +404,7 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
         foreach($attrs as $attributeType => $types){
             foreach ($types as $attributeID => $attribute) {
                 Mage::log('bxLog: Products - exporting attribute: ' . $attribute['attribute_code']  . ' for ' . $account, Zend_Log::INFO, self::BOXALINO_LOG_FILE);
+
                 $optionSelect = in_array($attribute['frontend_input'], array('multiselect','select'));
                 $data = array();
                 $additionalData = array();
@@ -414,10 +415,6 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                 $optionValues = array();
                 $labelColumns = array();
 
-                if($attribute['attribute_code'] == 'bag_luggage_type')
-                {
-                    $isLuggage = true;
-                }
                 foreach ($languages as $langIndex => $lang) {
                     $select = $db->select()->from(
                         array('t_d' => $db->getTableName($this->_prefix . 'catalog_product_entity_' . $attributeType)),
