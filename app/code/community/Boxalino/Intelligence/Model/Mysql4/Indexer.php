@@ -127,6 +127,8 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                         try {
                             Mage::log('bxLog: Push the XML configuration file to the Data Indexing server for account: ' . $account, Zend_Log::INFO, self::BOXALINO_LOG_FILE);
                             $this->bxData->pushDataSpecifications();
+                        }catch(\LogicException $e){
+                            Mage::log('bxLog: publishing XML configurations returned a timeout: ' . $e->getMessage(), Zend_Log::WARN, self::BOXALINO_LOG_FILE);
                         } catch(\Exception $e) {
                             $value = @json_decode($e->getMessage(), true);
                             if(isset($value['error_type_number']) && $value['error_type_number'] == 3) {
