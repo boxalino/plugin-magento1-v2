@@ -17,6 +17,11 @@ class Boxalino_Intelligence_Block_Facets extends Boxalino_Intelligence_Block_Plu
     protected $_layer = null;
 
     /**
+     * @var bool
+     */
+    protected $fallback = false;
+
+    /**
      * @return array
      */
     public function getTopFilter(){
@@ -53,11 +58,17 @@ class Boxalino_Intelligence_Block_Facets extends Boxalino_Intelligence_Block_Plu
      * @return com\boxalino\bxclient\v1\BxFacets
      */
     public function getBxFacets(){
-        if(is_null($this->bxFacets)) {
-            $bxHelperData = Mage::helper('boxalino_intelligence');
-            $this->bxFacets = $bxHelperData->getAdapter()->getFacets();
+        try {
+            if(is_null($this->bxFacets)) {
+                $bxHelperData = Mage::helper('boxalino_intelligence');
+                $this->bxFacets = $bxHelperData->getAdapter()->getFacets();
+            }
+            return $this->bxFacets;
+        } catch(\Exception $e){
+            $this->fallback = true;
+            Mage::logException($e);
         }
-        return $this->bxFacets;
+
     }
 
     /**
@@ -73,7 +84,18 @@ class Boxalino_Intelligence_Block_Facets extends Boxalino_Intelligence_Block_Plu
 
     public function isPluginActive()
     {
-        return $this->getBxRewriteAllowed();
+        if($this->getBxRewriteAllowed())
+        {
+            $this->getBxFacets();
+            if($this->fallback)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
 }

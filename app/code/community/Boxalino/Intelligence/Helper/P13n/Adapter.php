@@ -326,8 +326,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
     private function addBlogResult($queryText, $hitCount) {
         $bxRequest = new \com\boxalino\bxclient\v1\BxSearchRequest($this->bxHelperData->getLanguage(), $queryText, $hitCount, $this->getSearchChoice($queryText, true));
         $requestParams = Mage::app()->getRequest()->getParams();
-        $pageOffset = isset($requestParams['bx_blog_page']) ? ($requestParams['bx_blog_page'] - 1) * ($hitCount) : 0;
-        $pageOffset = 0;
+        $pageOffset = isset($requestParams['bx_blog_page'])&&!empty($requestParams['bx_blog_page']) ? ($requestParams['bx_blog_page'] - 1) * ($hitCount) : 0;
         $bxRequest->setOffset($pageOffset);
         $bxRequest->setGroupBy('id');
         $returnFields = $this->bxHelperData->getBlogReturnFields();
@@ -335,14 +334,11 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
         self::$bxClient->addRequest($bxRequest);
     }
 
-    public function getLandingpageContextParameters($extraParams = null){
-
+    public function getLandingpageContextParameters($extraParams = null)
+    {
         foreach ($extraParams as $key => $value) {
-
             self::$bxClient->addRequestContextParameter($key, $value);
-
         }
-
     }
 
     public function getFinderChoice() {
@@ -380,6 +376,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
         }
         $isFinder = Mage::helper('boxalino_intelligence')->getIsFinder();
         $request = Mage::app()->getRequest();
+        $params = $request->getParams();
         $queryText = Mage::helper('catalogsearch')->getQueryText();
 
         if (self::$bxClient->getChoiceIdRecommendationRequest($this->getSearchChoice($queryText)) != null && !$addFinder && !$isFinder) {
@@ -391,7 +388,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
             return;
         }
         $field = '';
-        $order = $request->getParam('order') != null ? $request->getParam('order') : $this->getMagentoStoreConfigListOrder();
+        $order = isset($params['order'])&&!empty($params['order']) ? $params['order'] : $this->getMagentoStoreConfigListOrder();
 
         if ($order == 'name') {
             $field = 'products_bx_parent_title';
@@ -406,8 +403,9 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
         }
 
         $categoryId = Mage::registry('current_category') != null ? Mage::registry('current_category')->getId() : null;
-        $overWriteLimit = $request->getParam('limit') != null ? $request->getParam('limit') : Mage::getBlockSingleton('catalog/product_list_toolbar')->getLimit();
-        $pageOffset = isset($_REQUEST['p'])? ($_REQUEST['p']-1)*($overWriteLimit) : 0;
+        $overWriteLimit = isset($params['limit'])&&!empty($params['limit'])? $params['limit']: Mage::getBlockSingleton('catalog/product_list_toolbar')->getLimit();
+        $pageOffset = isset($params['p'])&&!empty($params['p']) ? ($params['p']-1)*($overWriteLimit) : 0;
+
         $this->search($queryText, $pageOffset, $overWriteLimit, new \com\boxalino\bxclient\v1\BxSortFields($field, $dir), $categoryId, $addFinder);
     }
 
@@ -426,7 +424,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
         }
         $dir = isset($requestParams['product_list_dir']) ? true : false;
         $hitCount = isset($requestParams['product_list_limit']) ? $requestParams['product_list_limit'] : $this->getMagentoStoreConfigPageSize();
-        $pageOffset = isset($requestParams['p']) ? ($requestParams['p'] - 1) * ($hitCount) : 0;
+        $pageOffset = isset($requestParams['p'])&&!empty($requestParams['p']) ? ($requestParams['p'] - 1) * ($hitCount) : 0;
 
         $language = $this->bxHelperData->getLanguage();
         $bxRequest = new \com\boxalino\bxclient\v1\BxRequest($language, $choice_id, $hitCount);

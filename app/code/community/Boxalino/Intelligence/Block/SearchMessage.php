@@ -10,6 +10,10 @@ class Boxalino_Intelligence_Block_SearchMessage extends Boxalino_Intelligence_Bl
 
     protected $p13nHelper;
 
+    protected $response = null;
+
+    protected $fallback = false;
+
     public function _construct()
     {
         if($this->getBxRewriteAllowed())
@@ -23,11 +27,32 @@ class Boxalino_Intelligence_Block_SearchMessage extends Boxalino_Intelligence_Bl
 
     public function isPluginActive()
     {
-        return $this->getBxRewriteAllowed();
+        if($this->getBxRewriteAllowed())
+        {
+            $this->getResponse();
+            if($this->fallback)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     public function getResponse()
     {
-        return $bxResponse = $this->p13nHelper->getResponse();
+        try {
+            if(is_null($this->response))
+            {
+                $this->response = $this->p13nHelper->getResponse();
+            }
+
+            return $this->response;
+        } catch(\Exception $e){
+            $this->fallback = true;
+            Mage::logException($e);
+        }
     }
 }
