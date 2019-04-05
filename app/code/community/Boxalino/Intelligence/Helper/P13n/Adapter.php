@@ -58,7 +58,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
                 self::$bxClient->setTestMode(true);
             }
         }
-        }
+    }
 
     /**
      * Initialize BxClient
@@ -326,7 +326,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
     private function addBlogResult($queryText, $hitCount) {
         $bxRequest = new \com\boxalino\bxclient\v1\BxSearchRequest($this->bxHelperData->getLanguage(), $queryText, $hitCount, $this->getSearchChoice($queryText, true));
         $requestParams = Mage::app()->getRequest()->getParams();
-        $pageOffset = isset($requestParams['bx_blog_page'])&&!empty($requestParams['bx_blog_page']) ? ($requestParams['bx_blog_page'] - 1) * ($hitCount) : 0;
+        $pageOffset = isset($requestParams['bx_blog_page'])&&!empty($requestParams['bx_blog_page']) && is_numeric($requestParams['bx_blog_page'])? ($requestParams['bx_blog_page'] - 1) * ($hitCount) : 0;
         $bxRequest->setOffset($pageOffset);
         $bxRequest->setGroupBy('id');
         $returnFields = $this->bxHelperData->getBlogReturnFields();
@@ -403,8 +403,8 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
         }
 
         $categoryId = Mage::registry('current_category') != null ? Mage::registry('current_category')->getId() : null;
-        $overWriteLimit = isset($params['limit'])&&!empty($params['limit'])? $params['limit']: Mage::getBlockSingleton('catalog/product_list_toolbar')->getLimit();
-        $pageOffset = isset($params['p'])&&!empty($params['p']) ? ($params['p']-1)*($overWriteLimit) : 0;
+        $overWriteLimit = isset($params['limit'])&&!empty($params['limit']) && is_numeric($params['limit'])? $params['limit']: Mage::getBlockSingleton('catalog/product_list_toolbar')->getLimit();
+        $pageOffset = isset($params['p'])&&!empty($params['p'])&& is_numeric($params['p']) ? ($params['p']-1)*($overWriteLimit) : 0;
 
         $this->search($queryText, $pageOffset, $overWriteLimit, new \com\boxalino\bxclient\v1\BxSortFields($field, $dir), $categoryId, $addFinder);
     }
@@ -423,8 +423,8 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
             $field = 'products_bx_grouped_price';
         }
         $dir = isset($requestParams['product_list_dir']) ? true : false;
-        $hitCount = isset($requestParams['product_list_limit']) ? $requestParams['product_list_limit'] : $this->getMagentoStoreConfigPageSize();
-        $pageOffset = isset($requestParams['p'])&&!empty($requestParams['p']) ? ($requestParams['p'] - 1) * ($hitCount) : 0;
+        $hitCount = isset($requestParams['product_list_limit'])&& is_numeric($requestParams['product_list_limit']) ? $requestParams['product_list_limit'] : $this->getMagentoStoreConfigPageSize();
+        $pageOffset = isset($requestParams['p'])&&!empty($requestParams['p'])&&is_numeric($requestParams['p']) ? ($requestParams['p'] - 1) * ($hitCount) : 0;
 
         $language = $this->bxHelperData->getLanguage();
         $bxRequest = new \com\boxalino\bxclient\v1\BxRequest($language, $choice_id, $hitCount);
