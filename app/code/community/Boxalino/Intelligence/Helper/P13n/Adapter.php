@@ -403,9 +403,8 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
         }
 
         $categoryId = Mage::registry('current_category') != null ? Mage::registry('current_category')->getId() : null;
-        $overWriteLimit = isset($params['limit'])&&!empty($params['limit']) && is_numeric($params['limit'])? $params['limit']: Mage::getBlockSingleton('catalog/product_list_toolbar')->getLimit();
+        $overWriteLimit = isset($params['limit'])&&!empty($params['limit']) && is_numeric($params['limit'])? $params['limit']: $this->getMagentoStoreConfigPageSize();
         $pageOffset = isset($params['p'])&&!empty($params['p'])&& is_numeric($params['p']) ? ($params['p']-1)*($overWriteLimit) : 0;
-
         $this->search($queryText, $pageOffset, $overWriteLimit, new \com\boxalino\bxclient\v1\BxSortFields($field, $dir), $categoryId, $addFinder);
     }
 

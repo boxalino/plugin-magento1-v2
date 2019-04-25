@@ -151,6 +151,7 @@ class Boxalino_Intelligence_Block_Product_List extends Mage_Catalog_Block_Produc
             Mage::logException($e);
             throw $e;
         }
+
         $count = $totalHitCount == 0 ? $totalHitCount : count($entity_ids);
         $lastPage = ceil($totalHitCount / $limit);
         $this->_productCollection
@@ -251,7 +252,19 @@ class Boxalino_Intelligence_Block_Product_List extends Mage_Catalog_Block_Produc
             return Mage::helper('boxalino_intelligence')->getSubPhrasesLimit();
         }
 
-        return $this->getRequest()->getParam('limit') ? $this->getRequest()->getParam('limit') : $this->getToolbarBlock()->getLimit();
+        $limit = $this->getRequest()->getParam('limit');
+        if(!empty($limit)&is_numeric($limit))
+        {
+            return $limit;
+        }
+
+        $toolbarLimit = $this->getToolbarBlock()->getLimit();
+        if(!is_numeric($toolbarLimit))
+        {
+            return $this->p13nAdapter->getMagentoStoreConfigPageSize();;
+        }
+
+        return $toolbarLimit;
     }
 
     /**
