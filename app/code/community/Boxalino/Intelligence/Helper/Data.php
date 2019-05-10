@@ -289,7 +289,7 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
                 'max' => $widgetMax[$index]
             );
         } else {
-            Mage::log("There is no configuration for this widget name: " . $widgetName);
+            Mage::log("There is no configuration for this widget name: " . $widgetName . " Please configure this widget in Recommendation->Other recommendations configuration tab");
         }
         return $widgetConfig;
     }

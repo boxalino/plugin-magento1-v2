@@ -28,19 +28,8 @@ class Boxalino_Intelligence_CategoryController extends Mage_Catalog_CategoryCont
                 }
                 Mage::unregister('current_category');
                 Mage::unregister('current_entity_key');
-                if(isset($_REQUEST['bx_category_id']) && $_REQUEST['bx_category_id'] != 0) {
-                    $catId = $this->getRequest()->getParam('id', false);
 
-                    if ($catId) {
-                        if ($catId != $_REQUEST['bx_category_id']) {
-                            $_category = Mage::getModel('catalog/category')
-                                ->setStore(Mage::app()->getStore()->getId())
-                                ->load($_REQUEST['bx_category_id']);
-                            $url = $_category->getUrl($_category);
-                            $this->getResponse()->setRedirect($url)->sendResponse();
-                        }
-                    }
-                }
+                $this->_checkForRedirect();
             }
         } catch(\Exception $e) {
             Mage::unregister('current_category');
@@ -50,4 +39,34 @@ class Boxalino_Intelligence_CategoryController extends Mage_Catalog_CategoryCont
         }
         parent::viewAction();
     }
+
+    /**
+     * Redirect to the filtered category
+     * (used on navigation)
+     *
+     * @throws Mage_Core_Model_Store_Exception
+     */
+    protected function _checkForRedirect()
+    {
+        $allowRedirectOnNavigationFilter = (bool) Mage::getStoreConfig('bxSearch/navigation/redirect_on_category_filter');
+        if(!$allowRedirectOnNavigationFilter)
+        {
+            return;
+        }
+
+        if(isset($_REQUEST['bx_category_id']) && $_REQUEST['bx_category_id'] != 0) {
+            $catId = $this->getRequest()->getParam('id', false);
+
+            if ($catId) {
+                if ($catId != $_REQUEST['bx_category_id']) {
+                    $_category = Mage::getModel('catalog/category')
+                        ->setStore(Mage::app()->getStore()->getId())
+                        ->load($_REQUEST['bx_category_id']);
+                    $url = $_category->getUrl($_category);
+                    $this->getResponse()->setRedirect($url)->sendResponse();
+                }
+            }
+        }
+    }
+
 }

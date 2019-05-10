@@ -220,6 +220,8 @@
             </blog>
             <navigation>
                 <sort>0</sort>
+                <show_category_facet>0</show_category_facet>
+                <redirect_on_category_filter>0</redirect_on_category_filter>
             </navigation>
             <autocomplete>
                 <enabled>1</enabled>
@@ -238,6 +240,7 @@
                 <widget>noresults</widget>
             </noresults>
             <advanced>
+                <use_root_category_filter>0</use_root_category_filter>
                 <search_sub_phrases_limit>3</search_sub_phrases_limit>
                 <search_sub_phrases_toolbar>0</search_sub_phrases_toolbar>
                 <parameter_separator>,</parameter_separator>

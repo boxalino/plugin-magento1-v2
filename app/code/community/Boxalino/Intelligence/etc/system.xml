@@ -573,6 +573,26 @@
                             <show_in_store>1</show_in_store>
                             <comment>Should the navigation use the relevance sorting as default?</comment>
                         </sort>
+                        <show_category_facet>
+                            <label>Show the child categories navigation view</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>3</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <comment>Optional: set to "no" by default. If set to "yes" - the category facet will be displayed on navigation (default Magento)</comment>
+                        </show_category_facet>
+                        <redirect_on_category_filter>
+                            <label>Redirect to category view on category select</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>5</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <comment>Optional: set to "no" by default. If set to "yes" - when selecting a category filter on navigation panel - it will load the requested category.</comment>
+                        </redirect_on_category_filter>
                     </fields>
                 </navigation>
                 <autocomplete>
@@ -738,6 +758,16 @@
                             <show_in_store>1</show_in_store>
                             <comment>Optional: default value is "search" and should normally not be changed</comment>
                         </search_choice_id>
+                        <use_root_category_filter translate="label">
+                            <label>Only show products tagged to a category</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>1</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <comment>Optional: set to "no" by default. If set to "yes" - the products unrelated to categories will not appear in search results.</comment>
+                        </use_root_category_filter>
                         <autocomplete_choice_id translate="label">
                             <label>Autocomplete choice ID</label>
                             <frontend_type>text</frontend_type>

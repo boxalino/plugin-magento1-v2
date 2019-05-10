@@ -341,13 +341,24 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
         }
     }
 
-    public function getFinderChoice() {
+    public function getFinderChoice()
+    {
         $choice_id = Mage::getStoreConfig('bxSearch/advanced/finder_choice_id');
         if(is_null($choice_id) || $choice_id == '') {
             $choice_id = 'productfinder';
         }
         $this->currentSearchChoice = $choice_id;
         return $choice_id;
+    }
+
+    public function getUseRootCategoryFilter()
+    {
+        return (bool) Mage::getStoreConfig('bxSearch/advanced/use_root_category_filter');
+    }
+
+    public function getShowCategoryFacetOnNavigation()
+    {
+        return (bool) Mage::getStoreConfig('bxSearch/navigation/show_category_facet');
     }
 
     /**
@@ -445,6 +456,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
                 }
             }
         }
+
         if(!is_null($choices)) {
             $choice_ids = explode(',', $choices);
             if(is_array($choice_ids)) {
@@ -532,6 +544,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
     }
 
     protected $changeQuery = null;
+
     /**
      * @return \com\boxalino\bxclient\v1\BxFacets
      */
@@ -602,11 +615,24 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
             }
         }
 
-        if (!$this->navigation) {
-            $values = isset($requestParams['bx_category_id']) ? $requestParams['bx_category_id'] : Mage::app()->getStore()->getRootCategoryId();
-            $values = explode($separator, $values);
-            $andSelectedValues = isset($facetOptions['category_id']) ? $facetOptions['category_id']['andSelectedValues']: false;
-            $bxFacets->addCategoryFacet($values, 2, -1, $andSelectedValues);
+        $categorySelectedValues = false;
+        if(($this->navigation && $this->getShowCategoryFacetOnNavigation() || !$this->navigation) && isset($facetOptions['category_id']))
+        {
+            $categorySelectedValues =  $facetOptions['category_id']['andSelectedValues'];
+        }
+
+        if (($this->navigation && $this->getShowCategoryFacetOnNavigation()) || !$this->navigation) {
+            $values = null;
+            if ($this->getUseRootCategoryFilter()) {
+                $values = Mage::app()->getStore()->getRootCategoryId();
+            }
+
+            if (isset($requestParams['bx_category_id'])) {
+                $values = $requestParams['bx_category_id'];
+            }
+
+            $categoryValue = explode($separator, $values);
+            $bxFacets->addCategoryFacet($categoryValue, 2, -1, $categorySelectedValues);
         }
 
         foreach ($attributeCollection as $code => $attribute) {
@@ -624,11 +650,14 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
                 }
             }
         }
-        foreach($bxSelectedValues as $field => $values) {
+
+        foreach($bxSelectedValues as $field => $values)
+        {
             if($field == 'discountedPrice') continue;
             $andSelectedValues = isset($facetOptions[$field]) ? $facetOptions[$field]['andSelectedValues']: false;
             $bxFacets->addFacet($field, $values, 'string', null, 2, false, -1, $andSelectedValues);
         }
+
         return $bxFacets;
     }
 

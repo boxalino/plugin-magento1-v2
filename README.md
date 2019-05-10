@@ -1,4 +1,4 @@
-# Boxalino Magento 1.x v2 plug-in
+# Boxalino Magento 1.x v2 plugin
 
 ## Introduction
 

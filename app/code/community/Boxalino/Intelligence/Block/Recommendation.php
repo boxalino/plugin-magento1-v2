@@ -44,17 +44,17 @@ class Boxalino_Intelligence_Block_Recommendation extends Mage_Catalog_Block_Prod
 
     public function init($widget, $scenario)
     {
-      if (is_null($this->getData('widget'))) {
-        $this->setData('widget', $widget);
-      }
-      if (is_null($this->getData('scenario'))) {
-        $this->setData('scenario', $scenario);
-      }
+        if (is_null($this->getData('widget'))) {
+            $this->setData('widget', $widget);
+        }
+        if (is_null($this->getData('scenario'))) {
+            $this->setData('scenario', $scenario);
+        }
     }
 
     public function getReturnFields()
     {
-      return array();
+        return array();
     }
 
     /**
@@ -90,12 +90,16 @@ class Boxalino_Intelligence_Block_Recommendation extends Mage_Catalog_Block_Prod
         $results = array();
         $recommendations = array();
         preg_match_all("/\<block type=\"boxalino_intelligence\/recommendation\"(.*?)\<\/block\>/" ,$content,$results);
-        if(isset($results[0])){
-            foreach ($results[0] as $block){
+        if(isset($results[0]))
+        {
+            foreach ($results[0] as $block)
+            {
                 preg_match_all("/\<name\>(.*?)\<\/name\>\<value\>(.*?)\<\/value\>/", $block, $key_value);
                 $data = [];
-                if(isset($key_value[1])){
-                    foreach ($key_value[1] as $index => $key){
+                if(isset($key_value[1]))
+                {
+                    foreach ($key_value[1] as $index => $key)
+                    {
                         $value = isset($key_value[2][$index]) ? $key_value[2][$index] : '';
                         $data[trim(strtolower($key))] = $value;
                     }
@@ -112,9 +116,10 @@ class Boxalino_Intelligence_Block_Recommendation extends Mage_Catalog_Block_Prod
      */
     protected function prepareRecommendations($recommendations = array(), $returnFields = array())
     {
-        if($recommendations && is_array($recommendations)){
-            foreach($recommendations as $index => $widget){
-
+        if($recommendations && is_array($recommendations))
+        {
+            foreach($recommendations as $index => $widget)
+            {
                 try{
                     $recommendation = array();
                     $widgetConfig = $this->bxHelperData->getWidgetConfig($widget['widget']);
@@ -134,8 +139,8 @@ class Boxalino_Intelligence_Block_Recommendation extends Mage_Catalog_Block_Prod
                     if (isset($widget['context'])) {
                         $recommendation['context'] = explode(',', str_replace(' ', '', $widget['context']));
                     } else {
-                      $scenario = isset($widget['scenario']) ? $widget['scenario'] : $widgetConfig['scenario'];
-                      $recommendation['context']  = $this->getWidgetContext($scenario);
+                        $scenario = isset($widget['scenario']) ? $widget['scenario'] : $widgetConfig['scenario'];
+                        $recommendation['context']  = $this->getWidgetContext($scenario);
                     }
                     $this->bxHelperData->getAdapter()->getRecommendation(
                         $widget['widget'],
@@ -161,7 +166,8 @@ class Boxalino_Intelligence_Block_Recommendation extends Mage_Catalog_Block_Prod
     protected function getWidgetContext($scenario)
     {
         $context = array();
-        switch($scenario){
+        switch($scenario)
+        {
             case 'category':
                 if(Mage::registry('category') !== null){
                     $context = Mage::registry('current_category');
@@ -173,7 +179,7 @@ class Boxalino_Intelligence_Block_Recommendation extends Mage_Catalog_Block_Prod
                     $context = Mage::registry('product');
                 }
                 break;
-                case 'basket':
+            case 'basket':
                 $order = Mage::registry('last_order');
                 if($order == null){
                     $orderId = Mage::getSingleton('checkout/session')->getLastOrderId();
@@ -182,13 +188,13 @@ class Boxalino_Intelligence_Block_Recommendation extends Mage_Catalog_Block_Prod
                 }
                 foreach ($order->getAllItems() as $item) {
                     if ($item->getPrice() > 0) {
-                      $product = $item->getProduct();
-                      if ($product) {
-                        $context[] = $product;
-                      }
+                        $product = $item->getProduct();
+                        if ($product) {
+                            $context[] = $product;
+                        }
                     }
-                  }
-                  break;
+                }
+                break;
             default:
                 break;
         }
@@ -201,7 +207,7 @@ class Boxalino_Intelligence_Block_Recommendation extends Mage_Catalog_Block_Prod
     public function getRecommendationTitle($widget)
     {
         $title = $this->bxHelperData->getAdapter()->getSearchResultTitle($widget);
-        return isset($title) ? $title : 'Recommendation';
+        return isset($title) ? $title : $this->__('Recommendation');
     }
 
     /**
@@ -211,7 +217,7 @@ class Boxalino_Intelligence_Block_Recommendation extends Mage_Catalog_Block_Prod
     {
         return $this->_getLoadedProductCollection();
     }
-    
+
     /**
      * @return mixed
      */
@@ -252,7 +258,8 @@ class Boxalino_Intelligence_Block_Recommendation extends Mage_Catalog_Block_Prod
                 $scenario,
                 $config['min'],
                 $config['max'],
-                false);
+                false
+            );
         }
 
         $entity_ids = array();
@@ -269,7 +276,6 @@ class Boxalino_Intelligence_Block_Recommendation extends Mage_Catalog_Block_Prod
         }catch(\Exception $e){
             Mage::logException($e);
         }
-
 
         if ((count($entity_ids) == 0)) {
             $entity_ids = array(0);
@@ -328,7 +334,6 @@ class Boxalino_Intelligence_Block_Recommendation extends Mage_Catalog_Block_Prod
         {
             if(Mage::helper('boxalino_intelligence')->isPluginEnabled())
             {
-
                 return true;
             }
         }
@@ -345,4 +350,5 @@ class Boxalino_Intelligence_Block_Recommendation extends Mage_Catalog_Block_Prod
 
         return $this->bxRewriteAllowed;
     }
+
 }
