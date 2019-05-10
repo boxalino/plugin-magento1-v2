@@ -6,7 +6,7 @@ On every plugin update - please check the file and what needs to be tested on yo
 If you have any question, just contact us at support@boxalino.com
 
 
-### v1.4.5 - 2019-05-10
+### v1.4.6 - 2019-05-10
 ##### 1. Conditional on using the root category as a filter (on search)
 * *default Magento behavior* : By default, the products not belonging to a category are searchable and appear in the search results.
 * *configuration path* : "System->Configuration->Boxalino Extension-> Search-Navigation", tab "Advanced -> Only show products tagged to a category"
