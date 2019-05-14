@@ -16,33 +16,59 @@ Class Boxalino_Intelligence_Block_Journey extends Mage_Core_Block_Template
     protected $p13nHelper;
     protected $renderer;
 
-    public function _construct()
+    protected $context = array();
+
+    protected function _construct()
     {
+        parent::_construct();
+
         $this->bxHelperData = Mage::helper('boxalino_intelligence');
         $this->renderer = Mage::getModel("boxalino_intelligence/visualElement_renderer");
         $this->p13nHelper = $this->bxHelperData->getAdapter();
+    }
 
-        parent::_construct();
-
+    /**
+     * Before rendering html, but after trying to load cache
+     * add extra data to request
+     *
+     * @return Mage_Core_Block_Abstract|void
+     */
+    protected function _beforeToHtml()
+    {
         $choice = $this->getData(self::BX_NARRATIVE_CHOICE_VAR);
         $additionalChoice = $this->getData(self::BX_NARRATIVE_ADDITIONAL_CHOICE_VAR);
-        $isMain = is_null($this->getData(self::BX_NARRATIVE_MAIN_VAR)) ? true : $this->getData(self::BX_NARRATIVE_MAIN_VAR);
+        $isMain = is_null($this->getData(self::BX_NARRATIVE_MAIN_VAR)) ? false : $this->getData(self::BX_NARRATIVE_MAIN_VAR);
         $extended = is_null($this->getData(self::BX_NARRATIVE_EXTENDED_REQUEST_VAR)) ? false : $this->getData(self::BX_NARRATIVE_EXTENDED_REQUEST_VAR);
 
         if($extended)
         {
-            $narrativeInfo = new Varien_Object(array('choice' => $choice, 'additional'=> $additionalChoice, 'context'=>""));
-            Mage::dispatchEvent('boxalino_block_narrative_construct', array('request' => $narrativeInfo));
+            Mage::dispatchEvent('boxalino_block_narrative_before', array('block' => $this));
         }
 
         if(!is_null($choice)) {
-            $replaceMain = is_null($isMain) ? true : $isMain;
-            $this->p13nHelper->getNarratives($choice, $additionalChoice, $replaceMain, false, $extended);
-            $this->setReplaceMain($replaceMain);
+            $this->p13nHelper->getNarratives($choice, $additionalChoice, $isMain, false, $this->getContext());
+            $this->setReplaceMain($isMain);
             $this->setAdditionalChoices($additionalChoice);
             $this->setExtended($extended);
             $this->setChoice($choice);
         }
+    }
+
+    public function getContext()
+    {
+        return $this->context;
+    }
+
+    /**
+     * Use this function to add context for the narrative request
+     * @param $key
+     * @param $value
+     * @return $this
+     */
+    public function addContextData($key, $value)
+    {
+        $this->context[$key] = $value;
+        return $this;
     }
 
     public function renderDependencies()

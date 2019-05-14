@@ -419,7 +419,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
         $this->search($queryText, $pageOffset, $overWriteLimit, new \com\boxalino\bxclient\v1\BxSortFields($field, $dir), $categoryId, $addFinder);
     }
 
-    protected function addNarrativeRequest($choice_id = 'narrative', $choices = null, $replaceMain = true, $extended = false) {
+    protected function addNarrativeRequest($choice_id = 'narrative', $choices = null, $replaceMain = true, $context = array()) {
         if($replaceMain) {
             $this->currentSearchChoice = $choice_id;
             $this->isNarrative = true;
@@ -443,6 +443,15 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
         $facets = $this->prepareFacets();
         $bxRequest->setFacets($facets);
         self::$bxClient->addRequest($bxRequest);
+
+        foreach($context as $key=>$value)
+        {
+            if(is_array($value))
+            {
+                $value = json_encode($value, true);
+            }
+            self::$bxClient->addRequestContextParameter($key, $value);
+        }
 
         foreach ($requestParams as $key => $value) {
             self::$bxClient->addRequestContextParameter($key, $value);
@@ -473,10 +482,10 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
     }
 
     protected $isNarrative = false;
-    public function getNarratives($choice_id = 'narrative', $choices = null, $replaceMain = true, $execute = true, $extended = false) {
+    public function getNarratives($choice_id = 'narrative', $choices = null, $replaceMain = true, $execute = true, $context = array()) {
 
         if(is_null(self::$bxClient->getChoiceIdRecommendationRequest($choice_id))) {
-            $this->addNarrativeRequest($choice_id, $choices, $replaceMain, $extended);
+            $this->addNarrativeRequest($choice_id, $choices, $replaceMain, $context);
         }
         if($execute) {
             $narrative = $this->getResponse()->getNarratives($choice_id);
