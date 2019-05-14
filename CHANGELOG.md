@@ -6,6 +6,13 @@ On every plugin update - please check the file and what needs to be tested on yo
 If you have any question, just contact us at support@boxalino.com
 
 
+### v1.4.7 - 2019-05-14
+##### 1. Extra parameters on narrative request
+* _description_ : The extra-data pre-set on narrative request can be used to control the narrative output.
+In your XML definition of the block, set the parameter _extended_request_ to _true_ and create an observer to set data.
+* _commit_: https://github.com/boxalino/plugin-magento1-v2/commit/61581505c3790b2343e549d8bf58635523d81f09
+
+
 ### v1.4.6 - 2019-05-10
 ##### 1. Conditional on using the root category as a filter (on search)
 * *default Magento behavior* : By default, the products not belonging to a category are searchable and appear in the search results.
