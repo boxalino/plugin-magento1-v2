@@ -29,7 +29,7 @@ $sliderValues = $this->getSliderValues();
             var from = values[0];
             var to = parseFloat(sliderMax) === parseFloat(values[1]) ? '*' : values[1];
             var newSrc = from + "-" + to;
-            var name = 'bx_discountedPrice';
+            var name = '<?php echo $this->getPriceFilterName(); ?>';
             var paramSet = name + '=' + newSrc;
             var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
             if (results && results[1]) {

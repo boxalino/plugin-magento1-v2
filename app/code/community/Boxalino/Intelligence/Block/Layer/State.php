@@ -137,7 +137,6 @@ class Boxalino_Intelligence_Block_Layer_State extends Mage_Catalog_Block_Layer_S
         {
             if(Mage::helper('boxalino_intelligence')->isPluginEnabled())
             {
-
                 return true;
             }
         }
@@ -154,4 +153,5 @@ class Boxalino_Intelligence_Block_Layer_State extends Mage_Catalog_Block_Layer_S
 
         return $this->bxRewriteAllowed;
     }
+
 }

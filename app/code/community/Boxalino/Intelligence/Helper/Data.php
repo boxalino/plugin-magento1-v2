@@ -71,6 +71,8 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
      */
     protected $isFinder = false;
 
+    CONST BOXALINO_PRICE_FACET_FIELD = "discountedPrice";
+
     /**
      * @param $countryCode
      * @return mixed
@@ -291,6 +293,7 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
         } else {
             Mage::log("There is no configuration for this widget name: " . $widgetName . " Please configure this widget in Recommendation->Other recommendations configuration tab");
         }
+
         return $widgetConfig;
     }
 
@@ -428,6 +431,37 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
             }
         }
         return $attributes;
+    }
+
+    /**
+     * Option to customize the search filter/params for SEO purposes
+     *
+     * @return array
+     */
+    public function getSeoFilterMapping()
+    {
+        $fields = explode(';',Mage::getStoreConfig('bxSearch/advanced/seo_filters'));
+        $seoMapping = [];
+        foreach ($fields as $field) {
+            $values = explode(':', $field);
+            $seoMapping[$values[0]] = $values[1];
+        }
+
+        return $seoMapping;
+    }
+
+    /**
+     * @return string
+     */
+    public function getPriceFacetFilterName()
+    {
+        $customMapping = $this->getSeoFilterMapping();
+        if($key = array_search(self::BOXALINO_PRICE_FACET_FIELD, $customMapping))
+        {
+            return $key;
+        }
+
+        return self::BOXALINO_PRICE_FACET_FIELD;
     }
 
     public function getFacetOptions() {

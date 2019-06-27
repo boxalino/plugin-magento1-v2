@@ -3,7 +3,8 @@
 /**
  * Class Boxalino_Intelligence_Block_Layer_Filter_Attribute
  */
-class Boxalino_Intelligence_Block_Layer_Filter_Attribute extends Mage_Catalog_Block_Layer_Filter_Abstract {
+class Boxalino_Intelligence_Block_Layer_Filter_Attribute extends Mage_Catalog_Block_Layer_Filter_Abstract
+{
 
     /**
      * Boxalino_Intelligence_Block_Layer_Filter_Attribute constructor.
@@ -41,6 +42,7 @@ class Boxalino_Intelligence_Block_Layer_Filter_Attribute extends Mage_Catalog_Bl
             ->setLayer($this->getLayer())
             ->setFacets($this->getFacets())
             ->setFieldName($this->getFieldName())
+            ->setSeoFieldName($this->getSeoFieldName())
             ->_initItems();
         return $this;
     }

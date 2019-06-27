@@ -16,6 +16,11 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
     protected $fieldName = '';
 
     /**
+     * @var string
+     */
+    protected $seoFieldName = null;
+
+    /**
      * @var null
      */
     protected $locale = null;
@@ -44,17 +49,31 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
     }
 
     /**
+     * @param $fieldName
+     */
+    public function setSeoFieldName($fieldName) {
+        $this->seoFieldName = $fieldName;
+        return $this;
+    }
+
+    /**
      * @return mixed
      */
     public function getName(){
         return $this->bxFacets->getFacetLabel($this->fieldName, $this->getLocale());
     }
 
-
     /**
      * @return string
      */
     public function getFieldName(){
+        return $this->fieldName;
+    }
+
+    /**
+     * @return string
+     */
+    public function getSeoFieldName(){
         return $this->fieldName;
     }
 
@@ -131,7 +150,7 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
      * @param null $hidden
      * @return mixed
      */
-    public function _createItem($label, $value, $count = 0, $selected = null, $type = null, $hidden = null, $bxValue = null){
+    public function _createItem($label, $value, $count = 0, $selected = null, $type = null, $hidden = null, $bxValue = null, $seoFieldName = null){
         if($this->checkIfPluginToBeUsed()) {
             return Mage::getModel('catalog/layer_filter_item')
                 ->setFilter($this)
@@ -141,6 +160,7 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
                 ->setSelected($selected)
                 ->setType($type)
                 ->setHidden($hidden)
+                ->setSeoFieldName($seoFieldName)
                 ->setBxValue($bxValue);
         }
 
@@ -185,9 +205,9 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
         $facetOptions = $bxDataHelper->getFacetOptions();
         $isMultiValued = isset($facetOptions[$fieldName]) ? true : false;
         if($isSystemFilter) {
-            $this->_requestVar = str_replace('bx_products_', '', $bxFacets->getFacetParameterName($fieldName));
+            $this->_requestVar = (is_null($this->seoFieldName)) ? str_replace('bx_products_', '', $bxFacets->getFacetParameterName($fieldName)) : $this->seoFieldName;
         } else {
-            $this->_requestVar = $bxFacets->getFacetParameterName($fieldName);
+            $this->_requestVar = (is_null($this->seoFieldName)) ? $bxFacets->getFacetParameterName($fieldName) : $this->seoFieldName;
         }
         if ($fieldName == $bxFacets->getCategoryfieldName()) {
             $count = 1;

@@ -69,7 +69,6 @@ class Boxalino_Intelligence_Model_Layer_Filter_Item extends Mage_Catalog_Model_L
     {
         $bxHelperData = Mage::helper('boxalino_intelligence');
         if($bxHelperData->isEnabledOnLayer($this->getFilter()->getLayer())){
-
             $removeParams = $bxHelperData->getRemoveParams();
             $addParams = $bxHelperData->getSystemParams();
             $requestVar =  $this->getFilter()->getRequestVar();

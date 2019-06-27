@@ -120,6 +120,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
         return $choice;
     }
 
+
     public function setLandingPageChoiceId($choice = ''){
 
         if (!empty($choice)) {
@@ -281,11 +282,9 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
     public function search($queryText, $pageOffset = 0, $overwriteHitCount = null, \com\boxalino\bxclient\v1\BxSortFields $bxSortFields=null, $categoryId=null, $addFinder=false){
 
         $returnFields = array($this->getEntityIdFieldName(), 'categories', 'discountedPrice', 'products_bx_grouped_price', 'title', 'score');
-        $additionalFields = explode(',', Mage::getStoreConfig('bxGeneral/advanced/additional_fields'));
-        if(!empty($additionalFields))
-        {
-            $returnFields = array_merge($returnFields, $additionalFields);
-        }
+        $additionalFields = array_filter(explode(',', Mage::getStoreConfig('bxGeneral/advanced/additional_fields')));
+        $returnFields = array_filter(array_merge($returnFields, $additionalFields));
+
         $hitCount = $overwriteHitCount;
 
         self::$bxClient->forwardRequestMapAsContextParameters();
@@ -569,6 +568,8 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
         $facetOptions = $bxHelperData->getFacetOptions();
         $systemParamValues = array();
         $separator = $bxHelperData->getSeparator();
+        $seoFriendlyMapping = $bxHelperData->getSeoFilterMapping();
+        $bxFilterPrefix = $this->getUrlParameterPrefix();
 
         foreach ($requestParams as $key => $values) {
             if($key == 'bx_cq') {
@@ -576,7 +577,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
                 continue;
             }
             $additionalChecks = false;
-            if (strpos($key, $this->getUrlParameterPrefix()) === 0 && $key != 'bx_category_id') {
+            if (strpos($key, $bxFilterPrefix) === 0 && $key != 'bx_category_id') {
                 $fieldName = substr($key, 3);
                 if(!isset($attributeCollection[$fieldName]) || $key == 'bx_discountedPrice'){
                     $bxSelectedValues[$fieldName] = is_array($values) ? $values : explode($separator, $values);
@@ -585,11 +586,16 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
                     $additionalChecks = true;
                 }
             }
+
+            if(isset($seoFriendlyMapping[$key])) {
+                $bxSelectedValues[$seoFriendlyMapping[$key]] = is_array($values) ? $values : explode($separator, $values);
+            }
+
             if (isset($attributeCollection['products_' . $key])) {
                 $paramValues = !is_array($values) ? array($values) : $values;
                 $attributeModel = Mage::getModel('eav/config')->getAttribute('catalog_product', $key)->getSource();
 
-                foreach ($paramValues as $paramValue){
+                foreach ($paramValues as $paramValue) {
                     $value = $attributeModel->getOptionText($paramValue);
                     if($additionalChecks && !$value) {
                         $systemParamValues[$key]['additional'] = $additionalChecks;
@@ -645,24 +651,22 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
         }
 
         foreach ($attributeCollection as $code => $attribute) {
-            if($attribute['addToRequest'] || isset($selectedValues[$code])){
-                $bound = $code == 'discountedPrice' ? true : false;
+            if($attribute['addToRequest'] || isset($selectedValues[$code]))
+            {
                 list($label, $type, $order, $position) = array_values($attribute);
-
                 $selectedValue = isset($selectedValues[$code]) ? $selectedValues[$code] : null;
-
                 if ($code == 'discountedPrice' && isset($bxSelectedValues[$code])) {
                     $bxFacets->addPriceRangeFacet($bxSelectedValues[$code]);
+                    unset($bxSelectedValues[$code]);
                 } else {
                     $andSelectedValues = isset($facetOptions[$code]) ? $facetOptions[$code]['andSelectedValues']: false;
-                    $bxFacets->addFacet($code, $selectedValue, $type, $label, $order, $bound, -1, $andSelectedValues);
+                    $bxFacets->addFacet($code, $selectedValue, $type, $label, $order, false, -1, $andSelectedValues);
                 }
             }
         }
 
         foreach($bxSelectedValues as $field => $values)
         {
-            if($field == 'discountedPrice') continue;
             $andSelectedValues = isset($facetOptions[$field]) ? $facetOptions[$field]['andSelectedValues']: false;
             $bxFacets->addFacet($field, $values, 'string', null, 2, false, -1, $andSelectedValues);
         }

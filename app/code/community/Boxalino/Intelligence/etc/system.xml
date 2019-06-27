@@ -839,6 +839,20 @@
                                 E.g.: category_id,products_color;1,products_manufacturer]]>
                             </comment>
                         </multiselect_fields>
+                        <seo_filters>
+                            <label>SEO-friendly filters mapping</label>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>17</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <comment>
+                                <![CDATA[Optional: For the purpose of user-friendly URLs while using the facets/filters, provide
+                                a list of SEO filter name - default Boxalino field, joined via a colon (:);
+                                each group is to be divided via a semicolon. Only to be used on the custom attributes which do not exist in store
+                                E.g.: price:discountedPrice;]]>
+                            </comment>
+                        </seo_filters>
                         <parameter_separator translate="label">
                             <label>Separator for URL Parameter</label>
                             <frontend_type>text</frontend_type>

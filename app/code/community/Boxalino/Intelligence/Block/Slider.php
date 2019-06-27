@@ -53,6 +53,11 @@ class Boxalino_Intelligence_Block_Slider extends Mage_Core_Block_Template
         return $this->sliderValues;
     }
 
+    public function getPriceFilterName()
+    {
+        return Mage::helper('boxalino_intelligence')->getPriceFacetFilterName();
+    }
+
     /**
      * @return bool
      */
