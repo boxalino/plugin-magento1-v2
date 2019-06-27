@@ -1955,7 +1955,7 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
             return $db->fetchAll($select);
         } catch(\Exception $exc)
         {
-            Mage::log("bxLog: {$entity} additional table error: ". $exception->getMessage(), Zend_Log::WARN, self::BOXALINO_LOG_FILE);
+            Mage::log("bxLog: {$table} additional table error: ". $exc->getMessage(), Zend_Log::WARN, self::BOXALINO_LOG_FILE);
             return array();
         }
 
