@@ -653,6 +653,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
         foreach ($attributeCollection as $code => $attribute) {
             if($attribute['addToRequest'] || isset($selectedValues[$code]))
             {
+                $bound = $code == 'discountedPrice' ? true : false;
                 list($label, $type, $order, $position) = array_values($attribute);
                 $selectedValue = isset($selectedValues[$code]) ? $selectedValues[$code] : null;
                 if ($code == 'discountedPrice' && isset($bxSelectedValues[$code])) {
@@ -660,7 +661,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
                     unset($bxSelectedValues[$code]);
                 } else {
                     $andSelectedValues = isset($facetOptions[$code]) ? $facetOptions[$code]['andSelectedValues']: false;
-                    $bxFacets->addFacet($code, $selectedValue, $type, $label, $order, false, -1, $andSelectedValues);
+                    $bxFacets->addFacet($code, $selectedValue, $type, $label, $order, $bound, -1, $andSelectedValues);
                 }
             }
         }
