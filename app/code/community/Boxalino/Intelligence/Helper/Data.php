@@ -440,14 +440,14 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
      */
     public function getSeoFilterMapping()
     {
-        $fields = explode(';',Mage::getStoreConfig('bxSearch/advanced/seo_filters'));
+        $fields = explode(';','');
         $seoMapping = [];
         foreach ($fields as $field) {
             $values = explode(':', $field);
             $seoMapping[$values[0]] = $values[1];
         }
 
-        return $seoMapping;
+        return array_filter($seoMapping);
     }
 
     /**
@@ -461,7 +461,7 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
             return $key;
         }
 
-        return self::BOXALINO_PRICE_FACET_FIELD;
+        return 'bx_' . self::BOXALINO_PRICE_FACET_FIELD;
     }
 
     public function getFacetOptions() {
