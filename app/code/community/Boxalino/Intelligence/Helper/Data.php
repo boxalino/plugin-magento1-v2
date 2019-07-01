@@ -440,14 +440,14 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
      */
     public function getSeoFilterMapping()
     {
-        $fields = explode(';',Mage::getStoreConfig('bxSearch/advanced/seo_filters'));
+        $fields = array_filter(explode(';',Mage::getStoreConfig('bxSearch/advanced/seo_filters')));
         $seoMapping = [];
         foreach ($fields as $field) {
             $values = explode(':', $field);
             $seoMapping[$values[0]] = $values[1];
         }
 
-        return array_filter($seoMapping);
+        return $seoMapping;
     }
 
     /**
