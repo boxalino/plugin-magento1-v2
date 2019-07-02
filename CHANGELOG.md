@@ -6,9 +6,31 @@ On every plugin update - please check the file and what needs to be tested on yo
 If you have any question, just contact us at support@boxalino.com
 
 ### Version History
+**[v1.4.9 : 2019-07-02](#v1.4.9)**<br>
 **[v1.4.8 : 2019-06-26](#v1.4.8)**<br>
 **[v1.4.7 : 2019-05-14](#v1.4.7)**<br>
 **[v1.4.6 : 2019-05-10](#v1.4.6)**<br>
+
+<a name="v1.4.9"></a>
+### v1.4.9 : 2019-07-02
+_post-deployment integration test_: 
+* if the autocomplete block/_toHtml() has been customized in your project, please check the extra configurations and layout logic;
+* if you have customized Search Message elements for the response, enable the option
+##### 1. Autocomplete - configurable location for categories matches, adding other property requests
+* *configuration path* : "System->Configuration->Boxalino Extension-> Search-Navigation", tab "Autocomplete", options: "Show categories list after 1st textual suggestion", "Other properties query"
+* _description_ : Configure if the categories matches to appear after the 1st recommendation or at the end; Configuration for adding custom property requests.
+* _commit_: https://github.com/boxalino/plugin-magento1-v2/commit/efa24736f26a5330986095dfeda624affb674e47
+
+##### 2. Search Message flag 
+* *configuration path* : "System->Configuration->Boxalino Extension-> Search-Navigation", tab "Search Message -> Enable search messages block"
+* _description_ : Enable/disable the Search Message response component;
+* _commits_: https://github.com/boxalino/plugin-magento1-v2/commit/283a9049567f4eed2e1f80edd03e76e46c916fcb
+https://github.com/boxalino/plugin-magento1-v2/commit/5b9f0dc0dd442f91328b987ed773eebb451fe164
+
+##### 3. Advanced filter multiselect facet option 
+* *configuration path* : "System->Configuration->Boxalino Extension-> Search-Navigation", tab "Advanced -> Multiselect Options As One"
+* _description_ : By default - disabled; When enabled, the plugin will be programmed to expect a single string with the joined selected facets option via the configured delimiter. Check with us before enabling if it is needed for you store specifications.
+
 
 <a name="v1.4.8"></a>
 ### v1.4.8 : 2019-06-26
