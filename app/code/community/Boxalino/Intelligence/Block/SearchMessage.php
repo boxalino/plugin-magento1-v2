@@ -10,13 +10,15 @@ class Boxalino_Intelligence_Block_SearchMessage extends Boxalino_Intelligence_Bl
 
     protected $p13nHelper;
 
+    protected $enabled = null;
+
     protected $response = null;
 
     protected $fallback = false;
 
     public function _construct()
     {
-        if($this->getBxRewriteAllowed())
+        if($this->isEnabled())
         {
             $this->bxHelperData = Mage::helper('boxalino_intelligence');
             $this->p13nHelper = $this->bxHelperData->getAdapter();
@@ -27,7 +29,7 @@ class Boxalino_Intelligence_Block_SearchMessage extends Boxalino_Intelligence_Bl
 
     public function isPluginActive()
     {
-        if($this->getBxRewriteAllowed())
+        if($this->isEnabled())
         {
             $this->getResponse();
             if($this->fallback)
@@ -55,4 +57,15 @@ class Boxalino_Intelligence_Block_SearchMessage extends Boxalino_Intelligence_Bl
             Mage::logException($e);
         }
     }
+
+    public function isEnabled()
+    {
+        if(is_null($this->enabled))
+        {
+            $this->enabled = $this->getBxRewriteAllowed() && Mage::getStoreConfigFlag('bxSearch/search_message/enabled');
+        }
+
+        return $this->enabled;
+    }
+
 }

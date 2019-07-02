@@ -240,6 +240,9 @@
                 <max>3</max>
                 <widget>noresults</widget>
             </noresults>
+            <search_message>
+                <enabled>0</enabled>
+            </search_message>
             <advanced>
                 <use_root_category_filter>0</use_root_category_filter>
                 <search_sub_phrases_limit>3</search_sub_phrases_limit>
