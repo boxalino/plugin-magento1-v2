@@ -37,7 +37,7 @@ class Boxalino_Intelligence_Block_Product_List_Related extends Mage_Catalog_Bloc
                 foreach ($this->_itemCollection as $product) {
                     $relatedProducts[$mainProduct->getId()][] = $product->getId();
                 }
-                $entity_ids = $bxHelperData->getAdapter()->getRecommendation(
+                $entity_ids = $bxHelperData->getAdapter()->getRecommendation (
                     $choiceId,
                     $mainProduct,
                     'product',

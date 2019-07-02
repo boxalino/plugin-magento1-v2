@@ -191,86 +191,170 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
      * @param $queryText
      * @param $autocomplete
      * @return array
+     * @throws Mage_Core_Model_Store_Exception
      */
-    public function autocomplete($queryText, $autocomplete) {
-
-        $data = array();
+    public function autocomplete($queryText, $autocomplete)
+    {
+        $data = [];
         $hash = null;
         $autocompleteConfig = Mage::getStoreConfig('bxSearch/autocomplete');
-        $autocomplete_limit = $autocompleteConfig['limit'];
-        $products_limit = $autocompleteConfig['products_limit'];
+        $autocompleteLimit = $autocompleteConfig['limit'];
+        $productsLimit = $autocompleteConfig['products_limit'];
+        $otherProperties = array_filter(explode(',', $autocompleteConfig['property_query']));
 
-        if ($queryText) {
-            $bxRequest = new \com\boxalino\bxclient\v1\BxAutocompleteRequest($this->bxHelperData->getLanguage(), $queryText, $autocomplete_limit, $products_limit, $this->getAutocompleteChoice(), $this->getSearchChoice($queryText));
-            $searchRequest = $bxRequest->getBxSearchRequest();
+        if (!$queryText)
+        {
+            return $data;
+        }
 
-            if ($autocompleteConfig['category']){
-                $facets = new \com\boxalino\bxclient\v1\BxFacets();
-                $rootCategory = [Mage::app()->getStore()->getRootCategoryId()];
-                $facets->addCategoryFacet($rootCategory, 1, 20);
-                $searchRequest->setFacets($facets);
+        $bxRequest = new \com\boxalino\bxclient\v1\BxAutocompleteRequest(
+            $this->bxHelperData->getLanguage(),
+            $queryText,
+            $autocompleteLimit,
+            $productsLimit,
+            $this->getAutocompleteChoice(),
+            $this->getSearchChoice($queryText)
+        );
+        $searchRequest = $bxRequest->getBxSearchRequest();
+
+        if ($autocompleteConfig['category'])
+        {
+            $facets = new \com\boxalino\bxclient\v1\BxFacets();
+            $rootCategory = [Mage::app()->getStore()->getRootCategoryId()];
+            $facets->addCategoryFacet($rootCategory, 1, 20);
+            $searchRequest->setFacets($facets);
+        }
+
+        foreach($otherProperties as $property)
+        {
+            $bxRequest->addPropertyQuery($property, $autocompleteConfig['count'], true);
+        }
+
+        $searchRequest->setReturnFields(array('products_group_id'));
+        $searchRequest->setGroupBy($this->getEntityIdFieldName());
+        $searchRequest->setFilters($this->getSystemFilters($queryText));
+        self::$bxClient->setAutocompleteRequest($bxRequest);
+        self::$bxClient->autocomplete();
+
+        $bxAutocompleteResponse = self::$bxClient->getAutocompleteResponse();
+
+        $entityIds = $bxAutocompleteResponse->getBxSearchResponse()->getHitIds($this->currentSearchChoice);
+        if(empty($entityIds))return $data;
+
+        $data['global_products'] = $autocomplete->getListValues($entityIds);
+        $data['properties'] = $this->getOtherPropertiesAutocompleteResponse($bxAutocompleteResponse, $otherProperties);
+
+        foreach ($bxAutocompleteResponse->getTextualSuggestions() as $i => $suggestion)
+        {
+            $entity_ids = [];
+            $totalHitcount = $bxAutocompleteResponse->getTextualSuggestionTotalHitCount($suggestion);
+            if ($totalHitcount <= 0) {
+                continue;
             }
-            $searchRequest->setReturnFields(array('products_group_id'));
-            $searchRequest->setGroupBy($this->getEntityIdFieldName());
-            $searchRequest->setFilters($this->getSystemFilters($queryText));
-            self::$bxClient->setAutocompleteRequest($bxRequest);
-            self::$bxClient->autocomplete();
 
-            $bxAutocompleteResponse = self::$bxClient->getAutocompleteResponse();
+            $_data = [
+                'highlighted' => $bxAutocompleteResponse->getTextualSuggestionHighlighted($suggestion),
+                'title' => $suggestion,
+                'num_results' => $totalHitcount,
+                'hash' => substr(md5($suggestion . $i), 0, 10),
+                'products' => []
+            ];
 
-            $entityIds = $bxAutocompleteResponse->getBxSearchResponse()->getHitIds($this->currentSearchChoice);
-            if(empty($entityIds))return $data;
-            $data['global_products'] = $autocomplete->getListValues($entityIds);
-            foreach ($bxAutocompleteResponse->getTextualSuggestions() as $i => $suggestion) {
-
-                $entity_ids = array();
-                $totalHitcount = $bxAutocompleteResponse->getTextualSuggestionTotalHitCount($suggestion);
-
-                if ($totalHitcount <= 0) {
-                    continue;
+            if ($i == 0 && $autocompleteConfig['category'] && $autocompleteConfig['category_suggestion_first']) {
+                $textualSuggestionFacets = $bxAutocompleteResponse->getTextualSuggestionFacets($suggestion);
+                if (!is_null($textualSuggestionFacets)) {
+                    $_data['categories'] = $this->prepareAutocompleteCategories(
+                        $facets,
+                        $textualSuggestionFacets,
+                        $autocompleteConfig['ranking'],
+                        $autocompleteConfig['level'],
+                        $autocompleteConfig['count']
+                    );
                 }
+            }
 
-                $_data = array(
-                    'highlighted' => $bxAutocompleteResponse->getTextualSuggestionHighlighted($suggestion),
-                    'title' => $suggestion,
-                    'num_results' => $totalHitcount,
-                    'hash' => substr(md5($suggestion . $i), 0, 10),
-                    'products' => array()
-                );
+            foreach ($bxAutocompleteResponse->getBxSearchResponse($suggestion)->getHitIds($this->currentSearchChoice) as $id)
+            {
+                $entity_ids[$id] = $id;
+            }
 
-                if ($i == 0) {
-                    $textualSuggestionFacets = $bxAutocompleteResponse->getTextualSuggestionFacets($suggestion);
-                    if ($textualSuggestionFacets != null) {
-                        $count = 0;
-                        foreach ($textualSuggestionFacets->getCategories($autocompleteConfig['ranking'], $autocompleteConfig['level']) as $category) {
-                            $_data['categories'][] = ['id' => $facets->getCategoryValueId($category),
-                                'title' => $facets->getCategoryValueLabel($category),
-                                'num_results' => $facets->getCategoryValueCount($category)
-                            ];
-                            if($count++>=$autocompleteConfig['count']) {
-                                break;
-                            }
-                        }
-                    }
-                }
+            if (count($entity_ids) > 0)
+            {
+                $_data['products'] = $autocomplete->getListValues($entity_ids);
+            }
 
-                foreach ($bxAutocompleteResponse->getBxSearchResponse($suggestion)->getHitIds($this->currentSearchChoice) as $id) {
-                    $entity_ids[$id] = $id;
-                }
-
-                if (count($entity_ids) > 0) {
-                    $_data['products'] = $autocomplete->getListValues($entity_ids);
-                }
-
-                if ($_data['title'] == $queryText) {
-                    array_unshift($data, $_data);
-                } else {
-                    $data[] = $_data;
-                }
+            if ($_data['title'] == $queryText) {
+                array_unshift($data, $_data);
+            } else {
+                $data[] = $_data;
             }
         }
+
+        if($autocompleteConfig['category'] && !$autocompleteConfig['category_suggestion_first'])
+        {
+            $data['categories'] = $this->prepareAutocompleteCategories(
+                $facets,
+                $bxAutocompleteResponse->getBxSearchResponse()->getFacets(),
+                $autocompleteConfig['ranking'],
+                $autocompleteConfig['level'],
+                $autocompleteConfig['count']
+            );;
+        }
+
         return $data;
     }
+
+    /**
+     * Get other property data
+     *
+     * @param $bxAutocompleteResponse
+     * @param array $otherProperties
+     * @return array
+     */
+    protected function getOtherPropertiesAutocompleteResponse($bxAutocompleteResponse, $otherProperties=[])
+    {
+        $data = [];
+        foreach($otherProperties as $property)
+        {
+            foreach($bxAutocompleteResponse->getPropertyHitValues($property) as $hitValue)
+            {
+                $data[$property][] = [
+                    'value' => $bxAutocompleteResponse->getPropertyHitValueLabel($property, $hitValue),
+                    'title' => $bxAutocompleteResponse->getPropertyHitValueLabel($property, $hitValue),
+                    'num_results' => $bxAutocompleteResponse->getPropertyHitValueTotalHitCount($property, $hitValue)
+                ];
+            }
+        }
+
+        return $data;
+    }
+
+    /**
+     * Prepare category ranking from textual suggestion
+     * @param $facets
+     * @param $suggestion
+     * @param int $ranking
+     * @param int $level
+     * @param int $count
+     * @return array
+     */
+    protected function prepareAutocompleteCategories($facets, $facetsResponse, $ranking=0, $level=0, $count=0)
+    {
+        $categories = [];
+        $found = 0;
+        foreach ($facetsResponse->getCategories($ranking, $level) as $category)
+        {
+            $categories[] = ['id' => $facets->getCategoryValueId($category),
+                'title' => $facets->getCategoryValueLabel($category),
+                'num_results' => $facets->getCategoryValueCount($category)
+            ];
+
+            if($found++>=$count) {break;}
+        }
+
+        return $categories;
+    }
+
 
     /**
      * @param $queryText
@@ -589,17 +673,26 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
 
             if(isset($seoFriendlyMapping[$key])) {
                 $bxSelectedValues[$seoFriendlyMapping[$key]] = is_array($values) ? $values : explode($separator, $values);
+                $additionalChecks = true;
+                $key = $seoFriendlyMapping[$key];
             }
 
             if (isset($attributeCollection['products_' . $key])) {
                 $paramValues = !is_array($values) ? array($values) : $values;
                 $attributeModel = Mage::getModel('eav/config')->getAttribute('catalog_product', $key)->getSource();
-
-                foreach ($paramValues as $paramValue) {
+                if(Mage::getStoreConfig("bxSearch/advanced/multiselect_options_as_one"))
+                {
+                    if(is_array($values)&&count($values)==1 || !is_array($values))
+                    {
+                        $paramValues = array_filter(explode($separator, $values));
+                    }
+                }
+                foreach ($paramValues as $paramValue)
+                {
                     $value = $attributeModel->getOptionText($paramValue);
                     if($additionalChecks && !$value) {
                         $systemParamValues[$key]['additional'] = $additionalChecks;
-                        $paramValue = explode($bxHelperData->getSeparator(), $paramValue);
+                        $paramValue = explode($separator, $paramValue);
                         $optionValues = $attributeModel->getAllOptions(false);
                         foreach ($optionValues as $optionValue) {
                             if(in_array($optionValue['label'], $paramValue)){
@@ -620,6 +713,8 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
                         }
                     }
                 }
+
+
             }
         }
         if(sizeof($systemParamValues) > 0) {
@@ -644,6 +739,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
 
             if (isset($requestParams['bx_category_id'])) {
                 $values = $requestParams['bx_category_id'];
+                //$bxSelectedValues['category_id'] = [$values];
             }
 
             $categoryValue = explode($separator, $values);

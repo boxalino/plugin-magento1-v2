@@ -232,6 +232,7 @@
                 <show_price>0</show_price>
                 <limit>7</limit>
                 <products_limit>1</products_limit>
+                <category_suggestion_first>1</category_suggestion_first>
             </autocomplete>
             <noresults>
                 <status>1</status>
@@ -244,6 +245,7 @@
                 <search_sub_phrases_limit>3</search_sub_phrases_limit>
                 <search_sub_phrases_toolbar>0</search_sub_phrases_toolbar>
                 <parameter_separator>,</parameter_separator>
+                <multiselect_options_as_one>0</multiselect_options_as_one>
             </advanced>
         </bxSearch>
         <bxRecommendations>

@@ -684,6 +684,25 @@
                                 while the user is typing
                             </comment>
                         </products_limit>
+                        <category_suggestion_first translate="label">
+                            <label>Show categories list after 1st textual suggestion</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_enabledisable</source_model>
+                            <sort_order>10</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <comment>Default: enabled - the categories suggestions will appear after the 1st textual suggestion. If disabled - the categoriees/replacing field suggestions will appear at the end</comment>
+                        </category_suggestion_first>
+                        <property_query translate="label">
+                            <label>Other properties query</label>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>15</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <comment>Add property query. Before using this, please check with Boxalino at support@boxalino.com.</comment>
+                        </property_query>
                     </fields>
                 </autocomplete>
                 <noresults>
@@ -864,6 +883,18 @@
                                 Optional: default separator is ',' and should normally not be changed.
                             </comment>
                         </parameter_separator>
+                        <multiselect_options_as_one translate="label">
+                            <label>Multiselect Options As One</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>adminhtml/system_config_source_yesno</source_model>
+                            <sort_order>30</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <comment>
+                                Optional: default is set to no. This option to be used in systems with custom plugins that pre-process the facets.
+                            </comment>
+                        </multiselect_options_as_one>
                     </fields>
                 </advanced>
             </groups>
@@ -1169,7 +1200,7 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
                             <comment>
-                              Set the height of the image that accompanies the blog.
+                                Set the height of the image that accompanies the blog.
                             </comment>
                         </blogArticleImageHeight>
                     </fields>

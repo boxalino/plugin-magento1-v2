@@ -65,6 +65,10 @@ class Boxalino_Intelligence_Block_Recommendation extends Mage_Catalog_Block_Prod
     {
         $results = array();
         $recommendations = array();
+        if(is_array($content))
+        {
+            return $recommendations;
+        }
         preg_match_all("/\{\{(.*?)\}\}/",$content, $results);
         if(isset($results[1])){
             foreach($results[1] as $result){
