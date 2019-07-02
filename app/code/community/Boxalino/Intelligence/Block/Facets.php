@@ -61,7 +61,9 @@ class Boxalino_Intelligence_Block_Facets extends Boxalino_Intelligence_Block_Plu
         try {
             if(is_null($this->bxFacets)) {
                 $bxHelperData = Mage::helper('boxalino_intelligence');
-                $this->bxFacets = $bxHelperData->getAdapter()->getFacets();
+                if($bxHelperData->isEnabledOnLayer($this->getLayer())) {
+                    $this->bxFacets = $bxHelperData->getAdapter()->getFacets();
+                }
             }
             return $this->bxFacets;
         } catch(\Exception $e){
