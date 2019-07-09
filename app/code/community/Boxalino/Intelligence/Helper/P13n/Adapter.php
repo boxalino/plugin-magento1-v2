@@ -469,8 +469,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
             return;
         }
         $isFinder = Mage::helper('boxalino_intelligence')->getIsFinder();
-        $request = Mage::app()->getRequest();
-        $params = $request->getParams();
+        $params = Mage::app()->getRequest()->getParams();
         $queryText = Mage::helper('catalogsearch')->getQueryText();
 
         if (self::$bxClient->getChoiceIdRecommendationRequest($this->getSearchChoice($queryText)) != null && !$addFinder && !$isFinder) {
@@ -481,25 +480,35 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
             $this->currentSearchChoice = $this->getFinderChoice();
             return;
         }
-        $field = '';
-        $order = isset($params['order'])&&!empty($params['order']) ? $params['order'] : $this->getMagentoStoreConfigListOrder();
 
-        if ($order == 'name') {
-            $field = 'products_bx_parent_title';
-        } elseif ($order == 'price') {
-            $field = 'products_bx_grouped_price';
-        }
-
-        $dir = false;
-        $dirOrder = $request->getParam('dir');
-        if ($dirOrder) {
-            $dir = $dirOrder == 'asc' ? false : true;
-        }
-
+        $sortFields = $this->getSortField();
         $categoryId = Mage::registry('current_category') != null ? Mage::registry('current_category')->getId() : null;
         $overWriteLimit = isset($params['limit'])&&!empty($params['limit']) && is_numeric($params['limit'])? $params['limit']: $this->getMagentoStoreConfigPageSize();
         $pageOffset = isset($params['p'])&&!empty($params['p'])&& is_numeric($params['p']) ? ($params['p']-1)*($overWriteLimit) : 0;
-        $this->search($queryText, $pageOffset, $overWriteLimit, new \com\boxalino\bxclient\v1\BxSortFields($field, $dir), $categoryId, $addFinder);
+        $this->search($queryText, $pageOffset, $overWriteLimit, $sortFields, $categoryId, $addFinder);
+    }
+
+    public function getSortField($params = [])
+    {
+        if(empty($params))
+        {
+            $params = Mage::app()->getRequest()->getParams();
+        }
+
+        $field = '';
+        $order = isset($params['order'])&&!empty($params['order']) ? $params['order'] : $this->getMagentoStoreConfigListOrder();
+        $fieldsMapping = Mage::helper('boxalino_intelligence')->getSortOptionsMapping();
+        if(isset($fieldsMapping[$order]))
+        {
+            $field = $fieldsMapping[$order];
+        }
+
+        $dir = false;
+        if (isset($params['dir'])) {
+            $dir = $params['dir'] == 'asc' ? false : true;
+        }
+
+        return new \com\boxalino\bxclient\v1\BxSortFields($field, $dir);
     }
 
     protected function addNarrativeRequest($choice_id = 'narrative', $choices = null, $replaceMain = true, $context = array()) {

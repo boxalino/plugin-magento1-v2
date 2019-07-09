@@ -892,6 +892,18 @@
                                 E.g.: price:discountedPrice;]]>
                             </comment>
                         </seo_filters>
+                        <sort_options_mapping>
+                            <label>Custom sort option mapping</label>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>18</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <comment>
+                                <![CDATA[Optional: When using custom sort-options, set the field name (used for sorting) abd the Boxalino field, joined via a colon (:);
+                                each group is to be divided via a semicolon.]]>
+                            </comment>
+                        </sort_options_mapping>
                         <parameter_separator translate="label">
                             <label>Separator for URL Parameter</label>
                             <frontend_type>text</frontend_type>
