@@ -225,9 +225,10 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
             $searchRequest->setFacets($facets);
         }
 
+        $propertyCount = $autocompleteConfig['property_hits'] * 5;
         foreach($otherProperties as $property)
         {
-            $bxRequest->addPropertyQuery($property, $autocompleteConfig['count'], true);
+            $bxRequest->addPropertyQuery($property, $propertyCount, true);
         }
 
         $searchRequest->setReturnFields(array('products_group_id'));
@@ -242,7 +243,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
         if(empty($entityIds))return $data;
 
         $data['global_products'] = $autocomplete->getListValues($entityIds);
-        $data['properties'] = $this->getOtherPropertiesAutocompleteResponse($bxAutocompleteResponse, $otherProperties);
+        $data['properties'] = $this->getOtherPropertiesAutocompleteResponse($bxAutocompleteResponse, $otherProperties, $autocompleteConfig['property_hits']);
 
         foreach ($bxAutocompleteResponse->getTextualSuggestions() as $i => $suggestion)
         {
@@ -309,20 +310,40 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
      *
      * @param $bxAutocompleteResponse
      * @param array $otherProperties
+     * @param int $count
      * @return array
      */
-    protected function getOtherPropertiesAutocompleteResponse($bxAutocompleteResponse, $otherProperties=[])
+    protected function getOtherPropertiesAutocompleteResponse($bxAutocompleteResponse, $otherProperties=[], $count=1)
     {
         $data = [];
         foreach($otherProperties as $property)
         {
+            $allValues = [];
             foreach($bxAutocompleteResponse->getPropertyHitValues($property) as $hitValue)
             {
-                $data[$property][] = [
-                    'value' => $bxAutocompleteResponse->getPropertyHitValueLabel($property, $hitValue),
-                    'title' => $bxAutocompleteResponse->getPropertyHitValueLabel($property, $hitValue),
-                    'num_results' => $bxAutocompleteResponse->getPropertyHitValueTotalHitCount($property, $hitValue)
-                ];
+                $propertyCount = $bxAutocompleteResponse->getPropertyHitValueTotalHitCount($property, $hitValue);
+                if($propertyCount > 0)
+                {
+                    $allValues[] = [
+                        'value' => $bxAutocompleteResponse->getPropertyHitValueLabel($property, $hitValue),
+                        'title' => $bxAutocompleteResponse->getPropertyHitValueLabel($property, $hitValue),
+                        'num_results' => $bxAutocompleteResponse->getPropertyHitValueTotalHitCount($property, $hitValue)
+                    ];
+                }
+
+            }
+            if(count($allValues))
+            {
+                uasort($allValues, function ($a, $b) {
+                    if ($a['num_results'] > $b['num_results']) {
+                        return -1;
+                    } elseif ($b['num_results'] > $a['num_results']) {
+                        return 1;
+                    }
+                    return 0;
+                });
+
+                $data[$property] = array_slice($allValues, 0, $count);
             }
         }
 

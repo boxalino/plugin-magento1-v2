@@ -703,6 +703,15 @@
                             <show_in_store>1</show_in_store>
                             <comment>Add property query. Before using this, please check with Boxalino at support@boxalino.com.</comment>
                         </property_query>
+                        <property_hits translate="label">
+                            <label>Limit for properties` match</label>
+                            <frontend_type>text</frontend_type>
+                            <sort_order>20</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <comment>Count of property matches to display.</comment>
+                        </property_hits>
                     </fields>
                 </autocomplete>
                 <noresults>

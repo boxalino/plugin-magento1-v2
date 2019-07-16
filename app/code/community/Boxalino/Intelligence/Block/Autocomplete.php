@@ -56,7 +56,7 @@ class Boxalino_Intelligence_Block_Autocomplete extends Mage_CatalogSearch_Block_
             unset($suggestData['global_products']);
 
             $outCategoriesHtml = '';
-            if(!$this->showCategoriesAfterFirstTextualSuggestion())
+            if(!$this->showCategoriesAfterFirstTextualSuggestion() && $this->categoriesAreRequested())
             {
                 $suggestData['title'] = $query;
                 $outCategoriesHtml = $this->generateCategoryHtml($suggestData);
@@ -71,7 +71,7 @@ class Boxalino_Intelligence_Block_Autocomplete extends Mage_CatalogSearch_Block_
             foreach($suggestData as $index => $item)
             {
                 $suggestionHtml .= $this->generateTextualSuggestionHtml($item);
-                if($index==0 && $this->showCategoriesAfterFirstTextualSuggestion())
+                if($index==0 && $this->showCategoriesAfterFirstTextualSuggestion() && $this->categoriesAreRequested())
                 {
                     if(isset($item[self::BOXALINO_AUTOCOMPLETE_CATEGORIES]) && count($item[self::BOXALINO_AUTOCOMPLETE_CATEGORIES]))
                     {
@@ -246,6 +246,16 @@ class Boxalino_Intelligence_Block_Autocomplete extends Mage_CatalogSearch_Block_
         }
 
         return $this->showPropertyAfterTextualSuggestion;
+    }
+
+    /**
+     * Check if categories are requested
+     *
+     * @return bool
+     */
+    public function categoriesAreRequested()
+    {
+        return (bool) Mage::getStoreConfig('bxSearch/autocomplete/category');
     }
 
     /**
