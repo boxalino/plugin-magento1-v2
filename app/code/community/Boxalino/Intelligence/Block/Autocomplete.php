@@ -58,8 +58,10 @@ class Boxalino_Intelligence_Block_Autocomplete extends Mage_CatalogSearch_Block_
             $outCategoriesHtml = '';
             if(!$this->showCategoriesAfterFirstTextualSuggestion())
             {
+                $suggestData['title'] = $query;
                 $outCategoriesHtml = $this->generateCategoryHtml($suggestData);
                 unset($suggestData['categories']);
+                unset($suggestData['title']);
             }
 
             $extraPropertiesHtml = $this->generatePropertyHtml($suggestData['properties'], $query);

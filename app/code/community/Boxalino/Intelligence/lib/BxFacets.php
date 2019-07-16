@@ -1064,6 +1064,9 @@ class BxFacets
                     if ($rangedValue[0] != '*') {
                         $selectedFacet->rangeFromInclusive = (float)$rangedValue[0];
                     }
+                    if(!isset($rangedValue[1])){
+                        $rangedValue[1] = "*";
+                    }
                     if ($rangedValue[1] != '*') {
                         $selectedFacet->rangeToExclusive = $this->getPriceRangeExclusive((float)$rangedValue[1]);
                     }
