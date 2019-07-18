@@ -76,6 +76,7 @@ class Boxalino_Intelligence_Block_Product_List extends Mage_Catalog_Block_Produc
                         $entity_ids = array(0);
                     }
                     $this->_setupCollection($entity_ids, $queries);
+                    $this->prepareSortableFieldsByCategory($layer->getCurrentCategory());
                     // Soft cache subphrases to prevent multiple requests.
                     if ($this->hasSubPhrases) {
                         $this->_subPhraseCollections[self::$number] = $this->_productCollection;
@@ -175,9 +176,9 @@ class Boxalino_Intelligence_Block_Product_List extends Mage_Catalog_Block_Produc
             if($this->hasSubPhrases) {
                 $this->setChild('toolbar' . self::$number, $this->getToolbarBlock());
                 $this->_getProductCollection()->load();
-            }
 
-            return $this;
+                return $this;
+            }
         }
 
         if(!is_null(Mage::registry('current_category')) && Mage::helper('boxalino_intelligence')->isEnabledOnLayer($this->getLayer()) &&
@@ -186,6 +187,7 @@ class Boxalino_Intelligence_Block_Product_List extends Mage_Catalog_Block_Produc
             $toolbar = $this->getToolbarBlock();
             $orders = $toolbar->getAvailableOrders();
             $orders = array_merge(['relevance' => $this->__('Relevance')], $orders);
+            $this->setAvailableOrders($orders);
             $toolbar->setAvailableOrders($orders);
             $toolbar->setDefaultOrder('relevance');
         }
