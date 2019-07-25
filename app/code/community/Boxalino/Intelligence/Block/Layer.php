@@ -22,6 +22,11 @@ class Boxalino_Intelligence_Block_Layer extends Mage_CatalogSearch_Block_Layer
     protected $bxRewriteAllowed = null;
 
     /**
+     * @var null
+     */
+    protected $seoMapping = null;
+
+    /**
      * @param string $template
      * @return $this
      */
@@ -54,6 +59,7 @@ class Boxalino_Intelligence_Block_Layer extends Mage_CatalogSearch_Block_Layer
                     ->setLayer($this->getLayer())
                     ->setFacets($facets)
                     ->setFieldName($fieldName)
+                    ->setSeoFieldName($this->getSeoFieldNameByField($fieldName))
                     ->setAttributeModel(Mage::getResourceModel('catalog/eav_attribute'))
                     ->init();
                 $filters[] = $filter;
@@ -62,6 +68,21 @@ class Boxalino_Intelligence_Block_Layer extends Mage_CatalogSearch_Block_Layer
         $facetModel->setFacets($filters);
         $this->bxFilters = $filters;
         return $this;
+    }
+
+    public function getSeoFieldNameByField($fieldName)
+    {
+        if(is_null($this->seoMapping))
+        {
+            $this->seoMapping =  Mage::helper('boxalino_intelligence')->getSeoFilterMapping();
+        }
+
+        if($seoField = array_search($fieldName, $this->seoMapping))
+        {
+            return $seoField;
+        }
+
+        return null;
     }
 
     /**

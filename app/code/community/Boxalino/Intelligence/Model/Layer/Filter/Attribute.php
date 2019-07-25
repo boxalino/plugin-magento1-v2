@@ -148,11 +148,12 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
      * @param null $selected
      * @param null $type
      * @param null $hidden
+     * @param null $bxValue
      * @return mixed
      */
-    public function _createItem($label, $value, $count = 0, $selected = null, $type = null, $hidden = null, $bxValue = null, $seoFieldName = null){
+    public function _createItem($label, $value, $count = 0, $selected = null, $type = null, $hidden = null, $bxValue = null){
         if($this->checkIfPluginToBeUsed()) {
-            return Mage::getModel('catalog/layer_filter_item')
+            return Mage::getModel($this->getItemModel())
                 ->setFilter($this)
                 ->setLabel($label)
                 ->setValue($value)
@@ -160,7 +161,7 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
                 ->setSelected($selected)
                 ->setType($type)
                 ->setHidden($hidden)
-                ->setSeoFieldName($seoFieldName)
+                ->setSeoFieldName($this->seoFieldName)
                 ->setBxValue($bxValue);
         }
 
@@ -168,18 +169,36 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
     }
 
     /**
+     * for an easier extensibility in custom plugins
+     *
+     * @return string
+     */
+    public function getItemModel()
+    {
+        return 'catalog/layer_filter_item';
+    }
+
+    /**
      * @return mixed
      */
     public function getAttributeModel() {
-        return Mage::getModel('eav/config')->getAttribute('catalog_product', substr($this->fieldName, 9))->getSource();
+        if($this->fieldName == 'discountedPrice')
+        {
+            return Mage::getModel('eav/config')->getAttribute('catalog_product', 'price');
+        }
+
+        return Mage::getModel('eav/config')->getAttribute('catalog_product', substr($this->fieldName, 9));
     }
 
     /**
      * @return bool
      */
     public function isSystemFilter() {
-        $source = $this->getAttributeModel();
-        return sizeof($source->getAllOptions()) > 1;
+        if(strpos($this->fieldName, 'bxi_') !== false || strpos($this->fieldName, 'products_') === false) {
+            return false;
+        }
+        $attributeModel = $this->getAttributeModel();
+        return sizeof($attributeModel->getSource()->getAllOptions()) > 1;
     }
 
     /**
@@ -275,7 +294,7 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
                 }
             }
         } else {
-            $attributeModel = $this->getAttributeModel();
+            $attributeModel = $this->getAttributeModel()->getSource();
             if ($order == 2) {
                 $values = $attributeModel->getAllOptions();
                 $responseValues = $bxDataHelper->useValuesAsKeys($bxFacets->getFacetValues($fieldName));
