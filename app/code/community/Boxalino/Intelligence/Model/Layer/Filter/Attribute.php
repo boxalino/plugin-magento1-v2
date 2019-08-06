@@ -246,7 +246,6 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
                     $data[] = array(
                         'label' => strip_tags($homeLabel),
                         'value' => $rootCategoryId,
-                        'bx_value' => $rootCategoryId,
                         'count' => $bxFacets->getParentCategoriesHitCount($key),
                         'selected' => $value,
                         'type' => 'home parent',
@@ -260,7 +259,6 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
                 $data[] = array(
                     'label' => strip_tags($parentCategory),
                     'value' => $key,
-                    'bx_value' => $key,
                     'count' => $bxFacets->getParentCategoriesHitCount($key),
                     'selected' => $value,
                     'type' => 'parent',
@@ -294,7 +292,6 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
                     $data[] = array(
                         'label' => strip_tags($bxFacets->getFacetValueLabel($fieldName, $facetValue)),
                         'value' => $id,
-                        'bx_value' => $id,
                         'count' => $bxFacets->getFacetValueCount($fieldName, $facetValue),
                         'selected' => false,
                         'type' => $value ? 'children' : 'home',
