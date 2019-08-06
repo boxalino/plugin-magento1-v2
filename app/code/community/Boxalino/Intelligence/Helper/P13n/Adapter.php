@@ -243,7 +243,10 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
         if(empty($entityIds))return $data;
 
         $data['global_products'] = $autocomplete->getListValues($entityIds);
-        $data['properties'] = $this->getOtherPropertiesAutocompleteResponse($bxAutocompleteResponse, $otherProperties, $autocompleteConfig['property_hits']);
+        if(count($otherProperties))
+        {
+            $data['properties'] = $this->getOtherPropertiesAutocompleteResponse($bxAutocompleteResponse, $otherProperties, $autocompleteConfig['property_hits']);
+        }
 
         foreach ($bxAutocompleteResponse->getTextualSuggestions() as $i => $suggestion)
         {
@@ -755,27 +758,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
             }
         }
 
-        $categorySelectedValues = false;
-        if(($this->navigation && $this->getShowCategoryFacetOnNavigation() || !$this->navigation) && isset($facetOptions['category_id']))
-        {
-            $categorySelectedValues =  $facetOptions['category_id']['andSelectedValues'];
-        }
-
-        if (($this->navigation && $this->getShowCategoryFacetOnNavigation()) || !$this->navigation) {
-            $values = null;
-            if ($this->getUseRootCategoryFilter()) {
-                $values = Mage::app()->getStore()->getRootCategoryId();
-            }
-
-            if (isset($requestParams['bx_category_id'])) {
-                $values = $requestParams['bx_category_id'];
-                //$bxSelectedValues['category_id'] = [$values];
-            }
-
-            $categoryValue = explode($separator, $values);
-            $bxFacets->addCategoryFacet($categoryValue, 2, -1, $categorySelectedValues);
-        }
-
+        $bxFacets = $this->addCategoryFacetRequest($bxFacets);
         foreach ($attributeCollection as $code => $attribute) {
             if($attribute['addToRequest'] || isset($selectedValues[$code]))
             {
@@ -796,6 +779,60 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
         {
             $andSelectedValues = isset($facetOptions[$field]) ? $facetOptions[$field]['andSelectedValues']: false;
             $bxFacets->addFacet($field, $values, 'string', null, 2, false, -1, $andSelectedValues);
+        }
+
+        return $bxFacets;
+    }
+
+
+    /**
+     * @param null $bxFacets
+     * @return \com\boxalino\bxclient\v1\BxFacets|null
+     * @throws Mage_Core_Model_Store_Exception
+     */
+    public function addCategoryFacetRequest($bxFacets = null)
+    {
+        if(is_null($bxFacets))
+        {
+            $bxFacets = new \com\boxalino\bxclient\v1\BxFacets();
+        }
+        $requestParams = Mage::app()->getRequest()->getParams();
+        $facetOptions = Mage::helper('boxalino_intelligence')->getFacetOptions();
+        $separator = Mage::helper('boxalino_intelligence')->getSeparator();
+
+        $andSelectedValues = false;
+        if (($this->navigation && $this->getShowCategoryFacetOnNavigation() || !$this->navigation) && isset($facetOptions['category_id'])) {
+            $andSelectedValues = $facetOptions['category_id']['andSelectedValues'];
+        }
+
+        $categoryValues = null;
+        if(!$this->navigation && $this->getUseRootCategoryFilter())
+        {
+            $categoryValues = Mage::app()->getStore()->getRootCategoryId();
+        }
+
+        if($this->navigation && $this->getShowCategoryFacetOnNavigation())
+        {
+
+            $hasChildren = Mage::getSingleton("catalog/category")->load($requestParams['id'])->hasChildren();
+            if($hasChildren)
+            {
+                $categoryValues = $requestParams['id'];
+            }
+        }
+
+        if (isset($requestParams['bx_category_id'])) {
+            $categoryValues = $requestParams['bx_category_id'];
+        }
+
+        $categoryValues = explode($separator, $categoryValues);
+        foreach($categoryValues as $categoryValue)
+        {
+            if($this->navigation && empty($categoryValue))
+            {
+                continue;
+            }
+            $bxFacets->addCategoryFacet($categoryValue, 2, -1, $andSelectedValues);
         }
 
         return $bxFacets;

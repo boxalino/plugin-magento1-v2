@@ -1105,6 +1105,11 @@ class BxFacets
         }
     }
 
+    public function isNavigation()
+    {
+        return (bool) empty($this->searchResult->queryText);
+    }
+
     /**
      * The price range max value must not be exclusive, so that existing products for max price to be also displayed
      *

@@ -233,13 +233,20 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
             $parentCategories = $bxFacets->getParentCategories();
             $parentCount = count($parentCategories);
             $value = false;
+            $isNavigation = $bxFacets->isNavigation();
+            $rootCategoryId = Mage::app()->getStore()->getRootCategoryId();
             foreach ($parentCategories as $key => $parentCategory) {
-                if ($count == 1) {
+                if ($key == $rootCategoryId) {
                     $count++;
+                    if($isNavigation)
+                    {
+                        continue;
+                    }
                     $homeLabel = Mage::helper('boxalino_intelligence')->__("All Categories");
                     $data[] = array(
                         'label' => strip_tags($homeLabel),
-                        'value' => Mage::app()->getStore()->getRootCategoryId(),
+                        'value' => $rootCategoryId,
+                        'bx_value' => $rootCategoryId,
                         'count' => $bxFacets->getParentCategoriesHitCount($key),
                         'selected' => $value,
                         'type' => 'home parent',
@@ -252,7 +259,8 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
                 }
                 $data[] = array(
                     'label' => strip_tags($parentCategory),
-                    'value' => $value ? null : $key,
+                    'value' => $key,
+                    'bx_value' => $key,
                     'count' => $bxFacets->getParentCategoriesHitCount($key),
                     'selected' => $value,
                     'type' => 'parent',
@@ -286,6 +294,7 @@ class Boxalino_Intelligence_Model_Layer_Filter_Attribute extends Mage_Catalog_Mo
                     $data[] = array(
                         'label' => strip_tags($bxFacets->getFacetValueLabel($fieldName, $facetValue)),
                         'value' => $id,
+                        'bx_value' => $id,
                         'count' => $bxFacets->getFacetValueCount($fieldName, $facetValue),
                         'selected' => false,
                         'type' => $value ? 'children' : 'home',
