@@ -430,7 +430,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
         }
     }
 
-    private function addBlogResult($queryText, $hitCount) {
+    protected function addBlogResult($queryText, $hitCount) {
         $bxRequest = new \com\boxalino\bxclient\v1\BxSearchRequest($this->bxHelperData->getLanguage(), $queryText, $hitCount, $this->getSearchChoice($queryText, true));
         $requestParams = Mage::app()->getRequest()->getParams();
         $pageOffset = isset($requestParams['bx_blog_page'])&&!empty($requestParams['bx_blog_page']) && is_numeric($requestParams['bx_blog_page'])? ($requestParams['bx_blog_page'] - 1) * ($hitCount) : 0;
@@ -647,7 +647,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
     /**
      * @return mixed
      */
-    private function getMagentoStoreConfig()
+    protected function getMagentoStoreConfig()
     {
         return Mage::getStoreConfig('catalog/frontend');
     }
@@ -673,7 +673,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
     /**
      * @return \com\boxalino\bxclient\v1\BxFacets
      */
-    private function prepareFacets()
+    protected function prepareFacets()
     {
         $bxFacets = new \com\boxalino\bxclient\v1\BxFacets();
         $selectedValues = array();
