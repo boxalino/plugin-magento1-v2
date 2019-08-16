@@ -6,10 +6,37 @@ On every plugin update - please check the file and what needs to be tested on yo
 If you have any question, just contact us at support@boxalino.com
 
 ### Version History
+**[v1.5.0 : 2019-08-07](#v1.5.0)**<br>
 **[v1.4.9 : 2019-07-02](#v1.4.9)**<br>
 **[v1.4.8 : 2019-06-26](#v1.4.8)**<br>
 **[v1.4.7 : 2019-05-14](#v1.4.7)**<br>
 **[v1.4.6 : 2019-05-10](#v1.4.6)**<br>
+
+<a name="v1.5.0"></a>
+### v1.5.0 : 2019-08-07
+_post-deployment integration test_: 
+* on navigation - check the right configurations for _category_ options are used
+* on autocomplete - check the updates in the Block definition for _toHtml()
+* 
+##### 1. Navigation - option to show the category tree/facet
+* *configuration path* : "System->Configuration->Boxalino Extension-> Search-Navigation", tab "Navigation", options: "Show the child categories navigation view"
+* _description_ : If enabled - the category tree will be displayed on the navigation.
+* _commit_: https://github.com/boxalino/plugin-magento1-v2/commit/e511b3e75da797d22340cd2a8ae97ad5449df935
+
+##### 2. Sort options on navigation fix
+* _description_ : *bug fix* the sort options enabled on category (as configured in Magento admin) are used in the view
+* _commits_: https://github.com/boxalino/plugin-magento1-v2/commit/283a9049567f4eed2e1f80edd03e76e46c916fcb
+https://github.com/boxalino/plugin-magento1-v2/commit/5b9f0dc0dd442f91328b987ed773eebb451fe164
+
+##### 3. Adding custom sorting options
+* *configuration path* : "System->Configuration->Boxalino Extension-> Search-Navigation", tab "Advanced -> Custom sort option mapping"
+* _description_ : If your system has created custom logic/fields for sorting, it has to be used. Map your system field (used for sorting) to a Boxalino field.
+* _commits_ : https://github.com/boxalino/plugin-magento1-v2/commit/4c0e2284f3cc8329b9bba4ca1ff7d93765a7636e
+
+##### 4. Autocomplete properties order by hit count
+* _description_ : For the extra-properties used in autocomplete, the returned values will be sorted by count;
+* _commits_ : https://github.com/boxalino/plugin-magento1-v2/commit/795fb6116ad8e89bd9864de832176d9fc36f88ef
+
 
 <a name="v1.4.9"></a>
 ### v1.4.9 : 2019-07-02
