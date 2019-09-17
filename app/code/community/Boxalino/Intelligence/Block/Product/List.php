@@ -188,8 +188,10 @@ class Boxalino_Intelligence_Block_Product_List extends Mage_Catalog_Block_Produc
             $orders = $toolbar->getAvailableOrders();
             $orders = array_merge(['relevance' => $this->__('Relevance')], $orders);
             $this->setAvailableOrders($orders);
+            $this->setSortBy('relevance');
             $toolbar->setAvailableOrders($orders);
             $toolbar->setDefaultOrder('relevance');
+            $toolbar->setData("_current_grid_order", "relevance");
         }
 
         return parent::_beforeToHtml();
