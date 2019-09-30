@@ -6,11 +6,26 @@ On every plugin update - please check the file and what needs to be tested on yo
 If you have any question, just contact us at support@boxalino.com
 
 ### Version History
+**[v2.0.0 : 2019-09-30](#v2.0.0)**<br>
 **[v1.5.0 : 2019-08-07](#v1.5.0)**<br>
 **[v1.4.9 : 2019-07-02](#v1.4.9)**<br>
 **[v1.4.8 : 2019-06-26](#v1.4.8)**<br>
 **[v1.4.7 : 2019-05-14](#v1.4.7)**<br>
 **[v1.4.6 : 2019-05-10](#v1.4.6)**<br>
+
+
+<a name="v2.0.0"></a>
+### v2.0.0 : 2019-09-30
+_post-deployment integration test_: 
+* on navigation - check product visibility/status combinations for grouped and configurable products
+* 
+##### 1. Exporter - visibility&status update for configurable/grouped products
+* _description_ : The SQL logic for retrieving product properties has been exported into a resource file. It can be overwritten for custom logic:
+https://github.com/boxalino/plugin-magento1-v2/blob/master/app/code/community/Boxalino/Intelligence/Model/Mysql4/Exporter.php
+The children-parent relation influences the visibility and status of the product. 
+* _commit_: https://github.com/boxalino/plugin-magento1-v2/commit/a114910d3d96597921d1a42afea718867a0739cb
+
+
 
 <a name="v1.5.0"></a>
 ### v1.5.0 : 2019-08-07
