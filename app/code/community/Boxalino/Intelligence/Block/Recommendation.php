@@ -249,9 +249,15 @@ class Boxalino_Intelligence_Block_Recommendation extends Mage_Catalog_Block_Prod
         $widget  = $this->getData('widget');
         $context = $this->getData('context');
         $scenario = $this->getData('scenario');
-        if(($scenario == 'product') && !is_null($context)) {
-            $context = Mage::getModel('catalog/product')->load($context);
+        if(($scenario == 'product')) {
+            if(is_null($context))
+            {
+                $context = $this->getWidgetContext($scenario);
+            } else {
+                $context = Mage::getModel('catalog/product')->load($context);
+            }
         }
+
         if($this->getData('widget') == 'noresults') {
             $config = Mage::getStoreConfig('bxSearch/noresults');
             $widget = $config['widget'];
