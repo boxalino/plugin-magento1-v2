@@ -13,7 +13,7 @@ class Boxalino_Intelligence_Block_Recommendation extends Mage_Catalog_Block_Prod
     /**
      * @var
      */
-    protected $_itemCollection;
+    protected $_itemCollection = [];
 
     /**
      * @var
@@ -25,9 +25,9 @@ class Boxalino_Intelligence_Block_Recommendation extends Mage_Catalog_Block_Prod
      */
     public function _construct()
     {
+        $this->bxHelperData = Mage::helper('boxalino_intelligence');
         if($this->getBxRewriteAllowed())
         {
-            $this->bxHelperData = Mage::helper('boxalino_intelligence');
             $this->_data = array();
             if($this->bxHelperData->isSetup()){
                 $cmsBlock = $this->bxHelperData->getCmsBlock();
@@ -39,7 +39,7 @@ class Boxalino_Intelligence_Block_Recommendation extends Mage_Catalog_Block_Prod
             }
         }
 
-        return parent::_construct();
+        return false;
     }
 
     public function init($widget, $scenario)
@@ -323,9 +323,10 @@ class Boxalino_Intelligence_Block_Recommendation extends Mage_Catalog_Block_Prod
                 $this->bxHelperData->setSetup(false);
             }
             $this->_prepareData();
+            return parent::_beforeToHtml();
         }
 
-        return parent::_beforeToHtml();
+        return false;
     }
 
     public function bxRecommendationTitle()
