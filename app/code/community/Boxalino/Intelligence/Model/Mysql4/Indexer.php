@@ -401,7 +401,7 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
 
                     if ($attribute['attribute_code'] == 'visibility') {
                         $getValueForDuplicate = true;
-                        $select = $this->exporterResource->getProductAttributeParentUnionSqlByCodeTypeStore($attribute['attribute_code'], $attributeType, $storeId);
+                        $select = $this->exporterResource->getProductAttributeValueSqlByCodeTypeStore($attribute['attribute_code'], $attributeType, $storeId);
                     }
 
                     if ($attribute['attribute_code'] == 'status') {

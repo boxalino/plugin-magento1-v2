@@ -599,6 +599,43 @@ class Boxalino_Intelligence_Model_Mysql4_Exporter extends Mage_Core_Model_Resour
     }
 
     /**
+     * Get product attribute value as is in Magento
+     *
+     * @param $attributeCode string
+     * @param $type
+     * @param $storeId int
+     * @return \Zend_Db_Select
+     * @throws Zend_Db_Statement_Exception
+     */
+    public function getProductAttributeValueSqlByCodeTypeStore($attributeCode, $type, $storeId)
+    {
+        $attributeId = $this->getAttributeIdByAttributeCodeAndEntityType($attributeCode, $this->getEntityTypeId("catalog_product"));
+        $select = $this->adapter->select()
+            ->from(
+                ['c_p_e' => $this->adapter->getTableName('catalog_product_entity')],
+                [
+                    new \Zend_Db_Expr("CASE WHEN c_p_e_b.value IS NULL THEN c_p_e_a.value ELSE c_p_e_b.value END as value"),
+                    new \Zend_Db_Expr("CASE WHEN c_p_e_b.value IS NULL THEN c_p_e_a.store_id ELSE c_p_e_b.store_id END as store_id"),
+                    'c_p_e.entity_id'
+                ]
+            )
+            ->joinInner(
+                ['c_p_e_a' => $this->adapter->getTableName('catalog_product_entity_' . $type)],
+                'c_p_e_a.entity_id = c_p_e.entity_id AND c_p_e_a.store_id = 0 AND c_p_e_a.attribute_id = ' . $attributeId,
+                []
+            )
+            ->joinLeft(
+                ['c_p_e_b' => $this->adapter->getTableName('catalog_product_entity_' . $type)],
+                'c_p_e_b.entity_id = c_p_e.entity_id AND c_p_e_b.store_id = ' . $storeId . ' AND c_p_e_b.attribute_id = ' . $attributeId,
+                []
+            );
+
+        if(!empty($this->exportIds) && $this->isDelta) $select->where('c_p_e.entity_id IN(?)', $this->exportIds);
+
+        return $select;
+    }
+
+    /**
      * Query for setting the product status value based on the parent properties and product visibility
      * Fixes the issue when parent product is enabled but child product is disabled.
      *
