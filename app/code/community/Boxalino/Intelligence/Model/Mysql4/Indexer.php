@@ -726,12 +726,14 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
     {
         //product stock
         $productStockData = $this->exporterResource->getProductStockInformation();
+        $duplicateProductStockData = $this->exporterResource->getDuplicateProductStockByIds($duplicateIds);
         if(sizeof($productStockData)){
             foreach ($productStockData as $r) {
                 $data[] = array('entity_id'=>$r['entity_id'], 'qty'=>$r['qty'], 'is_in_stock'=>$r['is_in_stock']);
-                if(isset($duplicateIds[$r['entity_id']])){
-                    $data[] = array('entity_id'=>'duplicate'.$r['entity_id'], 'qty'=>$r['qty'], 'is_in_stock'=>$r['is_in_stock']);
-                }
+            }
+
+            foreach($duplicateProductStockData as $r) {
+                $data[] = array('entity_id'=>$r['entity_id'], 'qty'=>$r['qty'], 'is_in_stock'=>$r['is_in_stock']);
             }
             $d = array_merge(array(array_keys(end($data))), $data);
             $files->savePartToCsv('product_stock.csv', $d);

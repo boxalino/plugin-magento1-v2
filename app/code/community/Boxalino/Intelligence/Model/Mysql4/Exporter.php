@@ -125,12 +125,30 @@ class Boxalino_Intelligence_Model_Mysql4_Exporter extends Mage_Core_Model_Resour
             )
             ->where('t_d.value = ?', Mage_CatalogInventory_Model_Stock::STOCK_IN_STOCK);
 
+        $parentSelect = $this->adapter->select()
+            ->from(
+                ['c_p_r' => $this->adapter->getTableName('catalog_product_relation')],
+                ['c_p_r.parent_id', 'entity_id' => 'c_p_r.child_id']
+            )
+            ->joinLeft(['t_d' => new \Zend_Db_Expr("( ". $stockSelect->__toString() . ' )')],
+                't_d.entity_id = c_p_r.parent_id',
+                ['t_d.value']
+            )
+            ->where('t_d.value = ?', Mage_CatalogInventory_Model_Stock::STOCK_IN_STOCK);
+
         $childCountSql = $this->adapter->select()
             ->from(
                 ["child_select"=> new \Zend_Db_Expr("( ". $childrenSelect->__toString() . ' )')],
                 ["child_count" => new \Zend_Db_Expr("COUNT(child_select.child_id)"), 'entity_id']
             )
             ->group("child_select.entity_id");
+
+        $parentCountSql = $this->adapter->select()
+            ->from(
+                ["parent_select"=> new \Zend_Db_Expr("( ". $parentSelect->__toString() . ' )')],
+                ["parent_count" => new \Zend_Db_Expr("COUNT(parent_select.parent_id)"), 'entity_id']
+            )
+            ->group("parent_select.entity_id");
 
         $select = $this->adapter->select()
             ->from(
@@ -141,7 +159,13 @@ class Boxalino_Intelligence_Model_Mysql4_Exporter extends Mage_Core_Model_Resour
                 ['c_p_e' => $this->adapter->getTableName('catalog_product_entity')],
                 'c_p_e.entity_id = c_s_i.product_id',
                 ['c_p_e.type_id']
+            )
+            ->joinLeft(
+                ['c_p_r' => $this->adapter->getTableName('catalog_product_relation')],
+                'c_s_i.product_id = c_p_r.child_id',
+                ['c_p_r.parent_id']
             );
+
         if($this->isDelta)$select->where('product_id IN(?)', $this->exportIds);
 
         $configurableType = Mage_Catalog_Model_Product_Type_Configurable::TYPE_CODE;
@@ -155,20 +179,46 @@ class Boxalino_Intelligence_Model_Mysql4_Exporter extends Mage_Core_Model_Resour
                     "is_in_stock" => new \Zend_Db_Expr("
                         (CASE 
                             WHEN (entity_select.type_id = '{$configurableType}' OR entity_select.type_id = '{$groupedType}') AND entity_select.is_in_stock = '1' THEN IF(child_count.child_count > 0, 1, 0)
+                            WHEN entity_select.parent_id IS NOT NULL AND entity_select.is_in_stock = '1' THEN IF(parent_stock.parent_count > 0, 1, 0)
                             ELSE entity_select.is_in_stock
                          END
                         )"
                     )
                 ]
             )
+
             ->joinLeft(
                 ["child_count"=> new \Zend_Db_Expr("( ". $childCountSql->__toString() . " )")],
                 "child_count.entity_id = entity_select.entity_id",
+                []
+            )
+            ->joinLeft(
+                ["parent_stock"=> new \Zend_Db_Expr("( ". $parentCountSql->__toString() . " )")],
+                "parent_stock.entity_id = entity_select.entity_id",
                 []
             );
 
         return $this->adapter->fetchAll($finalSelect);
     }
+
+    /**
+     * Export stock data for the duplicate/children products as is
+     *
+     * @param $duplicateIds
+     * @return mixed
+     */
+    public function getDuplicateProductStockByIds($duplicateIds)
+    {
+        $select = $this->adapter->select()
+            ->from(
+                ['c_s_i' => $this->adapter->getTableName('cataloginventory_stock_item')],
+                array('is_in_stock', 'qty', 'entity_id' => new \Zend_Db_Expr("CONCAT('duplicate',product_id)"))
+            )
+            ->where('c_s_i.product_id IN (?)', $duplicateIds);
+
+        return $this->adapter->fetchAll($select);
+    }
+
 
     /**
      * @return mixed
