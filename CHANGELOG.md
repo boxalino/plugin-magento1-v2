@@ -6,6 +6,7 @@ On every plugin update - please check the file and what needs to be tested on yo
 If you have any question, just contact us at support@boxalino.com
 
 ### Version History
+**[v2.1.0 : 2019-09-30](#v2.1.0)**<br>
 **[v2.0.0 : 2019-09-30](#v2.0.0)**<br>
 **[v1.5.0 : 2019-08-07](#v1.5.0)**<br>
 **[v1.4.9 : 2019-07-02](#v1.4.9)**<br>
@@ -13,16 +14,32 @@ If you have any question, just contact us at support@boxalino.com
 **[v1.4.7 : 2019-05-14](#v1.4.7)**<br>
 **[v1.4.6 : 2019-05-10](#v1.4.6)**<br>
 
+<a name="v2.1.0"></a>
+### v2.1.0 : 2019-10-08
+_post-deployment integration test_: 
+* on navigation - check product visibility/status combinations for grouped and configurable products
+ 
+##### 1. Exporter - stock&visibility update for configurable/grouped products
+* _description_ : The product visibility is exported as is; The stock of the parent depends on the in-stock children as well; The children-parent relation influences the visibility and status of the product. 
+* _commit_: https://github.com/boxalino/plugin-magento1-v2/commit/40aa4dee6bb63400c7bdee693c3deb3570a0f6a9
+https://github.com/boxalino/plugin-magento1-v2/commit/b1bddb568917f0120408a9c201f81ee4026ea21a
+https://github.com/boxalino/plugin-magento1-v2/commit/497ac30bda4bf16b0ba01af6f1397f95ec9cbd1c
+
+##### 2. User-Friendly view for debugging Boxalino responses
+* _description_ : For developers - use &boxalino_response=true OR boxalino_request=true as an URL parameter to see the content requested/returned by the SOLR index as JSON.
+* _commit_: https://github.com/boxalino/plugin-magento1-v2/commit/1bbeccb7bd2cacad41763d3f443a31790954a9f4
+
 
 <a name="v2.0.0"></a>
 ### v2.0.0 : 2019-09-30
 _post-deployment integration test_: 
 * on navigation - check product visibility/status combinations for grouped and configurable products
-* 
+
 ##### 1. Exporter - visibility&status update for configurable/grouped products
-* _description_ : The SQL logic for retrieving product properties has been exported into a resource file. It can be overwritten for custom logic:
-https://github.com/boxalino/plugin-magento1-v2/blob/master/app/code/community/Boxalino/Intelligence/Model/Mysql4/Exporter.php
-The children-parent relation influences the visibility and status of the product. 
+* _description_ : : The SQL logic for retrieving product properties has been exported into a resource file. 
+It can be overwritten for custom logic: 
+https://github.com/boxalino/plugin-magento1-v2/blob/master/app/code/community/Boxalino/Intelligence/Model/Mysql4/Exporter.php 
+The children-parent relation influences the visibility and status of the product.
 * _commit_: https://github.com/boxalino/plugin-magento1-v2/commit/a114910d3d96597921d1a42afea718867a0739cb
 
 
