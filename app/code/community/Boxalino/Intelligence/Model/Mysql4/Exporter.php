@@ -589,7 +589,7 @@ class Boxalino_Intelligence_Model_Mysql4_Exporter extends Mage_Core_Model_Resour
         ];
 
         $attributeIdSql = $this->adapter->select()
-            ->from(['attr'=>'eav_attribute'], ['attribute_id'])
+            ->from(['attr'=>$this->adapter->getTableName($this->_prefix .'eav_attribute')], ['attribute_id'])
             ->where(implode(' AND ', $whereConditions));
 
         return $this->adapter->fetchOne($attributeIdSql);
@@ -1208,5 +1208,6 @@ class Boxalino_Intelligence_Model_Mysql4_Exporter extends Mage_Core_Model_Resour
     {
         return $this->exportIds;
     }
+
 
 }
