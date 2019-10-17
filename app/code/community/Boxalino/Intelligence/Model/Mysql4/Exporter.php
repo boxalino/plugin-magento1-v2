@@ -2,7 +2,6 @@
 
 /**
  * Class Boxalino_Intelligence_Model_Resource_Exporter
- * Easier overwrite in order to customize logic on certain steps/queries
  */
 class Boxalino_Intelligence_Model_Mysql4_Exporter extends Mage_Core_Model_Resource_Db_Abstract
 {
@@ -55,11 +54,11 @@ class Boxalino_Intelligence_Model_Mysql4_Exporter extends Mage_Core_Model_Resour
     {
         $select = $this->adapter->select()
             ->from(
-                ['ca_t' => $this->adapter->getTableName('catalog_eav_attribute')],
+                ['ca_t' => $this->adapter->getTableName($this->_prefix . 'catalog_eav_attribute')],
                 ['attribute_id']
             )
             ->joinInner(
-                ['a_t' => $this->adapter->getTableName('eav_attribute')],
+                ['a_t' => $this->adapter->getTableName($this->_prefix . 'eav_attribute')],
                 'ca_t.attribute_id = a_t.attribute_id',
                 ['attribute_code']
             );
@@ -77,16 +76,16 @@ class Boxalino_Intelligence_Model_Mysql4_Exporter extends Mage_Core_Model_Resour
     {
         $select = $this->adapter->select()
             ->from(
-                ['c_p_e' => $this->adapter->getTableName('catalog_product_entity')],
+                ['c_p_e' => $this->adapter->getTableName($this->_prefix .'catalog_product_entity')],
                 [new \Zend_Db_Expr("CASE WHEN c_p_e_b.value IS NULL THEN c_p_e_a.value ELSE c_p_e_b.value END as value")]
             )
             ->joinLeft(
-                ['c_p_e_a' => $this->adapter->getTableName('catalog_product_entity_int')],
+                ['c_p_e_a' => $this->adapter->getTableName($this->_prefix . 'catalog_product_entity_int')],
                 'c_p_e_a.entity_id = c_p_e.entity_id AND c_p_e_a.store_id = 0 AND c_p_e_a.attribute_id = ' . $attributeId,
                 []
             )
             ->joinLeft(
-                ['c_p_e_b' => $this->adapter->getTableName('catalog_product_entity_int')],
+                ['c_p_e_b' => $this->adapter->getTableName($this->_prefix . 'catalog_product_entity_int')],
                 'c_p_e_b.entity_id = c_p_e.entity_id AND c_p_e_b.store_id = ' . $storeId . ' AND c_p_e_b.attribute_id = ' . $attributeId,
                 []
             )
@@ -105,17 +104,17 @@ class Boxalino_Intelligence_Model_Mysql4_Exporter extends Mage_Core_Model_Resour
     {
         $stockSelect = $this->adapter->select()
             ->from(
-                ['c_s_i' => $this->adapter->getTableName('cataloginventory_stock_item')],
+                ['c_s_i' => $this->adapter->getTableName($this->_prefix . 'cataloginventory_stock_item')],
                 array('entity_id' => 'product_id', 'value'=>'is_in_stock')
             );
 
         $childrenSelect = $this->adapter->select()
             ->from(
-                ['c_p_r' => $this->adapter->getTableName('catalog_product_relation')],
+                ['c_p_r' => $this->adapter->getTableName($this->_prefix . 'catalog_product_relation')],
                 ['c_p_r.child_id']
             )
             ->joinLeft(
-                ['c_p_e' => $this->adapter->getTableName('catalog_product_entity')],
+                ['c_p_e' => $this->adapter->getTableName($this->_prefix . 'catalog_product_entity')],
                 'c_p_e.entity_id = c_p_r.parent_id',
                 ['c_p_e.entity_id']
             )
@@ -127,7 +126,7 @@ class Boxalino_Intelligence_Model_Mysql4_Exporter extends Mage_Core_Model_Resour
 
         $parentSelect = $this->adapter->select()
             ->from(
-                ['c_p_r' => $this->adapter->getTableName('catalog_product_relation')],
+                ['c_p_r' => $this->adapter->getTableName($this->_prefix . 'catalog_product_relation')],
                 ['c_p_r.parent_id', 'entity_id' => 'c_p_r.child_id']
             )
             ->joinLeft(['t_d' => new \Zend_Db_Expr("( ". $stockSelect->__toString() . ' )')],
@@ -152,16 +151,16 @@ class Boxalino_Intelligence_Model_Mysql4_Exporter extends Mage_Core_Model_Resour
 
         $select = $this->adapter->select()
             ->from(
-                ['c_s_i' => $this->adapter->getTableName('cataloginventory_stock_item')],
+                ['c_s_i' => $this->adapter->getTableName($this->_prefix . 'cataloginventory_stock_item')],
                 array('entity_id' => 'product_id', 'qty', 'is_in_stock')
             )
             ->joinLeft(
-                ['c_p_e' => $this->adapter->getTableName('catalog_product_entity')],
+                ['c_p_e' => $this->adapter->getTableName($this->_prefix . 'catalog_product_entity')],
                 'c_p_e.entity_id = c_s_i.product_id',
                 ['c_p_e.type_id']
             )
             ->joinLeft(
-                ['c_p_r' => $this->adapter->getTableName('catalog_product_relation')],
+                ['c_p_r' => $this->adapter->getTableName($this->_prefix . 'catalog_product_relation')],
                 'c_s_i.product_id = c_p_r.child_id',
                 ['c_p_r.parent_id']
             );
@@ -211,14 +210,13 @@ class Boxalino_Intelligence_Model_Mysql4_Exporter extends Mage_Core_Model_Resour
     {
         $select = $this->adapter->select()
             ->from(
-                ['c_s_i' => $this->adapter->getTableName('cataloginventory_stock_item')],
+                ['c_s_i' => $this->adapter->getTableName($this->_prefix . 'cataloginventory_stock_item')],
                 array('is_in_stock', 'qty', 'entity_id' => new \Zend_Db_Expr("CONCAT('duplicate',product_id)"))
             )
             ->where('c_s_i.product_id IN (?)', $duplicateIds);
 
         return $this->adapter->fetchAll($select);
     }
-
 
     /**
      * @return mixed
@@ -228,12 +226,12 @@ class Boxalino_Intelligence_Model_Mysql4_Exporter extends Mage_Core_Model_Resour
         $selectTwo = $this->getProductParentCategoriesInformationSql();
         $selectOne = clone $selectTwo;
         $selectOne->join(
-            ['c_c_p' => $this->adapter->getTableName('catalog_category_product')],
+            ['c_c_p' => $this->adapter->getTableName($this->_prefix . 'catalog_category_product')],
             'c_c_p.product_id = c_p_r.parent_id',
             ['category_id']
         );
         $selectTwo->join(
-            ['c_c_p' => $this->adapter->getTableName('catalog_category_product')],
+            ['c_c_p' => $this->adapter->getTableName($this->_prefix . 'catalog_category_product')],
             'c_c_p.product_id = c_p_e.entity_id AND c_p_r.parent_id IS NULL',
             ['category_id']
         );
@@ -251,11 +249,11 @@ class Boxalino_Intelligence_Model_Mysql4_Exporter extends Mage_Core_Model_Resour
     {
         $select = $this->adapter->select()
             ->from(
-                ['c_p_e' => $this->adapter->getTableName('catalog_product_entity')],
+                ['c_p_e' => $this->adapter->getTableName($this->_prefix . 'catalog_product_entity')],
                 ['c_p_e.entity_id']
             )
             ->joinLeft(
-                ['c_p_r' => $this->adapter->getTableName('catalog_product_relation')],
+                ['c_p_r' => $this->adapter->getTableName($this->_prefix . 'catalog_product_relation')],
                 'c_p_e.entity_id = c_p_r.child_id',
                 []
             );
@@ -275,10 +273,10 @@ class Boxalino_Intelligence_Model_Mysql4_Exporter extends Mage_Core_Model_Resour
     {
         $select = $this->adapter->select()
             ->from(
-                ['c_p_e' => $this->adapter->getTableName('catalog_product_entity')],
+                ['c_p_e' => $this->adapter->getTableName($this->_prefix . 'catalog_product_entity')],
                 ['entity_id']
             )->join(
-                ['c_c_p' => $this->adapter->getTableName('catalog_category_product')],
+                ['c_c_p' => $this->adapter->getTableName($this->_prefix . 'catalog_category_product')],
                 'c_c_p.product_id = c_p_e.entity_id',
                 ['category_id']
             )->where('c_p_e.entity_id IN(?)', $duplicateIds);
@@ -293,7 +291,7 @@ class Boxalino_Intelligence_Model_Mysql4_Exporter extends Mage_Core_Model_Resour
     {
         $select = $this->adapter->select()
             ->from(
-                $this->adapter->getTableName('catalog_product_super_link'),
+                $this->adapter->getTableName($this->_prefix . 'catalog_product_super_link'),
                 ['entity_id' => 'product_id', 'parent_id', 'link_id']
             );
         if(!empty($this->exportIds) && $this->isDelta)
@@ -311,11 +309,11 @@ class Boxalino_Intelligence_Model_Mysql4_Exporter extends Mage_Core_Model_Resour
     {
         $select = $this->adapter->select()
             ->from(
-                ['pl'=> $this->adapter->getTableName('catalog_product_link')],
+                ['pl'=> $this->adapter->getTableName($this->_prefix . 'catalog_product_link')],
                 ['entity_id' => 'product_id', 'linked_product_id', 'lt.code']
             )
             ->joinLeft(
-                ['lt' => $this->adapter->getTableName('catalog_product_link_type')],
+                ['lt' => $this->adapter->getTableName($this->_prefix . 'catalog_product_link_type')],
                 'pl.link_type_id = lt.link_type_id', []
             )
             ->where('lt.link_type_id = pl.link_type_id');
@@ -333,11 +331,11 @@ class Boxalino_Intelligence_Model_Mysql4_Exporter extends Mage_Core_Model_Resour
         $attrId = $this->getAttributeId("name", $this->getEntityTypeId('catalog_product'));
         $select = $this->adapter->select()
             ->from(
-                ['c_p_e' => $this->adapter->getTableName('catalog_product_entity')],
+                ['c_p_e' => $this->adapter->getTableName($this->_prefix . 'catalog_product_entity')],
                 ['c_p_e.entity_id']
             )
             ->joinLeft(
-                ['c_p_r' => $this->adapter->getTableName('catalog_product_relation')],
+                ['c_p_r' => $this->adapter->getTableName($this->_prefix . 'catalog_product_relation')],
                 'c_p_e.entity_id = c_p_r.child_id',
                 ['c_p_r.parent_id']
             );
@@ -359,12 +357,12 @@ class Boxalino_Intelligence_Model_Mysql4_Exporter extends Mage_Core_Model_Resour
         $selectTwo = $this->getProductParentTitleInformationSql($storeId);
         $selectOne = clone $selectTwo;
         $selectOne->join(
-            ['t_d' => $this->adapter->getTableName('catalog_product_entity_varchar')],
+            ['t_d' => $this->adapter->getTableName($this->_prefix . 'catalog_product_entity_varchar')],
             't_d.entity_id = c_p_e.entity_id AND c_p_r.parent_id IS NULL',
             [new \Zend_Db_Expr('LOWER(t_d.value) as value'), 't_d.store_id']
         );
         $selectTwo->join(
-            ['t_d' => $this->adapter->getTableName('catalog_product_entity_varchar')],
+            ['t_d' => $this->adapter->getTableName($this->_prefix . 'catalog_product_entity_varchar')],
             't_d.entity_id = c_p_r.parent_id',
             [new \Zend_Db_Expr('LOWER(t_d.value) as value'), 't_d.store_id']
         );
@@ -383,14 +381,14 @@ class Boxalino_Intelligence_Model_Mysql4_Exporter extends Mage_Core_Model_Resour
         $attrId = $this->getAttributeId("name", $this->getEntityTypeId('catalog_product'));
         $select = $this->adapter->select()
             ->from(
-                ['c_p_e' => $this->adapter->getTableName('catalog_product_entity')],
+                ['c_p_e' => $this->adapter->getTableName($this->_prefix . 'catalog_product_entity')],
                 ['entity_id', new \Zend_Db_Expr("CASE WHEN c_p_e_v_b.value IS NULL THEN LOWER(c_p_e_v_a.value) ELSE LOWER(c_p_e_v_b.value) END as value")]
             )->joinLeft(
-                ['c_p_e_v_a' => $this->adapter->getTableName('catalog_product_entity_varchar')],
+                ['c_p_e_v_a' => $this->adapter->getTableName($this->_prefix . 'catalog_product_entity_varchar')],
                 '(c_p_e_v_a.attribute_id = ' . $attrId . ' AND c_p_e_v_a.store_id = 0) AND (c_p_e_v_a.entity_id = c_p_e.entity_id)',
                 []
             )->joinLeft(
-                ['c_p_e_v_b' => $this->adapter->getTableName('catalog_product_entity_varchar')],
+                ['c_p_e_v_b' => $this->adapter->getTableName($this->_prefix . 'catalog_product_entity_varchar')],
                 '(c_p_e_v_b.attribute_id = ' . $attrId . ' AND c_p_e_v_b.store_id = ' . $storeId . ') AND (c_p_e_v_b.entity_id = c_p_e.entity_id)',
                 []
             )->where('c_p_e.entity_id IN (?)', $duplicateIds);
@@ -475,17 +473,17 @@ class Boxalino_Intelligence_Model_Mysql4_Exporter extends Mage_Core_Model_Resour
     {
         $select = $this->adapter->select()
             ->from(
-                ['c_p_r' => $this->adapter->getTableName('catalog_product_relation')],
+                ['c_p_r' => $this->adapter->getTableName($this->_prefix . 'catalog_product_relation')],
                 [
                     'child_id',
                     new \Zend_Db_Expr("CASE WHEN c_p_e_b.value IS NULL THEN c_p_e_a.value ELSE c_p_e_b.value END as value")
                 ]
             )->joinLeft(
-                ['c_p_e_a' => $this->adapter->getTableName('catalog_product_entity_int')],
+                ['c_p_e_a' => $this->adapter->getTableName($this->_prefix . 'catalog_product_entity_int')],
                 'c_p_e_a.entity_id = c_p_r.child_id AND c_p_e_a.store_id = 0 AND c_p_e_a.attribute_id = ' . $attributeId,
                 ['default_store'=>'c_p_e_a.store_id']
             )->joinLeft(
-                ['c_p_e_b' => $this->adapter->getTableName('catalog_product_entity_int')],
+                ['c_p_e_b' => $this->adapter->getTableName($this->_prefix . 'catalog_product_entity_int')],
                 'c_p_e_b.entity_id = c_p_r.child_id AND c_p_e_b.store_id = ' . $storeId . ' AND c_p_e_b.attribute_id = ' . $attributeId,
                 ['c_p_e_b.store_id']
             );
@@ -498,20 +496,19 @@ class Boxalino_Intelligence_Model_Mysql4_Exporter extends Mage_Core_Model_Resour
             ->where('main.value <> ?', $condition);
 
         return $this->adapter->fetchPairs($main);
-
     }
 
     public function getProductEntityByLimitPage($limit, $page, $websiteId)
     {
         $select = $this->adapter->select()
             ->from(
-                ['e' => $this->adapter->getTableName('catalog_product_entity')],
+                ['e' => $this->adapter->getTableName($this->_prefix . 'catalog_product_entity')],
                 ["*"]
             )
             ->join(array('c_p_w' => $this->adapter->getTableName($this->_prefix . 'catalog_product_website')), 'e.entity_id = c_p_w.product_id', array('website_id'))
             ->limit($limit, ($page - 1) * $limit)
             ->joinLeft(
-                ['p_t' => $this->adapter->getTableName('catalog_product_relation')],
+                ['p_t' => $this->adapter->getTableName($this->_prefix . 'catalog_product_relation')],
                 'e.entity_id = p_t.child_id', ['group_id' => 'parent_id']
             )
             ->where('c_p_w.website_id = ?', $websiteId);
@@ -528,11 +525,11 @@ class Boxalino_Intelligence_Model_Mysql4_Exporter extends Mage_Core_Model_Resour
     {
         $select = $this->adapter->select()
             ->from(
-                ['main_table' => $this->adapter->getTableName('eav_attribute')],
+                ['main_table' => $this->adapter->getTableName($this->_prefix . 'eav_attribute')],
                 ['attribute_id', 'attribute_code', 'backend_type', 'frontend_input']
             )
             ->joinInner(
-                ['additional_table' => $this->adapter->getTableName('catalog_eav_attribute'), 'is_global'],
+                ['additional_table' => $this->adapter->getTableName($this->_prefix . 'catalog_eav_attribute'), 'is_global'],
                 'additional_table.attribute_id = main_table.attribute_id'
             )
             ->where('main_table.entity_type_id = ?', $this->getEntityTypeId('catalog_product'))
@@ -557,17 +554,17 @@ class Boxalino_Intelligence_Model_Mysql4_Exporter extends Mage_Core_Model_Resour
         $statusId = $this->getAttributeIdByAttributeCodeAndEntityType('status', $this->getEntityTypeId("catalog_product"));
         $select = $this->adapter->select()
             ->from(
-                array('c_p_r' => $this->adapter->getTableName('catalog_product_relation')),
+                array('c_p_r' => $this->adapter->getTableName($this->_prefix . 'catalog_product_relation')),
                 array('parent_id')
             )
             ->join(
-                array('t_d' => $this->adapter->getTableName('catalog_product_entity_' . $type)),
+                array('t_d' => $this->adapter->getTableName($this->_prefix . 'catalog_product_entity_' . $type)),
                 't_d.entity_id = c_p_r.child_id',
                 array(
                     'value' => 'MIN(t_d.value)'
                 )
             )->join(
-                array('t_s' => $this->adapter->getTableName('catalog_product_entity_int')),
+                array('t_s' => $this->adapter->getTableName($this->_prefix . 'catalog_product_entity_int')),
                 't_s.entity_id = c_p_r.child_id AND t_s.value = 1',
                 array()
             )
@@ -612,11 +609,11 @@ class Boxalino_Intelligence_Model_Mysql4_Exporter extends Mage_Core_Model_Resour
         $attributeId = $this->getAttributeIdByAttributeCodeAndEntityType($attributeCode, $this->getEntityTypeId("catalog_product"));
         $select1 = $this->adapter->select()
             ->from(
-                ['c_p_e' => $this->adapter->getTableName('catalog_product_entity')],
+                ['c_p_e' => $this->adapter->getTableName($this->_prefix . 'catalog_product_entity')],
                 ['c_p_e.entity_id']
             )
             ->joinLeft(
-                ['c_p_r' => $this->adapter->getTableName('catalog_product_relation')],
+                ['c_p_r' => $this->adapter->getTableName($this->_prefix . 'catalog_product_relation')],
                 'c_p_e.entity_id = c_p_r.child_id',
                 ['parent_id']
             );
@@ -625,7 +622,7 @@ class Boxalino_Intelligence_Model_Mysql4_Exporter extends Mage_Core_Model_Resour
         if(!empty($this->exportIds) && $this->isDelta) $select1->where('c_p_e.entity_id IN(?)', $this->exportIds);
 
         $select2 = clone $select1;
-        $select2->join(['t_d' => $this->adapter->getTableName('catalog_product_entity_' . $type)],
+        $select2->join(['t_d' => $this->adapter->getTableName($this->_prefix . 'catalog_product_entity_' . $type)],
             't_d.entity_id = c_p_e.entity_id AND c_p_r.parent_id IS NULL',
             [
                 't_d.attribute_id',
@@ -633,7 +630,7 @@ class Boxalino_Intelligence_Model_Mysql4_Exporter extends Mage_Core_Model_Resour
                 't_d.store_id'
             ]
         );
-        $select1->join(['t_d' => $this->adapter->getTableName('catalog_product_entity_' . $type)],
+        $select1->join(['t_d' => $this->adapter->getTableName($this->_prefix . 'catalog_product_entity_' . $type)],
             't_d.entity_id = c_p_r.parent_id',
             [
                 't_d.attribute_id',
@@ -662,7 +659,7 @@ class Boxalino_Intelligence_Model_Mysql4_Exporter extends Mage_Core_Model_Resour
         $attributeId = $this->getAttributeIdByAttributeCodeAndEntityType($attributeCode, $this->getEntityTypeId("catalog_product"));
         $select = $this->adapter->select()
             ->from(
-                ['c_p_e' => $this->adapter->getTableName('catalog_product_entity')],
+                ['c_p_e' => $this->adapter->getTableName($this->_prefix . 'catalog_product_entity')],
                 [
                     new \Zend_Db_Expr("CASE WHEN c_p_e_b.value IS NULL THEN c_p_e_a.value ELSE c_p_e_b.value END as value"),
                     new \Zend_Db_Expr("CASE WHEN c_p_e_b.value IS NULL THEN c_p_e_a.store_id ELSE c_p_e_b.store_id END as store_id"),
@@ -670,12 +667,12 @@ class Boxalino_Intelligence_Model_Mysql4_Exporter extends Mage_Core_Model_Resour
                 ]
             )
             ->joinInner(
-                ['c_p_e_a' => $this->adapter->getTableName('catalog_product_entity_' . $type)],
+                ['c_p_e_a' => $this->adapter->getTableName($this->_prefix . 'catalog_product_entity_' . $type)],
                 'c_p_e_a.entity_id = c_p_e.entity_id AND c_p_e_a.store_id = 0 AND c_p_e_a.attribute_id = ' . $attributeId,
                 []
             )
             ->joinLeft(
-                ['c_p_e_b' => $this->adapter->getTableName('catalog_product_entity_' . $type)],
+                ['c_p_e_b' => $this->adapter->getTableName($this->_prefix . 'catalog_product_entity_' . $type)],
                 'c_p_e_b.entity_id = c_p_e.entity_id AND c_p_e_b.store_id = ' . $storeId . ' AND c_p_e_b.attribute_id = ' . $attributeId,
                 []
             );
@@ -706,11 +703,11 @@ class Boxalino_Intelligence_Model_Mysql4_Exporter extends Mage_Core_Model_Resour
         $visibilitySql = $this->getEavJoinAttributeSQLByStoreAttrIdTable($visibilityId, $storeId, "catalog_product_entity_int");
         $select = $this->adapter->select()
             ->from(
-                ['c_p_e' => $this->adapter->getTableName('catalog_product_entity')],
+                ['c_p_e' => $this->adapter->getTableName($this->_prefix . 'catalog_product_entity')],
                 ['c_p_e.entity_id', 'c_p_e.type_id']
             )
             ->joinLeft(
-                ['c_p_r' => $this->adapter->getTableName('catalog_product_relation')],
+                ['c_p_r' => $this->adapter->getTableName($this->_prefix . 'catalog_product_relation')],
                 'c_p_e.entity_id = c_p_r.child_id',
                 ['parent_id']
             )
@@ -776,7 +773,7 @@ class Boxalino_Intelligence_Model_Mysql4_Exporter extends Mage_Core_Model_Resour
         $select = $this->adapter
             ->select()
             ->from(
-                array('e' => $main),
+                array('e' => $this->adapter->getTableName($this->_prefix . $main)),
                 array('entity_id' => 'entity_id')
             );
 
@@ -794,11 +791,11 @@ class Boxalino_Intelligence_Model_Mysql4_Exporter extends Mage_Core_Model_Resour
 
         $select
             ->joinInner(
-                array($attributeId . '_default' => $table), implode(' AND ', $innerCondition),
+                array($attributeId . '_default' => $this->adapter->getTableName($this->_prefix . $table)), implode(' AND ', $innerCondition),
                 array('default_value' => 'value', 'attribute_id')
             )
             ->joinLeft(
-                array("{$attributeId}_store" => $table), implode(' AND ', $joinLeftConditions),
+                array("{$attributeId}_store" => $this->adapter->getTableName($this->_prefix . $table)), implode(' AND ', $joinLeftConditions),
                 array("store_value" => 'value', 'store_id')
             );
 
@@ -830,11 +827,11 @@ class Boxalino_Intelligence_Model_Mysql4_Exporter extends Mage_Core_Model_Resour
         $storeAttributeValue = $this->getEavJoinAttributeSQLByStoreAttrIdTable($attributeId, $storeId, "catalog_product_entity_int");
         $select = $this->adapter->select()
             ->from(
-                ['c_p_r' => $this->adapter->getTableName('catalog_product_relation')],
+                ['c_p_r' => $this->adapter->getTableName($this->_prefix . 'catalog_product_relation')],
                 ['c_p_r.parent_id']
             )
             ->joinLeft(
-                ['c_p_e' => $this->adapter->getTableName('catalog_product_entity')],
+                ['c_p_e' => $this->adapter->getTableName($this->_prefix . 'catalog_product_entity')],
                 'c_p_e.entity_id = c_p_r.child_id',
                 ['c_p_e.entity_id']
             )
@@ -868,11 +865,11 @@ class Boxalino_Intelligence_Model_Mysql4_Exporter extends Mage_Core_Model_Resour
         $storeAttributeValue = $this->getEavJoinAttributeSQLByStoreAttrIdTable($attributeId, $storeId, "catalog_product_entity_int");
         $select = $this->adapter->select()
             ->from(
-                ['c_p_r' => $this->adapter->getTableName('catalog_product_relation')],
+                ['c_p_r' => $this->adapter->getTableName($this->_prefix . 'catalog_product_relation')],
                 ['c_p_r.child_id']
             )
             ->joinLeft(
-                ['c_p_e' => $this->adapter->getTableName('catalog_product_entity')],
+                ['c_p_e' => $this->adapter->getTableName($this->_prefix . 'catalog_product_entity')],
                 'c_p_e.entity_id = c_p_r.parent_id',
                 ['c_p_e.entity_id']
             )
@@ -911,10 +908,10 @@ class Boxalino_Intelligence_Model_Mysql4_Exporter extends Mage_Core_Model_Resour
             ((string) Mage::getConfig()->getNode('global/crypt/key')) .
             $account
         );
-        $sales_order_table = $this->adapter->getTableName('sales_flat_order');
-        $sales_order_item = $this->adapter->getTableName('sales_flat_order_item');
-        $sales_order_address =  $this->adapter->getTableName('sales_flat_order_address');
-        $sales_order_payment =  $this->adapter->getTableName('sales_flat_order_payment');
+        $sales_order_table = $this->adapter->getTableName($this->_prefix . 'sales_flat_order');
+        $sales_order_item = $this->adapter->getTableName($this->_prefix . 'sales_flat_order_item');
+        $sales_order_address =  $this->adapter->getTableName($this->_prefix . 'sales_flat_order_address');
+        $sales_order_payment =  $this->adapter->getTableName($this->_prefix . 'sales_flat_order_payment');
 
         $select = $this->adapter
             ->select()
@@ -1008,11 +1005,11 @@ class Boxalino_Intelligence_Model_Mysql4_Exporter extends Mage_Core_Model_Resour
         $attributeId = $this->getAttributeIdByAttributeCodeAndEntityType('name', $this->getEntityTypeId("catalog_category"));
         $select = $this->adapter->select()
             ->from(
-                ['c_t' => $this->adapter->getTableName('catalog_category_entity')],
+                ['c_t' => $this->adapter->getTableName($this->_prefix . 'catalog_category_entity')],
                 ['entity_id', 'parent_id']
             )
             ->joinInner(
-                ['c_v' => $this->adapter->getTableName('catalog_category_entity_varchar')],
+                ['c_v' => $this->adapter->getTableName($this->_prefix . 'catalog_category_entity_varchar')],
                 'c_v.entity_id = c_t.entity_id',
                 ['c_v.value', 'c_v.store_id']
             )
@@ -1030,7 +1027,7 @@ class Boxalino_Intelligence_Model_Mysql4_Exporter extends Mage_Core_Model_Resour
     {
         $select = $this->adapter->select()
             ->from(
-                ['a_t' => $this->adapter->getTableName('eav_attribute')],
+                ['a_t' => $this->adapter->getTableName($this->_prefix . 'eav_attribute')],
                 ['code' => 'attribute_code', 'attribute_code']
             )
             ->where('a_t.entity_type_id = ?', $this->getEntityTypeId("customer"));
@@ -1042,7 +1039,7 @@ class Boxalino_Intelligence_Model_Mysql4_Exporter extends Mage_Core_Model_Resour
     {
         $select = $this->adapter->select()
             ->from(
-                ['main_table' => $this->adapter->getTableName('eav_attribute')],
+                ['main_table' => $this->adapter->getTableName($this->_prefix . 'eav_attribute')],
                 [
                     'aid' => 'attribute_id',
                     'attribute_code',
@@ -1050,7 +1047,7 @@ class Boxalino_Intelligence_Model_Mysql4_Exporter extends Mage_Core_Model_Resour
                 ]
             )
             ->joinInner(
-                ['additional_table' => $this->adapter->getTableName('customer_eav_attribute')],
+                ['additional_table' => $this->adapter->getTableName($this->_prefix . 'customer_eav_attribute')],
                 'additional_table.attribute_id = main_table.attribute_id',
                 []
             )
@@ -1064,11 +1061,11 @@ class Boxalino_Intelligence_Model_Mysql4_Exporter extends Mage_Core_Model_Resour
     {
         $select = $this->adapter->select()
             ->from(
-                $this->adapter->getTableName('customer_entity'),
+                $this->adapter->getTableName($this->_prefix . 'customer_entity'),
                 $attributeGroups
             )
             ->join(
-                $this->adapter->getTableName('customer_address_entity'),
+                $this->adapter->getTableName($this->_prefix . 'customer_address_entity'),
                 'customer_entity.entity_id = customer_address_entity.parent_id',
                 ['address_id' => 'entity_id']
             )
@@ -1087,7 +1084,7 @@ class Boxalino_Intelligence_Model_Mysql4_Exporter extends Mage_Core_Model_Resour
         foreach($attributeTypes as $type)
         {
             if (count($attributes[$type]) > 0) {
-                $selects[] = $this->getSqlForCustomerAttributesUnion($this->adapter->getTableName('customer_entity_'. $type), $columns, $attributes[$type], $ids);
+                $selects[] = $this->getSqlForCustomerAttributesUnion($this->adapter->getTableName($this->_prefix . 'customer_entity_'. $type), $columns, $attributes[$type], $ids);
             }
         }
 
@@ -1107,7 +1104,7 @@ class Boxalino_Intelligence_Model_Mysql4_Exporter extends Mage_Core_Model_Resour
         return $this->adapter->select()
             ->from(['ce' => $table], $columns)
             ->joinLeft(
-                ['ea' => $this->adapter->getTableName('eav_attribute')],
+                ['ea' => $this->adapter->getTableName($this->_prefix . 'eav_attribute')],
                 'ce.attribute_id = ea.attribute_id',
                 'ea.attribute_code'
             )
@@ -1170,7 +1167,7 @@ class Boxalino_Intelligence_Model_Mysql4_Exporter extends Mage_Core_Model_Resour
                 ['COLUMN_NAME', 'name'=>'COLUMN_NAME']
             )
             ->where('TABLE_SCHEMA=?', $setupConfig->dbname)
-            ->where('TABLE_NAME=?', $this->adapter->getTableName($table));
+            ->where('TABLE_NAME=?', $this->adapter->getTableName($this->_prefix . $table));
 
         $columns =  $this->adapter->fetchPairs($select);
         if(empty($columns))
