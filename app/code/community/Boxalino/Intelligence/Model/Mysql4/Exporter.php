@@ -1061,15 +1061,15 @@ class Boxalino_Intelligence_Model_Mysql4_Exporter extends Mage_Core_Model_Resour
     {
         $select = $this->adapter->select()
             ->from(
-                $this->adapter->getTableName($this->_prefix . 'customer_entity'),
+                ['c_e' => $this->adapter->getTableName($this->_prefix . 'customer_entity')],
                 $attributeGroups
             )
             ->join(
-                $this->adapter->getTableName($this->_prefix . 'customer_address_entity'),
-                'customer_entity.entity_id = customer_address_entity.parent_id',
+                ['c_a_e' => $this->adapter->getTableName($this->_prefix . 'customer_address_entity')],
+                'c_e.entity_id = c_a_e.parent_id',
                 ['address_id' => 'entity_id']
             )
-            ->group('customer_entity.entity_id')
+            ->group('c_e.entity_id')
             ->limit($limit, ($page - 1) * $limit);
 
         return $this->adapter->fetchAll($select);
@@ -1084,7 +1084,7 @@ class Boxalino_Intelligence_Model_Mysql4_Exporter extends Mage_Core_Model_Resour
         foreach($attributeTypes as $type)
         {
             if (count($attributes[$type]) > 0) {
-                $selects[] = $this->getSqlForCustomerAttributesUnion($this->adapter->getTableName($this->_prefix . 'customer_entity_'. $type), $columns, $attributes[$type], $ids);
+                $selects[] = $this->getSqlForCustomerAttributesUnion('customer_entity_'. $type, $columns, $attributes[$type], $ids);
             }
         }
 
@@ -1102,7 +1102,7 @@ class Boxalino_Intelligence_Model_Mysql4_Exporter extends Mage_Core_Model_Resour
     protected function getSqlForCustomerAttributesUnion($table, $columns, $attributes, $ids)
     {
         return $this->adapter->select()
-            ->from(['ce' => $table], $columns)
+            ->from(['ce' => $this->adapter->getTableName($this->_prefix . $table)], $columns)
             ->joinLeft(
                 ['ea' => $this->adapter->getTableName($this->_prefix . 'eav_attribute')],
                 'ce.attribute_id = ea.attribute_id',
@@ -1182,7 +1182,7 @@ class Boxalino_Intelligence_Model_Mysql4_Exporter extends Mage_Core_Model_Resour
     {
         try {
             $select = $this->adapter->select()
-                ->from(['main'=> $this->adapter->getTableName($this->_prefix . $table)],['*']);
+                ->from(['main'=> $this->adapter->getTableName($this->_prefix . $table)], ['*']);
 
             return $this->adapter->fetchAll($select);
         } catch(\Exception $exc)
