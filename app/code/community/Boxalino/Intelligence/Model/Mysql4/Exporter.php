@@ -1182,14 +1182,13 @@ class Boxalino_Intelligence_Model_Mysql4_Exporter extends Mage_Core_Model_Resour
     {
         try {
             $select = $this->adapter->select()
-                ->from($table, array('*'));
+                ->from(['main'=> $this->adapter->getTableName($this->_prefix . $table)],['*']);
 
             return $this->adapter->fetchAll($select);
         } catch(\Exception $exc)
         {
             return [];
         }
-
     }
 
     public function isDelta($isDelta)
@@ -1208,6 +1207,5 @@ class Boxalino_Intelligence_Model_Mysql4_Exporter extends Mage_Core_Model_Resour
     {
         return $this->exportIds;
     }
-
 
 }
