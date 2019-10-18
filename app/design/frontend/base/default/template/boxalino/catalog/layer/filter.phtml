@@ -5,14 +5,16 @@
     <?php echo $this->getLayout()->createBlock("boxalino_intelligence/slider")->setTemplate("boxalino/slider.phtml")->toHtml();?>
 <?php else: ?>
     <?php
-        $bxFacets = $this->getFacets();
-        $showCount = $bxFacets->showFacetValueCounters($this->getFieldName(), false);
+    $bxFacets = $this->getFacets();
+    $showCount = $bxFacets->showFacetValueCounters($this->getFieldName(), false);
+    $showedMoreLink = false;
     ?>
     <ol>
         <?php foreach ($this->getItems() as $_item): ?>
             <?php $selected = $_item->getSelected(); ?>
             <?php $hidden = $_item->getHidden();?>
-            <li class="item <?php echo $_item->getType(); echo $selected == true ?  ' selected' : ''; ?>">
+            <?php if(!$showedMoreLink && $hidden) { $showedMoreLink = true; } ?>
+            <li class="item <?php echo $_item->getType(); echo $selected == true ?  ' selected' : ''; ?> <?php echo $hidden == true ? ' hidden-items' : ''; ?>" style="<?php echo $hidden ? "display:none" : ""; ?>">
                 <?php if ($_item->getCount() > 0): ?>
                     <a href="<?php echo $this->escapeHtml($selected == true ? $_item->getRemoveUrl() : $_item->getUrl()) ?>">
                         <?php echo $_item->getLabel() ?>

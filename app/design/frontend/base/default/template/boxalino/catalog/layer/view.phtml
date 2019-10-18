@@ -22,7 +22,7 @@
                              $label = $bxFacets->getFacetLabel($_filter->getFieldName());
                          ?>
                         <?php if($_filter->getItemsCount() && !$isHidden): ?>
-                            <dt>
+                            <dt class="filter-options collapsible">
                                 <?php echo (!empty($label) || !is_null($label)) ? $label : $this->__($_filter->getName()) ?>
                             </dt>
                             <dd><?php echo $_filter->getHtml() ?></dd>
