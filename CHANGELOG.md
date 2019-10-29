@@ -6,13 +6,23 @@ On every plugin update - please check the file and what needs to be tested on yo
 If you have any question, just contact us at support@boxalino.com
 
 ### Version History
-**[v2.1.0 : 2019-09-30](#v2.1.0)**<br>
+**[v2.1.1 : 2019-10-29](#v2.1.0)**<br>
+**[v2.1.0 : 2019-10-08](#v2.1.0)**<br>
 **[v2.0.0 : 2019-09-30](#v2.0.0)**<br>
 **[v1.5.0 : 2019-08-07](#v1.5.0)**<br>
 **[v1.4.9 : 2019-07-02](#v1.4.9)**<br>
 **[v1.4.8 : 2019-06-26](#v1.4.8)**<br>
 **[v1.4.7 : 2019-05-14](#v1.4.7)**<br>
 **[v1.4.6 : 2019-05-10](#v1.4.6)**<br>
+
+<a name="v2.1.1"></a>
+### v2.1.1 : 2019-10-29
+_post-deployment integration test_: 
+* on navigation - check the Boxalino Relevance sorting vs default defined one for the categories
+ 
+##### 1. Navigation Sorting - Exclude Boxalino Relevance sorting on defined categories
+* _description_ : The client can predefine categories on which Boxalino Relevance sorting is not the default one. Update the configuration for the Boxalino Extension -> Search-Navigation tab, Navigation->Exclude Sorting.
+* _commit_: https://github.com/boxalino/plugin-magento1-v2/commit/38b43579f6367097cf9ef28ecbbb942726deaa73
 
 <a name="v2.1.0"></a>
 ### v2.1.0 : 2019-10-08
