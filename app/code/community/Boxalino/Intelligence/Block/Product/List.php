@@ -181,20 +181,60 @@ class Boxalino_Intelligence_Block_Product_List extends Mage_Catalog_Block_Produc
             }
         }
 
-        if(!is_null(Mage::registry('current_category')) && Mage::helper('boxalino_intelligence')->isEnabledOnLayer($this->getLayer()) &&
-                Mage::helper('boxalino_intelligence')->isNavigationSortEnabled())
-        {
+        if($this->useBoxalinoSort()) {
             $toolbar = $this->getToolbarBlock();
-            $orders = $toolbar->getAvailableOrders();
-            $orders = array_merge(['relevance' => $this->__('Relevance')], $orders);
-            $this->setAvailableOrders($orders);
-            $this->setSortBy('relevance');
-            $toolbar->setAvailableOrders($orders);
-            $toolbar->setDefaultOrder('relevance');
-            $toolbar->setData("_current_grid_order", "relevance");
+
+            $requestedOrder = $this->getRequest()->getParam($toolbar->getOrderVarName());
+            $toolbar->setData("_current_grid_order", $requestedOrder);
+            if(is_null($requestedOrder)) {
+                $toolbar->setData("_current_grid_order", "relevance");
+                if(Mage::helper('boxalino_intelligence')->isCategoryExcludedForNavigationSort(Mage::registry('current_category')->getId())) {
+                    $toolbar->setData("_current_grid_order", $this->getSortBy());
+                }
+            }
         }
 
         return parent::_beforeToHtml();
+    }
+
+    /**
+     * adds Boxalino logic for default
+     * @rewrite
+     * @param Mage_Catalog_Model_Category $category
+     * @return $this|Mage_Catalog_Block_Product_List
+     */
+    public function prepareSortableFieldsByCategory($category) {
+        if (!$this->getAvailableOrders()) {
+            $orders = $category->getAvailableSortByOptions();
+            if($this->useBoxalinoSort())
+            {
+                $orders = array_merge(['relevance' => $this->__('Relevance')], $orders);
+                if(!Mage::helper('boxalino_intelligence')->isCategoryExcludedForNavigationSort(Mage::registry('current_category')->getId())) {
+                    $this->setSortBy("relevance");
+                }
+            }
+            $this->setAvailableOrders($orders);
+        }
+        $availableOrders = $this->getAvailableOrders();
+        if (!$this->getSortBy()) {
+            if ($categorySortBy = $category->getDefaultSortBy()) {
+                if (!$availableOrders) {
+                    $availableOrders = $this->_getConfig()->getAttributeUsedForSortByArray();
+                }
+                if (isset($availableOrders[$categorySortBy])) {
+                    $this->setSortBy($categorySortBy);
+                }
+            }
+        }
+
+        return $this;
+    }
+
+    public function useBoxalinoSort()
+    {
+        return !is_null(Mage::registry('current_category')) &&
+            Mage::helper('boxalino_intelligence')->isEnabledOnLayer($this->getLayer()) &&
+            Mage::helper('boxalino_intelligence')->isNavigationSortEnabled();
     }
 
     /**

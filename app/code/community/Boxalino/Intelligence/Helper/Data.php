@@ -677,6 +677,18 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
     }
 
     /**
+     * @return bool
+     */
+    public function isCategoryExcludedForNavigationSort($categoryId) {
+        $excludedCategories = explode(",", Mage::getStoreConfig('bxSearch/navigation/sort_exclude'));
+        if(in_array($categoryId, $excludedCategories))
+        {
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * @param $fallback
      */
     public function setFallback($fallback){
