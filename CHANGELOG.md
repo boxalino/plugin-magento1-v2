@@ -6,7 +6,7 @@ On every plugin update - please check the file and what needs to be tested on yo
 If you have any question, just contact us at support@boxalino.com
 
 ### Version History
-**[v2.1.1 : 2019-10-29](#v2.1.0)**<br>
+**[v2.1.1 : 2019-10-29](#v2.1.1)**<br>
 **[v2.1.0 : 2019-10-08](#v2.1.0)**<br>
 **[v2.0.0 : 2019-09-30](#v2.0.0)**<br>
 **[v1.5.0 : 2019-08-07](#v1.5.0)**<br>

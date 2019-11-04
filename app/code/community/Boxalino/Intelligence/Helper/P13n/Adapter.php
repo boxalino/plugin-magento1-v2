@@ -520,6 +520,15 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
         }
 
         $field = '';
+        $category = Mage::registry("current_category");
+        if(!is_null($category))
+        {
+            if(Mage::helper('boxalino_intelligence')->isCategoryExcludedForNavigationSort(Mage::registry('current_category')->getId()))
+            {
+                $field = $category->getDefaultSortBy();
+            }
+        }
+
         $order = isset($params['order'])&&!empty($params['order']) ? $params['order'] : $this->getMagentoStoreConfigListOrder();
         $fieldsMapping = Mage::helper('boxalino_intelligence')->getSortOptionsMapping();
         if(isset($fieldsMapping[$order]))
