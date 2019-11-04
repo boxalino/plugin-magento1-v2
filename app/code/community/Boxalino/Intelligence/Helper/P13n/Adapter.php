@@ -520,15 +520,6 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
         }
 
         $field = '';
-        $category = Mage::registry("current_category");
-        if(!is_null($category))
-        {
-            if(Mage::helper('boxalino_intelligence')->isCategoryExcludedForNavigationSort(Mage::registry('current_category')->getId()))
-            {
-                $field = $category->getDefaultSortBy();
-            }
-        }
-
         $order = isset($params['order'])&&!empty($params['order']) ? $params['order'] : $this->getMagentoStoreConfigListOrder();
         $fieldsMapping = Mage::helper('boxalino_intelligence')->getSortOptionsMapping();
         if(isset($fieldsMapping[$order]))
@@ -649,6 +640,20 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
      */
     protected function getMagentoStoreConfigListOrder()
     {
+        if(Mage::helper('boxalino_intelligence')->isNavigationSortEnabled())
+        {
+            $category = Mage::registry("current_category");
+            if(!is_null($category))
+            {
+                if(Mage::helper('boxalino_intelligence')->isCategoryExcludedForNavigationSort($category->getId()))
+                {
+                    return $category->getDefaultSortBy();
+                }
+            }
+
+            return 'relevance';
+        }
+
         $storeConfig = $this->getMagentoStoreConfig();
         return $storeConfig['default_sort_by'];
     }
