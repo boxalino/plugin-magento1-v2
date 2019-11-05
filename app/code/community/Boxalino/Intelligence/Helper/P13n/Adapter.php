@@ -519,15 +519,15 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
             $params = Mage::app()->getRequest()->getParams();
         }
 
-        $field = '';
+        $field = ''; $direction = null; $dir = false;
         $order = isset($params['order'])&&!empty($params['order']) ? $params['order'] : $this->getMagentoStoreConfigListOrder();
         $fieldsMapping = Mage::helper('boxalino_intelligence')->getSortOptionsMapping();
         if(isset($fieldsMapping[$order]))
         {
-            $field = $fieldsMapping[$order];
+            $field = array_keys($fieldsMapping[$order])[0];
+            $dir = array_values($fieldsMapping[$order])[0] == 'asc' ? false : true;
         }
 
-        $dir = false;
         if (isset($params['dir'])) {
             $dir = $params['dir'] == 'asc' ? false : true;
         }

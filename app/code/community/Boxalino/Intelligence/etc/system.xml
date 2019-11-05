@@ -918,8 +918,10 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
                             <comment>
-                                <![CDATA[Optional: When using custom sort-options, set the field name (used for sorting) abd the Boxalino field, joined via a colon (:);
-                                each group is to be divided via a semicolon.]]>
+                                <![CDATA[Optional: When using custom sort-options, set the field name (used for sorting) and the Boxalino field, joined via a colon (:),
+                                add a hyphen (-) and define the default order (asc, desc) each group is to be divided via a semicolon.
+                                ex: custom_sort1:boxalino_field-asc;custom_sort2:boxalino_field-desc;
+                                ]]>
                             </comment>
                         </sort_options_mapping>
                         <parameter_separator translate="label">

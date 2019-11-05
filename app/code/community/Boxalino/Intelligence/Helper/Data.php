@@ -479,10 +479,20 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
     public function getSortOptionsMapping()
     {
         $sortMapping = array_filter(explode(';',Mage::getStoreConfig('bxSearch/advanced/sort_options_mapping')));
-        $sortFields = ['name' => 'products_bx_parent_title', 'price'=>'products_bx_grouped_price', 'entity_id'=>'products_group_id'];
-        foreach ($sortMapping as $field) {
-            $values = explode(':', $field);
-            $sortFields[$values[0]] = $values[1];
+        $sortFields = [
+            'name'      => ['products_bx_parent_title' => 'asc'],
+            'price'     => ['products_bx_grouped_price'=>'asc'],
+            'entity_id' => ['products_group_id' => 'desc']
+        ];
+
+        foreach ($sortMapping as $sortRule) {
+            if(empty($sortRule)){continue;}
+            $fieldRuleMapping = explode(':', $sortRule);
+            $fieldSortDir = explode('-',$fieldRuleMapping[1]);
+            if(isset($fieldSortDir[1]) && !empty($fieldSortDir[1]))
+            {
+                $sortFields[strtolower($fieldRuleMapping[0])] = [strtolower($fieldSortDir[0]) => strtolower($fieldSortDir[1])];
+            }
         }
 
         return $sortFields;
