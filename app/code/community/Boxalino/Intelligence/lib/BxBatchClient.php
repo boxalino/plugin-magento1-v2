@@ -143,10 +143,9 @@ class BxBatchClient
     {
         try{
             $batchChooseResponse = $this->getP13n($this->timeout)->batchChoose($batchChoiceRequest);
-            if(isset($this->requestContextParameters['dev_bx_disp']) && $this->requestContextParameters['dev_bx_disp'] == 'true') {
-                $this->debug($batchChoiceRequest, $batchChooseResponse, "p13nBatchChoose", false);
+            if(isset($this->requestContextParameters['dev_bx_disp']) && $this->requestContextParameters['dev_bx_disp'][0] == 'true') {
+                $this->debug($batchChoiceRequest, $batchChooseResponse, "p13nBatchChoose");
             }
-            $this->debug($batchChoiceRequest, $batchChooseResponse, "p13nBatchChoose", true, false);
             return $batchChooseResponse;
         } catch(\Exception $exc)
         {
@@ -249,13 +248,11 @@ class BxBatchClient
 
     protected function debug($request, $response, $type)
     {
-        if(isset($this->requestContextParameters['dev_bx_disp']) && $this->requestContextParameters['dev_bx_disp'] == 'true') {
-            ini_set('xdebug.var_display_max_children', -1);
-            ini_set('xdebug.var_display_max_data', -1);
-            ini_set('xdebug.var_display_max_depth', -1);
-            echo "<pre><h1>Batch Request {$type}</h1>" . var_export($request, true) .  "<br><h1>Batch Response</h1>" . var_export($response, true) . "</pre>";;
-            exit;
-        }
+        ini_set('xdebug.var_display_max_children', -1);
+        ini_set('xdebug.var_display_max_data', -1);
+        ini_set('xdebug.var_display_max_depth', -1);
+        echo "<pre><h1>Batch Request {$type}</h1>" . var_export($request, true) .  "<br><h1>Batch Response</h1>" . var_export($response, true) . "</pre>";;
+        exit;
     }
 
     /**
