@@ -257,16 +257,22 @@ class BxBatchClient
 
     /**
      * the profile ID of the request must be random to secure node-pining
+     * @return string
      */
     public function getProfileId()
     {
-        $uuid = bin2hex(random_bytes(16));
-        $hyphen = chr(45);
-        return substr($uuid, 0, 8).$hyphen
-            .substr($uuid, 8, 4).$hyphen
-            .substr($uuid,12, 4).$hyphen
-            .substr($uuid,16, 4).$hyphen
-            .substr($uuid,20,12);
+        if(function_exists("random_bytes"))
+        {
+            $uuid = bin2hex(random_bytes(16));
+            $hyphen = chr(45);
+            return substr($uuid, 0, 8).$hyphen
+                .substr($uuid, 8, 4).$hyphen
+                .substr($uuid,12, 4).$hyphen
+                .substr($uuid,16, 4).$hyphen
+                .substr($uuid,20,12);
+        }
+
+        return uniqid();
     }
 
     public function addRequestContextParameter($name, $values)

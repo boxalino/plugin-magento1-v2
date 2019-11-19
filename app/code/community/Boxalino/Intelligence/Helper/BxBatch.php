@@ -1,6 +1,6 @@
 <?php
 
-class Boxalino_Intelligence_BxBatch
+class Boxalino_Intelligence_Helper_BxBatch
 {
     /**
      * @var \com\boxalino\bxclient\v1\BxBatchClient
@@ -28,9 +28,7 @@ class Boxalino_Intelligence_BxBatch
         $isDev = Mage::getStoreConfig('bxGeneral/general/dev');
         $apiKey = Mage::getStoreConfig('bxGeneral/general/apiKey');
         $apiSecret = Mage::getStoreConfig('bxGeneral/general/apiSecret');
-        self::$bxClient = new \com\boxalino\bxclient\v1\BxClient($account, $apiKey, $apiSecret, $isDev);
-        self::$bxClient->setTimeout(Mage::getStoreConfig('bxGeneral/advanced/thrift_timeout'));
-
+        self::$bxClient = new \com\boxalino\bxclient\v1\BxBatchClient($account, $apiKey, $apiSecret, $isDev);
         foreach(Mage::app()->getRequest()->getParams() as $param=>$value)
         {
             self::$bxClient->addRequestContextParameter($param, $value);
@@ -38,17 +36,17 @@ class Boxalino_Intelligence_BxBatch
     }
 
     /**
-     * @param $choiceId
-     * @param $language
-     * @param $customerIds
-     * @param $hitCount
-     * @param $returnFields
-     * @param $productsGroupBy
+     * @param string $choiceId
+     * @param string $language
+     * @param [] $customerIds
+     * @param integer $hitCount
+     * @param [] $returnFields
+     * @param string $productsGroupBy
      * @param int $offset
      * @return \com\boxalino\bxclient\v1\BxBatchResponse
      * @throws Exception
      */
-    public function getRecommendationsResponse($choiceId, $language, $customerIds, $hitCount, $returnFields, $productsGroupBy, $offset=0)
+    public function getRecommendationsResponse($choiceId, $language, $customerIds, $hitCount, $returnFields, $productsGroupBy='products_group_id', $offset=0)
     {
         $bxRequest = new \com\boxalino\bxclient\v1\BxBatchRequest($language, $choiceId);
         $bxRequest->setMax($hitCount);
