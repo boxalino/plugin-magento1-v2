@@ -1,5 +1,19 @@
 <?php
 
+/**
+ * Class Boxalino_Intelligence_Helper_BxBatch
+ *
+ * initialize the helper with your account credentials:
+ * $bxBatchHelper = Mage::helper('boxalino_intelligence/bxBatch')->setAccount($account)->setApiKey($apiKey)->setApiSecret($apiSecret)->setIsDev($isDev);
+ *
+ * making the request to the BxBatch helper:
+ * $productRecommendations = $bxBatchHelper->getRecommendationsResponse($choiceId, $language, $customerIds, $hitCount, $returnFields, $productsGroupBy, $offset);
+ *
+ * viewing the data
+ * @return [customer_id=> [[field1=>value, field2=>value,..], [field1=>value, field2=>value, ..],..], customer_id=>[[], [], []]]
+ * $productDetails = $productRecommendations->getHitFieldValuesForProfileIds();
+ *
+ */
 class Boxalino_Intelligence_Helper_BxBatch
 {
     /**
