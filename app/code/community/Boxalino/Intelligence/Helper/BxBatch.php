@@ -7,16 +7,17 @@ class Boxalino_Intelligence_Helper_BxBatch
      */
     private static $bxClient = null;
 
+    protected $account = null;
+    protected $apiKey = null;
+    protected $apiSecret = null;
+    protected $language = null;
+    protected $isDev = null;
+
     public function __construct()
     {
         $libPath = Mage::getModuleDir('','Boxalino_Intelligence') . DIRECTORY_SEPARATOR . 'lib';
         require_once($libPath . DIRECTORY_SEPARATOR . 'BxBatchClient.php');
         \com\boxalino\bxclient\v1\BxBatchClient::LOAD_CLASSES($libPath);
-
-        $this->initializeBXClient();
-        if(isset($_REQUEST['dev_bx_test_mode']) && $_REQUEST['dev_bx_test_mode'] == 'true') {
-            self::$bxClient->setTestMode(true);
-        }
     }
 
     /**
@@ -24,11 +25,7 @@ class Boxalino_Intelligence_Helper_BxBatch
      */
     protected function initializeBXClient()
     {
-        $account = Mage::getStoreConfig('bxGeneral/general/account_name');
-        $isDev = Mage::getStoreConfig('bxGeneral/general/dev');
-        $apiKey = Mage::getStoreConfig('bxGeneral/general/apiKey');
-        $apiSecret = Mage::getStoreConfig('bxGeneral/general/apiSecret');
-        self::$bxClient = new \com\boxalino\bxclient\v1\BxBatchClient($account, $apiKey, $apiSecret, $isDev);
+        self::$bxClient = new \com\boxalino\bxclient\v1\BxBatchClient($this->getAccount(), $this->getApiKey(), $this->getApiSecret(), $this->getIsDev());
         foreach(Mage::app()->getRequest()->getParams() as $param=>$value)
         {
             self::$bxClient->addRequestContextParameter($param, $value);
@@ -48,6 +45,8 @@ class Boxalino_Intelligence_Helper_BxBatch
      */
     public function getRecommendationsResponse($choiceId, $language, $customerIds, $hitCount, $returnFields, $productsGroupBy='products_group_id', $offset=0)
     {
+        $this->initializeBXClient();
+
         $bxRequest = new \com\boxalino\bxclient\v1\BxBatchRequest($language, $choiceId);
         $bxRequest->setMax($hitCount);
         $bxRequest->setGroupBy($productsGroupBy);
@@ -67,6 +66,70 @@ class Boxalino_Intelligence_Helper_BxBatch
     {
         self::$bxClient->addRequestContextParameter($field, $value);
         return $this;
+    }
+
+    public function setApiKey($apiKey)
+    {
+        $this->apiKey = $apiKey;
+        return $this;
+    }
+
+    public function setApiSecret($apiSecret)
+    {
+        $this->apiSecret = $apiSecret;
+        return $this;
+    }
+
+    public function setAccount($account)
+    {
+        $this->account = $account;
+        return $this;
+    }
+
+    public function setIsDev($isDev)
+    {
+        $this->isDev = $isDev;
+        return $this;
+    }
+
+    public function getAccount()
+    {
+        if(is_null($this->account))
+        {
+            return Mage::getStoreConfig('bxGeneral/general/account_name');
+        }
+
+        return $this->account;
+    }
+
+    public function getApiKey()
+    {
+        if(is_null($this->apiKey))
+        {
+            $this->apiKey = Mage::getStoreConfig('bxGeneral/general/apiKey');
+        }
+
+        return $this->apiKey;
+    }
+
+    public function getApiSecret()
+    {
+        if(is_null($this->apiSecret))
+        {
+            $this->apiSecret = Mage::getStoreConfig('bxGeneral/general/apiSecret');
+        }
+
+        return $this->apiSecret;
+    }
+
+    public function getIsDev()
+    {
+        if(is_null($this->isDev))
+        {
+            $this->isDev = Mage::getStoreConfig('bxGeneral/general/dev');
+        }
+
+        return $this->isDev;
     }
 
 }
