@@ -535,29 +535,32 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
         return new \com\boxalino\bxclient\v1\BxSortFields($field, $dir);
     }
 
-    protected function addNarrativeRequest($choice_id = 'narrative', $choices = null, $replaceMain = true, $context = array()) {
+    protected function addNarrativeRequest($choice_id = 'narrative', $choices = null, $replaceMain = true, $context = array())
+    {
         if($replaceMain) {
             $this->currentSearchChoice = $choice_id;
             $this->isNarrative = true;
         }
-        $requestParams = Mage::app()->getRequest()->getParams();
-        $field = '';
-        $order = isset($requestParams['product_list_order']) ? $requestParams['product_list_order'] : $this->getMagentoStoreConfigListOrder();
-        if (($order == 'title') || ($order == 'name')) {
-            $field = 'products_bx_parent_title';
-        } elseif ($order == 'price') {
-            $field = 'products_bx_grouped_price';
-        }
-        $dir = isset($requestParams['product_list_dir']) ? true : false;
-        $hitCount = isset($requestParams['product_list_limit'])&& is_numeric($requestParams['product_list_limit']) ? $requestParams['product_list_limit'] : $this->getMagentoStoreConfigPageSize();
-        $pageOffset = isset($requestParams['p'])&&!empty($requestParams['p'])&&is_numeric($requestParams['p']) ? ($requestParams['p'] - 1) * ($hitCount) : 0;
 
+        $requestParams = Mage::app()->getRequest()->getParams();
+        $hitCount = isset($requestParams['limit'])&& is_numeric($requestParams['limit']) ? $requestParams['limit'] : (isset($context['hitCount']) ? $context['hitCount'] : $this->getMagentoStoreConfigPageSize());
+        $pageOffset = isset($requestParams['p'])&&!empty($requestParams['p'])&&is_numeric($requestParams['p']) ? ($requestParams['p'] - 1) * ($hitCount) :  (isset($context['offset']) ? $context['offset'] : 0);
         $language = $this->bxHelperData->getLanguage();
+        $returnFields = isset($context['returnFields']) ? array_merge(explode(',', $context['returnFields']), [$this->getEntityIdFieldName()]):  [$this->getEntityIdFieldName()];
+
         $bxRequest = new \com\boxalino\bxclient\v1\BxRequest($language, $choice_id, $hitCount);
         $bxRequest->setOffset($pageOffset);
-        $bxRequest->setSortFields(new \com\boxalino\bxclient\v1\BxSortFields($field, $dir));
-        $facets = $this->prepareFacets();
-        $bxRequest->setFacets($facets);
+        $bxRequest->setSortFields($this->getSortField());
+        $bxRequest->setGroupBy($this->getEntityIdFieldName());
+        $bxRequest->setHitsGroupsAsHits(true);
+        $bxRequest->setFilters($this->getSystemFilters());
+        $bxRequest->setGroupFacets(true);
+        $bxRequest->setReturnFields($returnFields);
+        if($replaceMain)
+        {
+            $facets = $this->prepareFacets();
+            $bxRequest->setFacets($facets);
+        }
         self::$bxClient->addRequest($bxRequest);
 
         foreach($context as $key=>$value)

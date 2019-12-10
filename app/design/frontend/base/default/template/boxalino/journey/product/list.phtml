@@ -1,0 +1,23 @@
+<?php
+/**
+ * @block Boxalino_Intelligence_Block_Journey_Product_List
+ * @see magento/app/design/frontend/base/default/template/catalog/product/list.phtml for more options (list/grid/etc)
+ */
+$subRenderings = $this->getSubRenderings();
+$index = 0;
+$_productCollection=$this->getLoadedProductCollection();
+$_helper = $this->helper('catalog/output');
+$viewMode = $this->getData('list_grid');
+$_columnCount = $this->getData('column_count');
+?>
+<div class="category-products products wrapper <?php /* @escapeNotVerified */ echo $viewMode; ?>">
+    <ul class="products-<?php /* @escapeNotVerified */ echo $viewMode; ?> list items product-items">
+        <?php foreach ($subRenderings as  $subRendering): ?>
+            <?php
+            $additional_parameter = $this->checkVisualElementParam($subRendering['visualElement'], 'format', 'product') ? ['bx_index' => $index++] : null;
+            echo $this->renderVisualElement($subRendering['visualElement'], $additional_parameter);
+            ?>
+        <?php endforeach ?>
+    </ul>
+    <script type="text/javascript">decorateGeneric($$('ul.products-grid'), ['odd','even','first','last'])</script>
+</div>
