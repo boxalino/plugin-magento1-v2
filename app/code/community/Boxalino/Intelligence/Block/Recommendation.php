@@ -279,8 +279,8 @@ class Boxalino_Intelligence_Block_Recommendation extends Mage_Catalog_Block_Prod
                 $widget,
                 $context,
                 $scenario,
-                $config['min'],
-                $config['max']
+                (isset($config['min'])&&!is_null($config['min'])) ? $config['min'] : $this->getData("min"),
+                (isset($config['max'])&&!is_null($config['max'])) ? $config['max'] : $this->getData("max")
             );
             $this->setData('title', $this->bxHelperData->getAdapter()->getSearchResultTitle($widget, $this->getData('title')));
         }catch(\Exception $e){
