@@ -33,4 +33,14 @@ class Boxalino_Intelligence_Block_Journey_General extends Mage_Core_Block_Templa
     {
         return $this->renderer->getLocalizedValue($values);
     }
+
+    public function getRequestUuid()
+    {
+        return $this->p13nHelper->getRequestUuid();
+    }
+
+    public function getRequestGroupBy()
+    {
+        $this->p13nHelper->getRequestGroupBy();
+    }
 }

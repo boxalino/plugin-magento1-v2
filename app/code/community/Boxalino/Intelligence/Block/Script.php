@@ -5,6 +5,8 @@ class Boxalino_Intelligence_Block_Script extends Mage_Core_Block_Template
     CONST BXL_INTELLIGENCE_STAGE_SCRIPT="//r-st.bx-cloud.com/static/ba.min.js";
     CONST BXL_INTELLIGENCE_PROD_SCRIPT="//track.bx-cloud.com/static/ba.min.js";
     CONST BXL_INTELLIGENCE_SCRIPT = "//cdn.bx-cloud.com/frontend/rc/js/ba.min.js";
+    CONST BXL_INTELLIGENCE_NARRATIVE_PROD_SCRIPT="//track.bx-cloud.com/static/bav2.min.js";
+    CONST BXL_INTELLIGENCE_NARRATIVE_STAGE_SCRIPT="//r-st.bx-cloud.com/static/bav2.min.js";
 
     private $helper = null;
 
@@ -51,9 +53,17 @@ class Boxalino_Intelligence_Block_Script extends Mage_Core_Block_Template
         $isDev = Mage::getStoreConfig('bxGeneral/general/dev');
         if($isDev)
         {
+            if($this->getBxHelper()->isNarrativeTrackerEnabled())
+            {
+                return self::BXL_INTELLIGENCE_NARRATIVE_STAGE_SCRIPT;
+            }
             return self::BXL_INTELLIGENCE_STAGE_SCRIPT;
         }
 
+        if($this->getBxHelper()->isNarrativeTrackerEnabled())
+        {
+            return self::BXL_INTELLIGENCE_NARRATIVE_PROD_SCRIPT;
+        }
         return self::BXL_INTELLIGENCE_PROD_SCRIPT;
     }
 

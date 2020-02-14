@@ -340,4 +340,30 @@ class Boxalino_Intelligence_Block_Product_List extends Mage_Catalog_Block_Produc
         return $this->bxRewriteAllowed;
     }
 
+    /**
+     * @return string|null
+     */
+    public function getRequestUuid()
+    {
+        if($this->getBxRewriteAllowed() && Mage::helper('boxalino_intelligence')->isEnabledOnLayer($this->getLayer()))
+        {
+            return $this->getP13nAdapter()->getRequestUuid();
+        }
+
+        return null;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getRequestGroupBy()
+    {
+        if($this->getBxRewriteAllowed() && Mage::helper('boxalino_intelligence')->isEnabledOnLayer($this->getLayer()))
+        {
+            return $this->getP13nAdapter()->getRequestGroupBy();
+        }
+
+        return null;
+    }
+
 }

@@ -103,4 +103,36 @@ class Boxalino_Intelligence_Block_Product_List_Upsell extends Mage_Catalog_Block
 
         return false;
     }
+
+    /**
+     * @return string|null
+     */
+    public function getRequestUuid()
+    {
+        if($this->checkIfPluginToBeUsed())
+        {
+            $bxHelperData = Mage::helper('boxalino_intelligence');
+            if($bxHelperData->isPluginEnabled() && $bxHelperData->isUpsellEnabled()) {
+                return $bxHelperData->getAdapter()->getRequestUuid();
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getRequestGroupBy()
+    {
+        if($this->checkIfPluginToBeUsed())
+        {
+            $bxHelperData = Mage::helper('boxalino_intelligence');
+            if($bxHelperData->isPluginEnabled() && $bxHelperData->isUpsellEnabled()) {
+                return $bxHelperData->getAdapter()->getRequestGroupBy();
+            }
+        }
+
+        return null;
+    }
 }

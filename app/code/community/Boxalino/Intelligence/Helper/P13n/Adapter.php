@@ -1124,4 +1124,27 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
         }
     }
 
+    /**
+     * @return string
+     */
+    public function getRequestGroupBy($choiceId=null)
+    {
+        return $this->getResponse()->getExtraInfo("_bx_group_by", "undefined", $choiceId);
+    }
+
+
+    /**
+     * @return string
+     */
+    public function getRequestUuid($choiceId=null)
+    {
+        $requestId = $this->getBxClient()->getRequestId();
+        if($requestId == "undefined")
+        {
+            $requestId = $this->getResponse()->getExtraInfo("_bx_request_id", "undefined", $choiceId);
+        }
+
+        return $requestId;
+    }
+
 }

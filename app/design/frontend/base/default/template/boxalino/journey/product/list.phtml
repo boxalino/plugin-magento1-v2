@@ -10,7 +10,7 @@ $_helper = $this->helper('catalog/output');
 $viewMode = $this->getData('list_grid');
 $_columnCount = $this->getData('column_count');
 ?>
-<div class="category-products products wrapper <?php /* @escapeNotVerified */ echo $viewMode; ?>">
+<div class="category-products products wrapper <?php /* @escapeNotVerified */ echo $viewMode; ?> bx-narrative" data-bx-variant-uuid="<?php echo $this->getRequestUuid();?>" data-bx-narrative-name="products-list" data-bx-narrative-group-by="<?php echo $this->getRequestGroupBy();?>">
     <ul class="products-<?php /* @escapeNotVerified */ echo $viewMode; ?> list items product-items">
         <?php foreach ($subRenderings as  $subRendering): ?>
             <?php

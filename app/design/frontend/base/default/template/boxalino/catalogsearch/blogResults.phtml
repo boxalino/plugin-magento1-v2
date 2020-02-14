@@ -1,43 +1,33 @@
 <?php
-
 $collection = $this->getBlogs();
-
 ?>
 
 <ul>
-
-  <?php foreach ($collection as $blog): ?>
-
-    <li class="item product product-item blogArticlePost" style="display:block;float:left;">
-
-        <figure>
-            <a href="<?php echo $blog[$this->getLinkFieldName()] ?>">
-                <img
-                  width="<?php echo $this->getBlogArticleImageWidth() ?>"
-                  height="<?php echo $this->getBlogArticleImageHeight() ?>"
-                  src="<?php echo $blog[$this->getMediaUrlFieldName()] ?>"
-                >
-            </a>
-        </figure>
-
-        <div class="blogArticleTextArea">
-
-            <h4 class="blogArticleHeader">
+    <?php foreach ($collection as $blog): ?>
+        <li class="item product product-item blogArticlePost" style="display:block;float:left;">
+            <figure>
                 <a href="<?php echo $blog[$this->getLinkFieldName()] ?>">
-                    <?php echo $this->escapeHtml($blog['title']); ?>
+                    <img
+                            width="<?php echo $this->getBlogArticleImageWidth() ?>"
+                            height="<?php echo $this->getBlogArticleImageHeight() ?>"
+                            src="<?php echo $blog[$this->getMediaUrlFieldName()] ?>"
+                    >
                 </a>
-            </h4>
+            </figure>
 
-            <div class="blogArticleExcerpt">
-              <p>
-              <?php echo $this->escapeHtml($blog[$this->getExcerptFieldName()]); ?>
-                <a href="<?php echo $blog[$this->getLinkFieldName()]; ?>">[&hellip;]</a>
-              </p>
+            <div class="blogArticleTextArea">
+                <h4 class="blogArticleHeader">
+                    <a href="<?php echo $blog[$this->getLinkFieldName()] ?>">
+                        <?php echo $this->escapeHtml($blog['title']); ?>
+                    </a>
+                </h4>
+                <div class="blogArticleExcerpt">
+                    <p>
+                        <?php echo $this->escapeHtml($blog[$this->getExcerptFieldName()]); ?>
+                        <a href="<?php echo $blog[$this->getLinkFieldName()]; ?>">[&hellip;]</a>
+                    </p>
+                </div>
             </div>
-
-        </div>
-    </li>
-
-  <?php endforeach; ?>
-
+        </li>
+    <?php endforeach; ?>
 </ul>

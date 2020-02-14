@@ -3,16 +3,18 @@
     <h1><?php /* @escapeNotVerified */ echo __('Recommendation for %s', $this->getData('title'))?></h1>
     <?php $_productCollection = $this->_getLoadedProductCollection(); ?>
     <?php if($_productCollection->count()): ?>
-        <div class="box-collateral box-up-sell">
+        <div class="box-collateral box-up-sell bx-narrative" data-bx-variant-uuid="<?php echo $this->getRequestUuid();?>" data-bx-narrative-name="products-list" data-bx-narrative-group-by="<?php echo $this->getRequestGroupBy();?>">
             <table class="products-grid" id="upsell-product-table">
                 <tr>
                     <?php foreach($_productCollection as $product): ?>
-                        <td>
-                            <a href="<?php echo $product->getProductUrl() ?>" title="<?php echo $this->escapeHtml($product->getName()) ?>" class="product-image"><img src="<?php echo $this->helper('catalog/image')->init($product, 'small_image')->resize(125) ?>" width="125" height="125" alt="<?php echo $this->escapeHtml($product->getName()) ?>" /></a>
-                            <h3 class="product-name"><a href="<?php echo $product->getProductUrl() ?>" title="<?php echo $this->escapeHtml($product->getName()) ?>"><?php echo $this->escapeHtml($product->getName()) ?></a></h3>
-                            <?php echo $this->getPriceHtml($product, true, '-upsell') ?>
-                            <?php echo $this->getReviewsSummaryHtml($product) ?>
-                        </td>
+                        <div class="bx-narrative-item" data-bx-item-id="<?php echo $product->getId();?>">
+                            <td>
+                                <a href="<?php echo $product->getProductUrl() ?>" title="<?php echo $this->escapeHtml($product->getName()) ?>" class="product-image"><img src="<?php echo $this->helper('catalog/image')->init($product, 'small_image')->resize(125) ?>" width="125" height="125" alt="<?php echo $this->escapeHtml($product->getName()) ?>" /></a>
+                                <h3 class="product-name"><a href="<?php echo $product->getProductUrl() ?>" title="<?php echo $this->escapeHtml($product->getName()) ?>"><?php echo $this->escapeHtml($product->getName()) ?></a></h3>
+                                <?php echo $this->getPriceHtml($product, true, '-upsell') ?>
+                                <?php echo $this->getReviewsSummaryHtml($product) ?>
+                            </td>
+                        </div>
                     <?php endforeach; ?>
                 </tr>
             </table>

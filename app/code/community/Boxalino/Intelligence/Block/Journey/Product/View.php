@@ -80,4 +80,14 @@ class Boxalino_Intelligence_Block_Journey_Product_View extends Mage_Catalog_Bloc
         $product = Mage::getModel('catalog/product')->load($product_id);
         return $product;
     }
+
+    public function getRequestUuid()
+    {
+        return $this->p13nHelper->getRequestUuid();
+    }
+
+    public function getRequestGroupBy()
+    {
+        return $this->p13nHelper->getRequestGroupBy();
+    }
 }

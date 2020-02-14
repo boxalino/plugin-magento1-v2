@@ -104,11 +104,43 @@ class Boxalino_Intelligence_Block_Cart_Crosssell extends Mage_Checkout_Block_Car
         {
             if(Mage::helper('boxalino_intelligence')->isPluginEnabled())
             {
-
                 return true;
             }
         }
 
         return false;
     }
+
+    /**
+     * Used for the narrative tracker
+     *
+     * @return string|null
+     */
+    public function getRequestUuid()
+    {
+        $bxHelperData = Mage::helper('boxalino_intelligence');
+        if($this->checkIfPluginToBeUsed() && $bxHelperData->isPluginEnabled() && $bxHelperData->isCrosssellEnabled())
+        {
+            return $bxHelperData->getAdapter()->getRequestUuid();
+        }
+
+        return null;
+    }
+
+    /**
+     * Used for the narrative tracker
+     *
+     * @return string|null
+     */
+    public function getRequestGroupBy()
+    {
+        $bxHelperData = Mage::helper('boxalino_intelligence');
+        if($this->checkIfPluginToBeUsed() && $bxHelperData->isPluginEnabled() && $bxHelperData->isCrosssellEnabled())
+        {
+            return $bxHelperData->getAdapter()->getRequestGroupBy();
+        }
+
+        return null;
+    }
+
 }

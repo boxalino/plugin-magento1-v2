@@ -362,4 +362,35 @@ class Boxalino_Intelligence_Block_Recommendation extends Mage_Catalog_Block_Prod
         return $this->bxRewriteAllowed;
     }
 
+    /**
+     * Used for narrative tracker
+     * @return string|null
+     */
+    public function getRequestUuid()
+    {
+        if($this->getBxRewriteAllowed())
+        {
+            $bxHelperData = Mage::helper('boxalino_intelligence');
+            return $bxHelperData->getAdapter()->getRequestUuid();
+        }
+
+        return null;
+    }
+
+    /**
+     * Used for narrative tracker
+     * @return string|null
+     */
+    public function getRequestGroupBy()
+    {
+        if($this->getBxRewriteAllowed())
+        {
+            $bxHelperData = Mage::helper('boxalino_intelligence');
+            return $bxHelperData->getAdapter()->getRequestGroupBy();
+        }
+
+        return null;
+    }
+
+
 }

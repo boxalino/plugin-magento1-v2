@@ -15,7 +15,7 @@ $scriptSource = $this->getBaScriptServerPath();
     _bxq.push(['setAccount', <?php echo json_encode($account); ?>]);
     <?php echo $this->getScripts(); ?>
 
-    <?php if ($_helper->isTrackerEnabled()): ?>
+    <?php if ($_helper->isTrackerEnabled() || $_helper->isNarrativeTrackerEnabled()): ?>
         _bxq.push(['trackPageView']);
     <?php endif; ?>
 

@@ -142,7 +142,7 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
      */
     public function reportAddToBasket($product, $count, $price, $currency)
     {
-        if ($this->isTrackerEnabled()) {
+        if ($this->isTrackerEnabled() || $this->isNarrativeTrackerEnabled()) {
             $script = "_bxq.push(['trackAddToBasket', '" . $product . "', " . $count . ", " . $price . ", '" . $currency . "']);" . PHP_EOL;
             return $script;
         }
@@ -155,7 +155,7 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
      */
     public function reportCategoryView($categoryID)
     {
-        if ($this->isTrackerEnabled()) {
+        if ($this->isTrackerEnabled() || $this->isNarrativeTrackerEnabled()) {
             $script = "_bxq.push(['trackCategoryView', '" . $categoryID . "'])" . PHP_EOL;
             return $script;
         }
@@ -168,7 +168,7 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
      */
     public function reportLogin($customerId)
     {
-        if ($this->isTrackerEnabled()) {
+        if ($this->isTrackerEnabled() || $this->isNarrativeTrackerEnabled()) {
             $script = "_bxq.push(['trackLogin', '" . $customerId . "'])" . PHP_EOL;
             return $script;
         }
@@ -181,7 +181,7 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
      */
     public function reportProductView($product)
     {
-        if ($this->isTrackerEnabled()) {
+        if ($this->isTrackerEnabled() || $this->isNarrativeTrackerEnabled()) {
             $script = "_bxq.push(['trackProductView', '" . $product . "'])" . PHP_EOL;
             return $script;
         }
@@ -195,7 +195,7 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
      */
     public function reportSearch($term, $filters = null)
     {
-        if ($this->isTrackerEnabled()) {
+        if ($this->isTrackerEnabled() || $this->isNarrativeTrackerEnabled()) {
             $logTerm = addslashes($term);
             $script = "_bxq.push(['trackSearch', '" . $logTerm . "', " . json_encode($filters) . "]);" . PHP_EOL;
             return $script;
@@ -217,7 +217,7 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
      */
     public function reportPurchase($products, $orderId, $price, $currency)
     {
-        if($this->isTrackerEnabled()){
+        if ($this->isTrackerEnabled() || $this->isNarrativeTrackerEnabled()) {
             $productsJson = json_encode($products);
             $script = "_bxq.push([" . PHP_EOL;
             $script .= "'trackPurchase'," . PHP_EOL;
@@ -630,6 +630,14 @@ class Boxalino_Intelligence_Helper_Data extends Mage_Core_Helper_Data
     public function isTrackerEnabled()
     {
         return $this->isPluginEnabled() && Mage::getStoreConfigFlag('bxGeneral/tracker/enabled');
+    }
+
+    /**
+     * @return bool
+     */
+    public function isNarrativeTrackerEnabled()
+    {
+        return $this->isPluginEnabled() && Mage::getStoreConfigFlag('bxGeneral/narrative_tracker/enabled');
     }
 
     /**

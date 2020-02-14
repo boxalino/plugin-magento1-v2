@@ -259,4 +259,38 @@ class Boxalino_Intelligence_Block_Result extends Mage_CatalogSearch_Block_Result
         return $this->bxRewriteAllowed;
     }
 
+    /**
+     * @return string|null
+     */
+    public function getRequestUuid()
+    {
+        if($this->getBxRewriteAllowed())
+        {
+            if(is_null($this->bxHelperData))
+            {
+                $this->bxHelperData = Mage::helper('boxalino_intelligence');
+            }
+            return $this->bxHelperData->getAdapter()->getRequestUuid();
+        }
+
+        return null;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getRequestGroupBy()
+    {
+        if($this->getBxRewriteAllowed())
+        {
+            if(is_null($this->bxHelperData))
+            {
+                $this->bxHelperData = Mage::helper('boxalino_intelligence');
+            }
+            return $this->bxHelperData->getAdapter()->getRequestGroupBy();
+        }
+
+        return null;
+    }
+
 }
