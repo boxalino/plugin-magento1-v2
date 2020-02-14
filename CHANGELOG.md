@@ -18,8 +18,34 @@ If you have any question, just contact us at support@boxalino.com
 
 <a name="v2.2.0"></a>
 ### v2.2.0 : 2020-02-14
+_post-deployment integration test_: test the custom XML/CMS recommendations sliders/blocks; enable the narrative tracker (as described in the integration steps)
 *_description_ : A new tracker system can be enabled which will allow Boxalino to track the actions of your user on predefined response blocks (navigation, search, recommendations). Manual integration required in your e-shop theme.
 *_commit_ : https://github.com/boxalino/plugin-magento1-v2/commit/64dd79331fdeac0ce7d21bd00cb8c4f9a7db9970
+*_integration steps_ : 
+
+1. Follow the sample markup showcasing 1 container with 1 item:
+```
+<div class="bx-narrative" data-bx-variant-uuid="<?php echo $this->getRequestUuid();?>" data-bx-narrative-name="products-list" data-bx-narrative-group-by="<?php echo $this->getRequestGroupBy();?>">
+    <div class="bx-narrative-item" data-bx-item-id="<?php echo $product->getId();?>">
+        /** product item **/ 
+    </div>
+</div>
+```
+The following theme templates require to include the above sample (bx-narrative/bx-narrative-item classes & data-attributes):
+- template/catalog/product/list.phtml
+- template/catalog/product/list/related.phtml
+- template/catalog/product/list/upsell.phtml
+
+Sample on recommendation.phtml:
+https://github.com/boxalino/plugin-magento1-v2/blob/f1ef64cc9d22f2d7b6a7d245c861b319f441b6f2/app/design/frontend/base/default/template/boxalino/recommendation.phtml#L6
+https://github.com/boxalino/plugin-magento1-v2/blob/f1ef64cc9d22f2d7b6a7d245c861b319f441b6f2/app/design/frontend/base/default/template/boxalino/recommendation.phtml#L10 
+
+2. *Enable* the narrative tracker via configuration: Stores->Configuration->Boxalino Extension->General->Narrative Tracker->Enable. Save, clear cache and test.
+3. *Test*: Once the tracker is presumably set up correctly the testing process can be simplified by entering debug-mode.
+Run the following script in your browser's console to enter debug-mode for the duration of the session.
+         
+ ```_bxq.push(['debugCookie', true]); ```        
+4. Deploy your theme updates.
 
 *_description_ : New sorting option available (newest products) (if it is enabled in your system); Other sorting updates
 *_commit_: https://github.com/boxalino/plugin-magento1-v2/commit/039548a632d56fa14d362c86fb4b8ab36359c00f
