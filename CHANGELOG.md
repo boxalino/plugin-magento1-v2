@@ -6,6 +6,7 @@ On every plugin update - please check the file and what needs to be tested on yo
 If you have any question, just contact us at support@boxalino.com
 
 ### Version History
+**[v2.2.0 : 2020-02-14](#v2.2.0)**<br>
 **[v2.1.1 : 2019-10-29](#v2.1.1)**<br>
 **[v2.1.0 : 2019-10-08](#v2.1.0)**<br>
 **[v2.0.0 : 2019-09-30](#v2.0.0)**<br>
@@ -14,6 +15,19 @@ If you have any question, just contact us at support@boxalino.com
 **[v1.4.8 : 2019-06-26](#v1.4.8)**<br>
 **[v1.4.7 : 2019-05-14](#v1.4.7)**<br>
 **[v1.4.6 : 2019-05-10](#v1.4.6)**<br>
+
+<a name="v2.2.0"></a>
+### v2.2.0 : 2020-02-14
+*_description_ : A new tracker system can be enabled which will allow Boxalino to track the actions of your user on predefined response blocks (navigation, search, recommendations). Manual integration required in your e-shop theme.
+*_commit_ : https://github.com/boxalino/plugin-magento1-v2/commit/64dd79331fdeac0ce7d21bd00cb8c4f9a7db9970
+
+*_description_ : New sorting option available (newest products) (if it is enabled in your system); Other sorting updates
+*_commit_: https://github.com/boxalino/plugin-magento1-v2/commit/039548a632d56fa14d362c86fb4b8ab36359c00f
+https://github.com/boxalino/plugin-magento1-v2/commit/7cbd8d842657b6481a8d15f3218a6924ed69ba64
+https://github.com/boxalino/plugin-magento1-v2/commit/a59dc2803230dfd678b7a0942de8c261e3374d28
+
+*_description_ : Batch requests library update for custom newsletter integration. Check the integration sample: https://github.com/boxalino/plugin-magento1-v2/commit/e431f327c77661050f91f73f8e773e484bc33ac2
+*_commit_: https://github.com/boxalino/plugin-magento1-v2/commit/647565120afc44ecf9d435cf3823335b3bb11a83
 
 <a name="v2.1.1"></a>
 ### v2.1.1 : 2019-10-29
