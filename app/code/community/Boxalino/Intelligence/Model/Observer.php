@@ -15,11 +15,7 @@ class Boxalino_Intelligence_Model_Observer
             );
             $session->addScript($script);
         } catch (Exception $e) {
-            if (Mage::helper('boxalino_intelligence')->isDebugEnabled()) {
-                echo($e);
-                exit;
-            }
-            
+            Mage::logException($e);
         }
     }
 
@@ -49,10 +45,7 @@ class Boxalino_Intelligence_Model_Observer
                 $session->addScript($script);
             }
         } catch (Exception $e) {
-            if (Mage::helper('boxalino_intelligence')->isDebugEnabled()) {
-                echo($e);
-                exit;
-            }
+            Mage::logException($e);
         }
     }
 
@@ -66,10 +59,7 @@ class Boxalino_Intelligence_Model_Observer
             $session = Mage::getSingleton('boxalino_intelligence/session');
             $session->addScript($script);
         } catch (Exception $e) {
-            if (Mage::helper('boxalino_intelligence')->isDebugEnabled()) {
-                echo($e);
-                exit;
-            }
+            Mage::logException($e);
         }
     }
 
@@ -83,10 +73,7 @@ class Boxalino_Intelligence_Model_Observer
             $session = Mage::getSingleton('boxalino_intelligence/session');
             $session->addScript($script);
         } catch (Exception $e) {
-            if (Mage::helper('boxalino_intelligence')->isDebugEnabled()) {
-                echo($e);
-                exit;
-            }
+            Mage::logException($e);
         }
     }
 
@@ -99,10 +86,7 @@ class Boxalino_Intelligence_Model_Observer
             $session = Mage::getSingleton('boxalino_intelligence/session');
             $session->addScript($script);
         } catch (Exception $e) {
-            if (Mage::helper('boxalino_intelligence')->isDebugEnabled()) {
-                echo($e);
-                exit;
-            }
+            Mage::logException($e);
         }
     }
 }
