@@ -19,9 +19,10 @@ If you have any question, just contact us at support@boxalino.com
 <a name="v2.2.0"></a>
 ### v2.2.0 : 2020-02-14
 _post-deployment integration test_: test the custom XML/CMS recommendations sliders/blocks; enable the narrative tracker (as described in the integration steps)
-*_description_ : A new tracker system can be enabled which will allow Boxalino to track the actions of your user on predefined response blocks (navigation, search, recommendations). Manual integration required in your e-shop theme.
-*_commit_ : https://github.com/boxalino/plugin-magento1-v2/commit/64dd79331fdeac0ce7d21bd00cb8c4f9a7db9970
-*_integration steps_ : 
+
+* _description_ : A new tracker system can be enabled which will allow Boxalino to track the actions of your user on predefined response blocks (navigation, search, recommendations). Manual integration required in your e-shop theme.
+* _commit_ : https://github.com/boxalino/plugin-magento1-v2/commit/64dd79331fdeac0ce7d21bd00cb8c4f9a7db9970
+* _integration steps_ : 
 
 1. Follow the sample markup showcasing 1 container with 1 item:
 ```
