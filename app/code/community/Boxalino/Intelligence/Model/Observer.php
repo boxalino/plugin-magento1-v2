@@ -6,6 +6,10 @@ class Boxalino_Intelligence_Model_Observer
     public function onProductAddedToCart(Varien_Event_Observer $event)
     {
         try {
+            if(Mage::helper("boxalino_intelligence")->isNarrativeTrackerEnabled())
+            {
+                return;
+            }
             $session = Mage::getSingleton('boxalino_intelligence/session');
             $script = Mage::helper('boxalino_intelligence')->reportAddToBasket(
                 $event->getProduct()->getId(),
