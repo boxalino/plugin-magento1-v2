@@ -10,23 +10,23 @@ $_helper = $this->getBxHelper();
 $account = $this->getAccount();
 $scriptSource = $this->getBaScriptServerPath();
 ?>
-<script>
-    var _bxq = _bxq || []
-    _bxq.push(['setAccount', <?php echo json_encode($account); ?>]);
-    <?php echo $this->getScripts(); ?>
-
-    <?php if ($_helper->isTrackerEnabled() || $_helper->isNarrativeTrackerEnabled()): ?>
+<?php if ($_helper->isTrackerEnabled() || $_helper->isNarrativeTrackerEnabled()): ?>
+    <script>
+        var _bxq = _bxq || []
+        _bxq.push(['setAccount', <?php echo json_encode($account); ?>]);
+        <?php echo $this->getScripts(); ?>
         _bxq.push(['trackPageView']);
-    <?php endif; ?>
 
-    <?php if ($this->isSearch()): ?>
+        <?php if ($this->isSearch()): ?>
         <?php echo $_helper->reportSearch(Mage::app()->getRequest()->getParam('q'), Mage::app()->getRequest()->getParams()); ?>
-    <?php endif; ?>
+        <?php endif; ?>
 
-    (function () {
-        var s = document.createElement('script');
-        s.async = 1;
-        s.src = '<?php echo $scriptSource;?>';
-        document.getElementsByTagName('head')[0].appendChild(s);
-    })();
-</script>
+        (function () {
+            var s = document.createElement('script');
+            s.async = 1;
+            s.src = '<?php echo $scriptSource;?>';
+            document.getElementsByTagName('head')[0].appendChild(s);
+        })();
+    </script>
+<?php endif; ?>
+

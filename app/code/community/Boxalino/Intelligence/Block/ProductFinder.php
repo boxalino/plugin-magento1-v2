@@ -3,7 +3,13 @@
 /**
  * Class Boxalino_Intelligence_Block_ProductFinder
  */
-class Boxalino_Intelligence_Block_ProductFinder extends Mage_Core_Block_Template {
+class Boxalino_Intelligence_Block_ProductFinder extends Mage_Core_Block_Template
+{
+
+    /**
+     * @var bool
+     */
+    protected $bxRewriteAllowed = false;
 
     /**
      * @return array|mixed
@@ -29,7 +35,7 @@ class Boxalino_Intelligence_Block_ProductFinder extends Mage_Core_Block_Template
     }
 
     /**
-     *
+     * @return string
      */
     public function getUrlParameterPrefix() {
         return $this->getP13nAdapter()->getUrlParameterPrefix();
@@ -38,14 +44,16 @@ class Boxalino_Intelligence_Block_ProductFinder extends Mage_Core_Block_Template
     /**
      * @return string
      */
-    public function getParametersPrefix() {
+    public function getParametersPrefix()
+    {
         return $this->getP13nAdapter()->getPrefixContextParameter();
     }
 
     /**
      *
      */
-    protected function checkMode() {
+    protected function checkMode()
+    {
         $currentUrl = Mage::helper('core/url')->getCurrentUrl();
         $url = Mage::getSingleton('core/url')->parseUrl($currentUrl);
         $path = $url->getPath();
@@ -154,4 +162,52 @@ class Boxalino_Intelligence_Block_ProductFinder extends Mage_Core_Block_Template
     public function getFinderUrl() {
         return Mage::getBaseUrl() . $this->getData('finder_url');
     }
+
+    /**
+     * Used for narrative tracker
+     * @return string|null
+     */
+    public function getRequestUuid()
+    {
+        if($this->getBoxalinoPluginInUse())
+        {
+            return $this->getP13nAdapter()->getRequestUuid();
+        }
+
+        return null;
+    }
+
+    /**
+     * Used for narrative tracker
+     * @return string|null
+     */
+    public function getRequestGroupBy()
+    {
+        if($this->getBoxalinoPluginInUse())
+        {
+            return $this->getP13nAdapter()->getRequestGroupBy();
+        }
+
+        return null;
+    }
+
+    public function getBoxalinoPluginInUse()
+    {
+        if(is_null($this->bxRewriteAllowed))
+        {
+            $boxalinoGlobalPluginStatus = Mage::helper('core')->isModuleOutputEnabled('Boxalino_Intelligence');
+            if($boxalinoGlobalPluginStatus)
+            {
+                if(Mage::helper('boxalino_intelligence')->isPluginEnabled())
+                {
+                    $this->bxRewriteAllowed = true;
+                }
+            }
+
+            $this->bxRewriteAllowed = false;
+        }
+
+        return $this->bxRewriteAllowed;
+    }
+
 }

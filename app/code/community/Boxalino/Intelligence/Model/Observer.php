@@ -59,9 +59,8 @@ class Boxalino_Intelligence_Model_Observer
         try {
             $productId = $event['product']->getId();
             $script = Mage::helper('boxalino_intelligence')->reportProductView($productId);
-
             $session = Mage::getSingleton('boxalino_intelligence/session');
-            $session->addScript($script);
+            $session->addScript($script, "productView");
         } catch (Exception $e) {
             Mage::logException($e);
         }
@@ -73,9 +72,8 @@ class Boxalino_Intelligence_Model_Observer
         try {
             $categoryId = $event['category']['entity_id'];
             $script = Mage::helper('boxalino_intelligence')->reportCategoryView($categoryId);
-
             $session = Mage::getSingleton('boxalino_intelligence/session');
-            $session->addScript($script);
+            $session->addScript($script, "categoryView");
         } catch (Exception $e) {
             Mage::logException($e);
         }
