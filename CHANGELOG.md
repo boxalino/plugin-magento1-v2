@@ -6,6 +6,7 @@ On every plugin update - please check the file and what needs to be tested on yo
 If you have any question, just contact us at support@boxalino.com
 
 ### Version History
+**[v2.3.0 : 2020-05-25](#v2.3.0)**<br>
 **[v2.2.0 : 2020-02-14](#v2.2.0)**<br>
 **[v2.1.1 : 2019-10-29](#v2.1.1)**<br>
 **[v2.1.0 : 2019-10-08](#v2.1.0)**<br>
@@ -15,6 +16,23 @@ If you have any question, just contact us at support@boxalino.com
 **[v1.4.8 : 2019-06-26](#v1.4.8)**<br>
 **[v1.4.7 : 2019-05-14](#v1.4.7)**<br>
 **[v1.4.6 : 2019-05-10](#v1.4.6)**<br>
+
+
+<a name="v2.3.0"></a>
+### v2.3.0 : 2020-05-25
+_post-deployment steps_: a full transaction export is required to update BQ reports
+
+##### 1. Transactions Exporter - new fields & total order value update
+* _description_ :  Transactions exporter new fields export
+* _commit_ : https://github.com/boxalino/plugin-magento1-v2/commit/bb8bc574252ead21739f6e689fa96ed1e20fbbe4
+
+##### 2. Disable addToBasket tracking event on narrative tracker
+* _commit_ : https://github.com/boxalino/plugin-magento1-v2/commit/75a10e1c7c4deadff253cedba34a95fd2a659175
+
+##### 3. Narrative : updated templates for narrative JS tracker
+* _description_ :  Transactions exporter new fields export
+* _commit_ : https://github.com/boxalino/plugin-magento1-v2/commit/ada0c225f30ea56cef769c0b93065a6390d016fe
+
 
 <a name="v2.2.0"></a>
 ### v2.2.0 : 2020-02-14
