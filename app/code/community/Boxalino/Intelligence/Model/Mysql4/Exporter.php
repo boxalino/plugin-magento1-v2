@@ -920,15 +920,19 @@ class Boxalino_Intelligence_Model_Mysql4_Exporter extends Mage_Core_Model_Resour
                 array(
                     'entity_id',
                     'status',
+                    'state',
                     'updated_at',
                     'created_at',
                     'customer_id',
                     'base_subtotal',
+                    'grand_total',
                     'shipping_amount',
                     'shipping_method',
+                    'shipping_description',
                     'customer_is_guest',
                     'customer_email',
-                    'order_currency_code'
+                    'order_currency_code',
+                    'coupon_code'
                 )
             )
             ->joinLeft(
@@ -941,6 +945,9 @@ class Boxalino_Intelligence_Model_Mysql4_Exporter extends Mage_Core_Model_Resour
                     'original_price',
                     'product_type',
                     'qty_ordered',
+                    'discount_amount',
+                    'discount_percent',
+                    'tax_amount',
                 )
             )
             ->joinLeft(
