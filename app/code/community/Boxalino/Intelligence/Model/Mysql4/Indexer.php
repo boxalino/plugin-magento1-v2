@@ -1103,6 +1103,7 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
                 }
                 $final_transaction = array(
                     'order_id' => $transaction['entity_id'],
+                    'increment_id' => $transaction['increment_id'],
                     'entity_id' => $transaction['product_id'],
                     'customer_id' => $transaction['customer_id'],
                     'email' => $transaction['customer_email'],

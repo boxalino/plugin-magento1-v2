@@ -919,6 +919,7 @@ class Boxalino_Intelligence_Model_Mysql4_Exporter extends Mage_Core_Model_Resour
                 array('order' => $sales_order_table),
                 array(
                     'entity_id',
+                    'increment_id',
                     'status',
                     'state',
                     'updated_at',
