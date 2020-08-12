@@ -347,7 +347,11 @@ class Boxalino_Intelligence_Block_Product_List extends Mage_Catalog_Block_Produc
     {
         if($this->getBxRewriteAllowed() && Mage::helper('boxalino_intelligence')->isEnabledOnLayer($this->getLayer()))
         {
-            return $this->getP13nAdapter()->getRequestUuid();
+            if(Mage::helper('boxalino_intelligence')->layerCheck($this->getLayer(), 'Mage_CatalogSearch_Model_Layer'))
+            {
+                return $this->getP13nAdapter()->getRequestUuid('search');
+            }
+            return $this->getP13nAdapter()->getRequestUuid('navigation');
         }
 
         return null;

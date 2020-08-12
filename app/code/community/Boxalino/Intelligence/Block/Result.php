@@ -270,7 +270,7 @@ class Boxalino_Intelligence_Block_Result extends Mage_CatalogSearch_Block_Result
             {
                 $this->bxHelperData = Mage::helper('boxalino_intelligence');
             }
-            return $this->bxHelperData->getAdapter()->getRequestUuid();
+            return $this->bxHelperData->getAdapter()->getRequestUuid("search");
         }
 
         return null;

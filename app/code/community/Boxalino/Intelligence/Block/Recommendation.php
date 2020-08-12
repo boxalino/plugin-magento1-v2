@@ -371,7 +371,7 @@ class Boxalino_Intelligence_Block_Recommendation extends Mage_Catalog_Block_Prod
         if($this->getBxRewriteAllowed())
         {
             $bxHelperData = Mage::helper('boxalino_intelligence');
-            return $bxHelperData->getAdapter()->getRequestUuid();
+            return $bxHelperData->getAdapter()->getRequestUuid($this->getData("widget"));
         }
 
         return null;
@@ -386,7 +386,7 @@ class Boxalino_Intelligence_Block_Recommendation extends Mage_Catalog_Block_Prod
         if($this->getBxRewriteAllowed())
         {
             $bxHelperData = Mage::helper('boxalino_intelligence');
-            return $bxHelperData->getAdapter()->getRequestGroupBy();
+            return $bxHelperData->getAdapter()->getRequestGroupBy($this->getData("widget"));
         }
 
         return null;

@@ -112,7 +112,7 @@ class Boxalino_Intelligence_Block_Product_List_Related extends Mage_Catalog_Bloc
         {
             $bxHelperData = Mage::helper('boxalino_intelligence');
             if($bxHelperData->isPluginEnabled() && $bxHelperData->isRelatedEnabled()) {
-                return $bxHelperData->getAdapter()->getRequestUuid();
+                return $bxHelperData->getAdapter()->getRequestUuid("similar");
             }
         }
 
@@ -128,7 +128,7 @@ class Boxalino_Intelligence_Block_Product_List_Related extends Mage_Catalog_Bloc
         {
             $bxHelperData = Mage::helper('boxalino_intelligence');
             if($bxHelperData->isPluginEnabled() && $bxHelperData->isRelatedEnabled()) {
-                return $bxHelperData->getAdapter()->getRequestGroupBy();
+                return $bxHelperData->getAdapter()->getRequestGroupBy("similar");
             }
         }
 

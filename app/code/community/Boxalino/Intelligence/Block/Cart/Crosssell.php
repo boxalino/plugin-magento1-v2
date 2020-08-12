@@ -121,7 +121,7 @@ class Boxalino_Intelligence_Block_Cart_Crosssell extends Mage_Checkout_Block_Car
         $bxHelperData = Mage::helper('boxalino_intelligence');
         if($this->checkIfPluginToBeUsed() && $bxHelperData->isPluginEnabled() && $bxHelperData->isCrosssellEnabled())
         {
-            return $bxHelperData->getAdapter()->getRequestUuid();
+            return $bxHelperData->getAdapter()->getRequestUuid("basket");
         }
 
         return null;
@@ -137,7 +137,7 @@ class Boxalino_Intelligence_Block_Cart_Crosssell extends Mage_Checkout_Block_Car
         $bxHelperData = Mage::helper('boxalino_intelligence');
         if($this->checkIfPluginToBeUsed() && $bxHelperData->isPluginEnabled() && $bxHelperData->isCrosssellEnabled())
         {
-            return $bxHelperData->getAdapter()->getRequestGroupBy();
+            return $bxHelperData->getAdapter()->getRequestGroupBy("basket");
         }
 
         return null;
