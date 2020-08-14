@@ -287,7 +287,7 @@ class Boxalino_Intelligence_Block_Result extends Mage_CatalogSearch_Block_Result
             {
                 $this->bxHelperData = Mage::helper('boxalino_intelligence');
             }
-            return $this->bxHelperData->getAdapter()->getRequestGroupBy();
+            return $this->bxHelperData->getAdapter()->getRequestGroupBy("search");
         }
 
         return null;

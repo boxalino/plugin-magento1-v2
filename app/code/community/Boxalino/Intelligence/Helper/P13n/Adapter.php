@@ -1137,7 +1137,12 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
      */
     public function getRequestId($choiceId=null)
     {
-        return $this->getResponse()->getExtraInfo("_bx_request_id", "undefined", $choiceId);
+        $id = $this->getEntityIdFieldName();
+        try{
+            $id = $this->getClientResponse()->getExtraInfo("_bx_request_id", "undefined", $choiceId);
+        } catch (\Exception $exception) {}
+
+        return $id;
     }
 
     /**
@@ -1145,7 +1150,12 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
      */
     public function getRequestUuid($choiceId=null)
     {
-        return $this->getResponse()->getExtraInfo("_bx_variant_uuid", "undefined", $choiceId);
+        $uuid = "undefined";
+        try {
+            $uuid = $this->getClientResponse()->getExtraInfo("_bx_variant_uuid", "undefined", $choiceId);
+        } catch (\Exception $exception) {}
+
+        return $uuid;
     }
 
 }

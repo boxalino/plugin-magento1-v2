@@ -129,7 +129,7 @@ class Boxalino_Intelligence_Block_Product_List_Upsell extends Mage_Catalog_Block
         {
             $bxHelperData = Mage::helper('boxalino_intelligence');
             if($bxHelperData->isPluginEnabled() && $bxHelperData->isUpsellEnabled()) {
-                return $bxHelperData->getAdapter()->getRequestGroupBy();
+                return $bxHelperData->getAdapter()->getRequestGroupBy("complementary");
             }
         }
 
