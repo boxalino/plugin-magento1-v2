@@ -933,22 +933,18 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
             if(!empty($customerAttributesValues))
             {
                 foreach ($customerAttributesValues as $r) {
-                    $customers[$r['entity_id']][$r['attribute_code']] = $r['value'];
+                    $customers[array_search($r['entity_id'],$ids)][$r['attribute_code']] = $r['value'];
                 }
             }
 
-            foreach ($customers as $customer) {
-                $id = $customer['entity_id'];
+            foreach ($customers as $customer)
+            {
                 $countryCode = $customer['country_id'];
                 if (array_key_exists('gender', $customer)) {
-                    if ($customer['gender'] % 2 == 0) {
-                        $customer['gender'] = 'female';
-                    } else {
-                        $customer['gender'] = 'male';
-                    }
+                    $customer['gender'] = is_null($customer['gender']) ? null : ($customer['gender'] % 2 == 0 ? 'female' : 'male');
                 }
                 $customer_to_save = array(
-                    'customer_id' => $id,
+                    'customer_id' => $customer['entity_id'],
                     'country' => !empty($countryCode) ? $this->_helperExporter->getCountry($countryCode)->getName() : '',
                     'zip' => array_key_exists('postcode', $customer) ? $customer['postcode'] : '',
                 );
