@@ -6,6 +6,7 @@ On every plugin update - please check the file and what needs to be tested on yo
 If you have any question, just contact us at support@boxalino.com
 
 ### Version History
+**[v2.4.0 : 2020-10-05](#v2.4.0)**<br>
 **[v2.3.3 : 2020-08-14](#v2.3.3)**<br>
 **[v2.3.0 : 2020-05-25](#v2.3.0)**<br>
 **[v2.2.0 : 2020-02-14](#v2.2.0)**<br>
@@ -17,6 +18,20 @@ If you have any question, just contact us at support@boxalino.com
 **[v1.4.8 : 2019-06-26](#v1.4.8)**<br>
 **[v1.4.7 : 2019-05-14](#v1.4.7)**<br>
 **[v1.4.6 : 2019-05-10](#v1.4.6)**<br>
+
+
+<a name="v2.4.0"></a>
+### v2.4.0 : 2020-10-05
+_post-deployment steps_: if your project rewrites the [EnterpriseCatalogLayer](https://github.com/boxalino/plugin-magento1-v2/blob/master/app/code/community/Boxalino/Intelligence/Block/EnterpriseCatalogLayer.php), [EnterpriseSearchLayer](https://github.com/boxalino/plugin-magento1-v2/blob/master/app/code/community/Boxalino/Intelligence/Block/EnterpriseSearchLayer.php), [Search Layer](https://github.com/boxalino/plugin-magento1-v2/blob/master/app/code/community/Boxalino/Intelligence/Block/Layer.php), category view or search result actions - please check the blocks/controllers for updates;
+
+1. Search/navigation context flag
+* _description_ :  isSearch and isNavigation flags set on specific context in order to avoid dummy search requests by unauthorized events;
+
+2. Custom recommendation fix (basket context)
+* _description_ :  Fix for custom integrations via the [Recommendation](https://github.com/boxalino/plugin-magento1-v2/blob/master/app/code/community/Boxalino/Intelligence/Block/Recommendation.php) block for the "basket" scenario.
+
+3. Customer export fix
+* _description_ :  Fix to export customers that have no address configured.
 
 
 <a name="v2.3.3"></a>
@@ -57,6 +72,10 @@ If not all product blocks (recommendations, listing, etc) are returning Boxalino
     </div>
 </div>
 ```
+
+The following templates are used to display the basket button:
+- template/catalog/product/view/addtocart.phtml
+- template/catalog/product/list.phtml
 
 
 <a name="v2.3.0"></a>

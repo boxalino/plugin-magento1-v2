@@ -1072,7 +1072,7 @@ class Boxalino_Intelligence_Model_Mysql4_Exporter extends Mage_Core_Model_Resour
                 ['c_e' => $this->adapter->getTableName($this->_prefix . 'customer_entity')],
                 $attributeGroups
             )
-            ->join(
+            ->joinLeft(
                 ['c_a_e' => $this->adapter->getTableName($this->_prefix . 'customer_address_entity')],
                 'c_e.entity_id = c_a_e.parent_id',
                 ['address_id' => 'entity_id']

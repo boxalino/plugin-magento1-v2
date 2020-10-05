@@ -928,7 +928,7 @@ abstract class Boxalino_Intelligence_Model_Mysql4_Indexer extends Mage_Core_Mode
         do{
             $customers_to_save = [];
             $customers = $this->exporterResource->getCustomerAddressByFieldsAndLimit($limit, $page, $fieldsForCustomerSelect);
-            $ids = array_keys($customers);
+            $ids = array_column($customers, 'entity_id');
             $customerAttributesValues = $this->exporterResource->getUnionCustomerAttributesByAttributesAndIds($attrsFromDb, $ids);
             if(!empty($customerAttributesValues))
             {

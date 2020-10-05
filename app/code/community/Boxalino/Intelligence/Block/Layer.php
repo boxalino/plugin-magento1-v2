@@ -96,10 +96,19 @@ class Boxalino_Intelligence_Block_Layer extends Mage_CatalogSearch_Block_Layer
         }
 
         $bxHelperData = Mage::helper('boxalino_intelligence');
-        if($bxHelperData->isEnabledOnLayer($this->getLayer())){
-            if(is_null($this->bxFilters)){
+        if($bxHelperData->isEnabledOnLayer($this->getLayer()))
+        {
+            $category = $this->getLayer()->getCurrentCategory();
+            if(!is_null($category))
+            {
+                $bxHelperData->getAdapter()->setIsNavigation(true);
+            }
+
+            if(is_null($this->bxFilters))
+            {
                 $this->_prepareFilters();
             }
+
             return $this->bxFilters;
         }
 

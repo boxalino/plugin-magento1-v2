@@ -1,5 +1,7 @@
 <?php
 
+use Boxalino\Intelligence\Helper\P13n\Adapter;
+
 /**
  * Class Boxalino_Intelligence_Helper_P13n_Adapter
  */
@@ -41,6 +43,21 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
      * @var String
      */
     protected $landingPageChoice;
+
+    /**
+     * @var bool
+     */
+    protected $isNavigation = false;
+
+    /**
+     * @var bool
+     */
+    protected $isSearch = false;
+
+    /**
+     * @var bool
+     */
+    protected $isNarrative = false;
 
     /**
      * Boxalino_Intelligence_Helper_P13n_Adapter constructor.
@@ -146,15 +163,15 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
         }
 
         $landingPageChoiceId = $this->landingPageChoice;
-
         if (!empty($landingPageChoiceId)) {
             $this->currentSearchChoice = $landingPageChoiceId;
             return $landingPageChoiceId;
         }
 
-        if($queryText == null && !is_null(Mage::registry('current_category'))) {
+        $choice = null;
+        if (empty($queryText) && $this->isNavigation) {
             $choice = Mage::getStoreConfig('bxSearch/advanced/navigation_choice_id');
-            if($choice == null) {
+            if ($choice == null) {
                 $choice = "navigation";
             }
             $this->currentSearchChoice = $choice;
@@ -168,7 +185,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
         }
 
         $choice = Mage::getStoreConfig('bxSearch/advanced/search_choice_id');
-        if($choice == null) {
+        if (($choice == null && !empty($queryText)) || ($choice==null && $this->isSearch)) {
             $choice = "search";
         }
         $this->currentSearchChoice = $choice;
@@ -495,8 +512,13 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
         $isFinder = Mage::helper('boxalino_intelligence')->getIsFinder();
         $params = Mage::app()->getRequest()->getParams();
         $queryText = Mage::helper('catalogsearch')->getQueryText();
+        $choice = $this->getSearchChoice($queryText);
+        if(is_null($choice) && !$isFinder && !$addFinder)
+        {
+            throw new \Exception("Invalid request context: missing choice. This can be triggered by dummy block/model loads via observer/events. If this is not the case, please contact Boxalino with your specific project scenario.");
+        }
 
-        if (self::$bxClient->getChoiceIdRecommendationRequest($this->getSearchChoice($queryText)) != null && !$addFinder && !$isFinder) {
+        if (self::$bxClient->getChoiceIdRecommendationRequest($choice) != null && !$addFinder && !$isFinder) {
             $this->currentSearchChoice = $this->getSearchChoice($queryText);
             return;
         }
@@ -600,7 +622,6 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
         }
     }
 
-    protected $isNarrative = false;
     public function getNarratives($choice_id = 'narrative', $choices = null, $replaceMain = true, $execute = true, $context = array()) {
 
         if(is_null(self::$bxClient->getChoiceIdRecommendationRequest($choice_id))) {
@@ -877,10 +898,15 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
 
     public function getBlogIds()
     {
-        $this->simpleSearch();
-        $choice_id = $this->getSearchChoice('', true);
-        return self::$bxClient->getResponse()->getHitIds($choice_id, true, 0, 10, $this->getEntityIdFieldName());
-
+        try{
+            $this->simpleSearch();
+            $choice_id = $this->getSearchChoice('', true);
+            return $this->getClientResponse()->getHitIds($choice_id, true, 0, 10, $this->getEntityIdFieldName());
+        } catch (\Exception $exception)
+        {
+            Mage::logException($exception);
+            return false;
+        }
     }
 
     public function getBlogTotalHitCount()
@@ -901,21 +927,29 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
     }
 
     /**
+     * @param bool $getFinder
      * @return null
      */
     public function getFacets($getFinder = false)
     {
-        $this->simpleSearch($getFinder);
-        $facets = self::$bxClient->getResponse()->getFacets($this->currentSearchChoice);
-        if(empty($facets)){
-            return null;
+        try{
+            $this->simpleSearch($getFinder);
+            $facets = $this->getClientResponse()->getFacets($this->currentSearchChoice);
+            if (empty($facets)) {
+                return null;
+            }
+
+            $facets->setParameterPrefix($this->getUrlParameterPrefix());
+            return $facets;
+        } catch (\Exception $exception) {
+            Mage::logException($exception);
+            return false;
         }
-        $facets->setParameterPrefix($this->getUrlParameterPrefix());
-        return $facets;
     }
 
     /**
      * @return null
+     * @throws Exception
      */
     public function getCorrectedQuery()
     {
@@ -925,6 +959,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
 
     /**
      * @return bool
+     * @throws Exception
      */
     public function areResultsCorrected()
     {
@@ -934,6 +969,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
 
     /**
      * @return bool
+     * @throws Exception
      */
     public function areThereSubPhrases()
     {
@@ -943,6 +979,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
 
     /**
      * @return bool
+     * @throws Exception
      */
     public function areResultsCorrectedAndAlsoProvideSubPhrases()
     {
@@ -952,6 +989,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
 
     /**
      * @return array
+     * @throws Exception
      */
     public function getSubPhrasesQueries()
     {
@@ -962,6 +1000,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
     /**
      * @param $queryText
      * @return int|mixed
+     * @throws Exception
      */
     public function getSubPhraseTotalHitCount($queryText)
     {
@@ -972,6 +1011,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
     /**
      * @param $queryText
      * @return array
+     * @throws Exception
      */
     public function getSubPhraseEntitiesIds($queryText)
     {
@@ -991,12 +1031,42 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
     }
 
     /**
-     *
+     * @param $value
+     * @return $this
+     */
+    public function setIsNavigation($value)
+    {
+        $this->isNavigation = $value;
+        return $this;
+    }
+
+    /**
+     * clear prior requests (ex: in case of noresults)
      */
     public function flushResponses()
     {
         self::$bxClient->flushResponses();
         self::$bxClient->resetRequests();
+    }
+
+    /**
+     * @param $value
+     * @return $this
+     */
+    public function setIsSearch($value)
+    {
+        $this->isSearch = $value;
+        return $this;
+    }
+
+    /**
+     * @param $value
+     * @return $this
+     */
+    public function setIsNarrative($value)
+    {
+        $this->isNarrative = $value;
+        return $this;
     }
 
     /**
@@ -1090,9 +1160,17 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
         return self::$bxClient->getResponse();
     }
 
+    /**
+     *
+     */
     public function getClientResponse()
     {
-        return self::$bxClient->getResponse();
+        try {
+            $response = self::$bxClient->getResponse();
+            return $response;
+        } catch (\Exception $e) {
+            throw $e;
+        }
     }
 
     public function getExtraInfoWithKey($key, $choice_id = null)
@@ -1125,14 +1203,17 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
     }
 
     /**
+     * @param  null | string $choiceId
      * @return string
+     * @throws Exception
      */
     public function getRequestGroupBy($choiceId=null)
     {
-        return $this->getResponse()->getExtraInfo("_bx_group_by", "undefined", $choiceId);
+        return $this->getClientResponse()->getExtraInfo("_bx_group_by", "undefined", $choiceId);
     }
 
     /**
+     * @param null | string $choiceId
      * @return string
      */
     public function getRequestId($choiceId=null)
@@ -1146,6 +1227,7 @@ class Boxalino_Intelligence_Helper_P13n_Adapter
     }
 
     /**
+     * @param null | string $choiceId
      * @return string
      */
     public function getRequestUuid($choiceId=null)

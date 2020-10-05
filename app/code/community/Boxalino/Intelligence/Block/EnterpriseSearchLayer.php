@@ -73,6 +73,7 @@ class Boxalino_Intelligence_Block_EnterpriseSearchLayer extends Enterprise_Searc
 
         $bxHelperData = Mage::helper('boxalino_intelligence');
         if($bxHelperData->isEnabledOnLayer($this->getLayer())){
+            $bxHelperData->getAdapter()->setIsSearch(true);
             if(is_null($this->bxFilters)){
                 $this->_prepareFilters();
             }

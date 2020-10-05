@@ -184,18 +184,11 @@ class Boxalino_Intelligence_Block_Recommendation extends Mage_Catalog_Block_Prod
                 }
                 break;
             case 'basket':
-                $order = Mage::registry('last_order');
-                if($order == null){
-                    $orderId = Mage::getSingleton('checkout/session')->getLastOrderId();
-                    $order = Mage::getModel('sales/order')->load($orderId);
-                    Mage::register('last_order', $order);
-                }
-                foreach ($order->getAllItems() as $item) {
+                $cartItems = Mage::getSingleton('checkout/cart')->getQuote()->getAllVisibleItems();
+                foreach ($cartItems as $item)
+                {
                     if ($item->getPrice() > 0) {
-                        $product = $item->getProduct();
-                        if ($product) {
-                            $context[] = $product;
-                        }
+                        $context[] = $item;
                     }
                 }
                 break;

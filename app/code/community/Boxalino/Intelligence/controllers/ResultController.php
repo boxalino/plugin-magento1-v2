@@ -7,8 +7,10 @@ class Boxalino_Intelligence_ResultController extends Mage_CatalogSearch_ResultCo
     {
         $bxHelperData = Mage::helper('boxalino_intelligence');
         try{
-            if($bxHelperData->isSearchEnabled()) {
+            if($bxHelperData->isSearchEnabled())
+            {
                 $adapter = $bxHelperData->getAdapter();
+                $adapter->setIsSearch(true);
                 $start = microtime(true);
                 $adapter->addNotification('debug', "request start at " . $start);
                 $redirect_link = $adapter->getResponse()->getRedirectLink();

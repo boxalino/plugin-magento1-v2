@@ -71,6 +71,7 @@ class Boxalino_Intelligence_Block_EnterpriseCatalogLayer extends Enterprise_Sear
 
         $bxHelperData = Mage::helper('boxalino_intelligence');
         if($bxHelperData->isEnabledOnLayer($this->getLayer())){
+            $bxHelperData->getAdapter()->setIsNavigation(true);
             if(is_null($this->bxFilters)){
                 $this->_prepareFilters();
             }

@@ -16,6 +16,7 @@ class Boxalino_Intelligence_CategoryController extends Mage_Catalog_CategoryCont
             if($bxHelperData->isNavigationEnabled()) {
                 $this->_initCatagory();
                 $adapter = $bxHelperData->getAdapter();
+                $adapter->setIsNavigation(true);
                 $start = microtime(true);
                 $adapter->addNotification('debug', "request start at " . $start);
                 $redirect_link = $adapter->getResponse()->getRedirectLink();
